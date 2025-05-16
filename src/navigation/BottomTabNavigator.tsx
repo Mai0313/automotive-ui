@@ -1,30 +1,56 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { MaterialIcons } from '@expo/vector-icons';
+
 import HomeScreen from '../screens/HomeScreen';
-// ...可依需求引入其他頁面
+import NavigationScreen from '../screens/NavigationScreen';
+import MusicScreen from '../screens/MusicScreen';
+import VehicleInfoScreen from '../screens/VehicleInfoScreen';
+import ClimateScreen from '../screens/ClimateScreen';
+import AIAssistantScreen from '../screens/AIAssistantScreen';
 
 const Tab = createBottomTabNavigator();
 
-export default function BottomTabNavigator() {
+const BottomTabNavigator: React.FC = () => {
   return (
     <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: '#181A1B',
-          borderTopWidth: 0,
-          height: 70,
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName: React.ComponentProps<typeof MaterialIcons>['name'] = 'home'; // Default icon
+
+          if (route.name === 'Home') {
+            iconName = 'home'; // Use base name
+          } else if (route.name === 'Navigation') {
+            iconName = 'navigation'; // Use base name
+          } else if (route.name === 'Music') {
+            iconName = 'music-note'; // Use base name
+          } else if (route.name === 'Vehicle') {
+            iconName = 'directions-car'; // Use base name
+          } else if (route.name === 'Climate') {
+            iconName = 'ac-unit'; // Use base name
+          } else if (route.name === 'AI') {
+            iconName = 'mic'; // Use base name
+          }
+
+          return <MaterialIcons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#fff',
         tabBarInactiveTintColor: '#888',
-        tabBarLabelStyle: {
-          fontSize: 18,
-          fontWeight: 'bold',
+        tabBarStyle: {
+          backgroundColor: '#121212',
+          borderTopWidth: 0, 
         },
-      }}
+        headerShown: false, // Hide header for all screens
+      })}
     >
-      <Tab.Screen name="首頁" component={HomeScreen} />
-      {/* 之後可加入導航、音樂、車輛資訊、空調、AI 助理頁 */}
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Navigation" component={NavigationScreen} />
+      <Tab.Screen name="Music" component={MusicScreen} />
+      <Tab.Screen name="Vehicle" component={VehicleInfoScreen} />
+      <Tab.Screen name="Climate" component={ClimateScreen} />
+      <Tab.Screen name="AI" component={AIAssistantScreen} />
     </Tab.Navigator>
   );
-}
+};
+
+export default BottomTabNavigator;

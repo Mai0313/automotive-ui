@@ -2,25 +2,32 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import BottomTabNavigator from './src/navigation/BottomTabNavigator';
-import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
+
+// Define the dark theme for Tesla-like UI
+const darkTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#fff',
+    accent: '#007aff',
+    background: '#000',
+    surface: '#121212',
+    text: '#fff',
+    disabled: '#666',
+  },
+};
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <BottomTabNavigator />
-      <View style={styles.container}>
-        <Text>Open up App.tsx to start working on your app!</Text>
-        <StatusBar style="auto" />
-      </View>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <PaperProvider theme={darkTheme}>
+        <NavigationContainer>
+          <StatusBar style="light" />
+          <BottomTabNavigator />
+        </NavigationContainer>
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
