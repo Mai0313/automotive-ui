@@ -105,7 +105,18 @@ const HomeScreen: React.FC = () => {
           { key: 'music',   icon: <MaterialIcons name="music-note" size={30} color="#fff" /> },
           { key: 'ai',      icon: <MaterialIcons name="mic" size={30} color="#fff" /> },
         ].map(btn => (
-          <TouchableOpacity key={btn.key} onPress={() => { setActiveOverlay(btn.key as any); setFullScreenOverlay(false); }}>
+          <TouchableOpacity
+            key={btn.key}
+            onPress={() => {
+              // toggle overlay on repeat click
+              if (activeOverlay === btn.key) {
+                setActiveOverlay(null);
+              } else {
+                setActiveOverlay(btn.key as any);
+                setFullScreenOverlay(false);
+              }
+            }}
+          >
             {btn.icon}
           </TouchableOpacity>
         ))}
@@ -121,8 +132,9 @@ const styles = StyleSheet.create({
   },
   overlayCard: {
     position: 'absolute',
-    top: 0,
-    bottom: 0,
+    // float between status bar and bottom buttons
+    top: 60,
+    bottom: 100,
     backgroundColor: 'rgba(0,0,0,0.8)',
     borderRadius: 20,
     shadowColor: '#000',

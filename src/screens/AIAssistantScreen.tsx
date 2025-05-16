@@ -13,7 +13,6 @@ import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useCurrentTime from '../hooks/useCurrentTime';
 import commonStyles from '../styles/commonStyles';
-import FloatingStatusBar from '../components/FloatingStatusBar';
 
 interface Message {
   id: number;
@@ -95,7 +94,6 @@ const AIAssistantScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={commonStyles.container}>
-      <FloatingStatusBar temperature="30°C" />
 
       {/* Chat Area */}
       <View style={styles.chatContainer}>
