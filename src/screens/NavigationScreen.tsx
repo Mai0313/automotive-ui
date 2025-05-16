@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView from '../components/MapView'; // Adjusted import path
+import MapView, { Marker, Polyline } from '../components/MapView'; // Adjusted import path
 
 const NavigationScreen: React.FC = () => {
   // Mock navigation data
@@ -75,9 +75,9 @@ const NavigationScreen: React.FC = () => {
           longitudeDelta: 0.5,
         }}
       >
-        <MapView.Marker coordinate={origin} pinColor="#3498db" />
-        <MapView.Marker coordinate={destination} pinColor="#e74c3c" />
-        <MapView.Polyline
+        <Marker coordinate={origin} pinColor="#3498db" />
+        <Marker coordinate={destination} pinColor="#e74c3c" />
+        <Polyline
           coordinates={route}
           strokeColor="#3498db"
           strokeWidth={4}

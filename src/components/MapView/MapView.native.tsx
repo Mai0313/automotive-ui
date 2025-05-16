@@ -1,5 +1,6 @@
 import React from 'react';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import RnmMapView, { Marker as RnmMarker, Polyline as RnmPolyline } from 'react-native-maps';
 
-// We're simply exporting react-native-maps directly for native platforms
-export default MapView;
+export const Marker = RnmMarker;
+export const Polyline = RnmPolyline;
+export default RnmMapView;
