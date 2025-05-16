@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Image, TouchableOpacity, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import commonStyles from '../styles/commonStyles';
-import FloatingStatusBar from '../components/FloatingStatusBar';
 
 // Slider fallback for web with proper HTML attributes
 const Slider = Platform.OS === 'web'
@@ -52,8 +51,6 @@ const MusicScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={commonStyles.container}>
-      <FloatingStatusBar temperature={temperature} />
-
        {/* Album art */}
        <Image
         source={{ uri: 'https://via.placeholder.com/400x400.png?text=Album+Art' }}

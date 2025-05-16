@@ -1,9 +1,10 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
-import BottomTabNavigator from './src/navigation/BottomTabNavigator';
+import HomeScreen from './src/screens/HomeScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
+import FloatingStatusBar from './src/components/FloatingStatusBar';
 
 // Define the dark theme for Tesla-like UI
 const darkTheme = {
@@ -25,7 +26,8 @@ export default function App() {
       <PaperProvider theme={darkTheme}>
         <NavigationContainer>
           <StatusBar style="light" />
-          <BottomTabNavigator />
+          <FloatingStatusBar />
+          <HomeScreen />
         </NavigationContainer>
       </PaperProvider>
     </SafeAreaProvider>

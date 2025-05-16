@@ -5,7 +5,6 @@ import Slider from '@react-native-community/slider'; // Ensure this is installed
 import { SafeAreaView } from 'react-native-safe-area-context';
 import commonStyles from '../styles/commonStyles';
 import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
-import FloatingStatusBar from '../components/FloatingStatusBar';
 
 const ClimateScreen: React.FC = () => {
   const currentTime = useCurrentTime(); // Use the hook
@@ -32,8 +31,6 @@ const ClimateScreen: React.FC = () => {
   
   return (
     <SafeAreaView style={commonStyles.container}>
-      <FloatingStatusBar temperature={`${temperature}°C`} />
-
       {/* Main Climate Controls */}
       <View style={styles.controlsContainer}>
         {/* Temperature Display */}

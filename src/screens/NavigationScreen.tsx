@@ -5,7 +5,6 @@ import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, Polyline } from '../components/MapView'; // Corrected import path
 import useCurrentTime from '../hooks/useCurrentTime';
 import commonStyles from '../styles/commonStyles';
-import FloatingStatusBar from '../components/FloatingStatusBar';
 
 const NavigationScreen: React.FC = () => {
   const currentTime = useCurrentTime(); // Use the hook
@@ -56,8 +55,6 @@ const NavigationScreen: React.FC = () => {
 
   return (
     <RNSafeAreaView style={commonStyles.container}>
-      <FloatingStatusBar temperature="30°C" />
-
       {/* Main Navigation Map */}
       <MapView
         style={styles.map}

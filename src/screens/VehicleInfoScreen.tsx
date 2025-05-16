@@ -4,7 +4,6 @@ import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useCurrentTime from '../hooks/useCurrentTime';
 import commonStyles from '../styles/commonStyles';
-import FloatingStatusBar from '../components/FloatingStatusBar';
 
 const VehicleInfoScreen: React.FC = () => {
   const currentTime = useCurrentTime(); // Use the hook
@@ -18,8 +17,6 @@ const VehicleInfoScreen: React.FC = () => {
   
   return (
     <SafeAreaView style={commonStyles.container}>
-      <FloatingStatusBar temperature={temperature} />
-
        {/* Main Content */}
        <View style={styles.content}>
         {/* Main Speed Display */}

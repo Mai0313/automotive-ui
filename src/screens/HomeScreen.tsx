@@ -10,7 +10,6 @@ import VehicleInfoScreen from './VehicleInfoScreen';
 import MusicScreen from './MusicScreen';
 import ClimateScreen from './ClimateScreen';
 import AIAssistantScreen from './AIAssistantScreen';
-import FloatingStatusBar from '../components/FloatingStatusBar';
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -58,8 +57,6 @@ const HomeScreen: React.FC = () => {
 
   return (
     <View style={commonStyles.container}>
-      <FloatingStatusBar temperature={temperature} />
-
       {/* Map area shrinks when overlay is active */}
       <Animated.View style={[styles.mapContainer, { width: mapWidth, transform: [{ translateX: mapTranslateX }] }]}>          
         <TouchableWithoutFeedback onPress={() => setActiveOverlay(null)}>
