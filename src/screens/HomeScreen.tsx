@@ -108,12 +108,13 @@ const HomeScreen: React.FC = () => {
           <TouchableOpacity
             key={btn.key}
             onPress={() => {
-              // toggle overlay on repeat click
               if (activeOverlay === btn.key) {
+                // click again to close
                 setActiveOverlay(null);
               } else {
+                // open overlay, music opens fullscreen to show album art and controls
                 setActiveOverlay(btn.key as any);
-                setFullScreenOverlay(false);
+                setFullScreenOverlay(btn.key === 'music');
               }
             }}
           >

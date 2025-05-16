@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Image, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, StatusBar, Platform, useWindowDimensions } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import commonStyles from '../styles/commonStyles';
 
 // Slider fallback for web with proper HTML attributes
@@ -29,8 +30,8 @@ const formatTime = (secs: number) => {
 
 const MusicScreen: React.FC = () => {
   const currentTime = useCurrentTime(); // Use the hook
-  const temperature = '28°C';
-
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
   // Mock music data
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0.3); // Current song progress (0-1)
@@ -51,83 +52,154 @@ const MusicScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={commonStyles.container}>
-       {/* Album art */}
-       <Image
-        source={{ uri: 'https://via.placeholder.com/400x400.png?text=Album+Art' }}
-        style={styles.albumArt}
-      />
-
-      {/* Song Info */}
-      <View style={styles.infoContainer}>
-        <Text style={styles.songTitle}>{songTitle}</Text>
-        <Text style={styles.artistName}>{artistName}</Text>
-        <Text style={styles.albumName}>{albumName}</Text>
-      </View>
-      
-      {/* Playback Progress */}
-      <View style={styles.progressContainer}>
-        <Slider
-          value={progress}
-          onValueChange={(value: number) => setProgress(value)}
-          style={styles.slider}
-        />
-        <View style={styles.timeContainer}>
-          <Text style={styles.timeText}>{formatTime(progress * totalSecondsAll)}</Text>
-          <Text style={styles.timeText}>{totalTime}</Text>
+      {/* Main Content: responsive to orientation */}
+      <View style={[styles.content, isLandscape ? styles.contentLandscape : styles.contentPortrait]}>
+        <View style={[styles.albumContainer, isLandscape ? styles.albumContainerLandscape : styles.albumContainerPortrait]}>
+          {/* full white album art placeholder */}
+          <View style={[styles.albumArt, { backgroundColor: '#fff' }]} />
         </View>
-      </View>
+        <View style={[styles.rightContainer, isLandscape ? styles.rightContainerLandscape : styles.rightContainerPortrait]}>
+          {/* Song Info */}
+          <View style={styles.infoContainer}>
+            <Text style={styles.songTitle}>{songTitle}</Text>
+            <Text style={styles.artistName}>{artistName}</Text>
+            <Text style={styles.albumName}>{albumName}</Text>
+          </View>
+          
+          {/* Playback Progress */}
+          <View style={[styles.progressContainer, isLandscape && styles.progressContainerLandscape]}>
+            <Slider
+              value={progress}
+              onValueChange={(value: number) => setProgress(value)}
+              style={styles.slider}
+            />
+            <View style={styles.timeContainer}>
+              <Text style={styles.timeText}>{formatTime(progress * totalSecondsAll)}</Text>
+              <Text style={styles.timeText}>{totalTime}</Text>
+            </View>
+          </View>
 
-      {/* Playback Controls */}
-      <View style={styles.controls}>
-        <TouchableOpacity style={styles.controlButton}>
-          <MaterialIcons name="skip-previous" size={50} color="#fff" />
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.playButton} onPress={togglePlayback}>
-          <MaterialIcons 
-            name={isPlaying ? "pause" : "play-arrow"} 
-            size={70} 
-            color="#fff" 
-          />
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.controlButton}>
-          <MaterialIcons name="skip-next" size={50} color="#fff" />
-        </TouchableOpacity>
-      </View>
-      
-      {/* Additional Controls */}
-      <View style={styles.additionalControls}>
-        <TouchableOpacity style={styles.additionalControlButton}>
-          <MaterialIcons name="shuffle" size={25} color="#888" />
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.additionalControlButton}>
-          <MaterialIcons name="repeat" size={25} color="#888" />
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.additionalControlButton}>
-          <MaterialIcons name="queue-music" size={25} color="#888" />
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.additionalControlButton}>
-          <MaterialIcons name="devices" size={25} color="#888" />
-        </TouchableOpacity>
+          {/* Playback Controls */}
+          <View style={[styles.controls, isLandscape && styles.controlsLandscape]}>
+            <TouchableOpacity style={styles.controlButton}>
+              <MaterialIcons name="skip-previous" size={50} color="#fff" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.playButton} onPress={togglePlayback}>
+              <MaterialIcons 
+                name={isPlaying ? "pause" : "play-arrow"} 
+                size={70} 
+                color="#fff" 
+              />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.controlButton}>
+              <MaterialIcons name="skip-next" size={50} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          
+          {/* Additional Controls */}
+          <View style={[styles.additionalControls, isLandscape && styles.additionalControlsLandscape]}>
+            <TouchableOpacity style={styles.additionalControlButton}>
+              <MaterialIcons name="shuffle" size={25} color="#888" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.additionalControlButton}>
+              <MaterialIcons name="repeat" size={25} color="#888" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.additionalControlButton}>
+              <MaterialIcons name="queue-music" size={25} color="#888" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.additionalControlButton}>
+              <MaterialIcons name="devices" size={25} color="#888" />
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  statusInfo: { color: '#fff', fontSize: 16 },
   container: {
     flex: 1,
     width: '100%', // full width for web responsiveness
     backgroundColor: '#000',
   },
+  statusBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  statusText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  statusRight: { // Added style for statusRight
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  content: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    paddingHorizontal: 0,  // no horizontal padding in portrait for center alignment
+    paddingTop: 20,
+  },
+  contentLandscape: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 20, // margin from edges
+  },
+  contentPortrait: {
+    paddingHorizontal: 0,  // override for portrait
+    maxWidth: 600,         // limit width in portrait for centering
+    alignSelf: 'center',   // center container
+  },
+  albumContainer: {
+    // width is overridden per orientation
+    maxWidth: 400,  // limit size on wide displays
+    aspectRatio: 1,
+    marginBottom: 30,
+    shadowColor: '#3498db',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  albumContainerPortrait: {
+    width: '80%',     // wider in portrait
+    alignSelf: 'center',  // center album cover horizontally
+  },
+  albumContainerLandscape: {
+    width: '40%',      // occupy left 40%
+    marginLeft: 20,    // from left edge
+  },
   albumArt: {
     width: '100%',
     height: '100%',
     borderRadius: 8,
+  },
+  rightContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',  // center in portrait
+    paddingLeft: 0,        // remove left offset
+  },
+  rightContainerPortrait: {
+    width: '80%',      // match album width in portrait
+    alignSelf: 'center',  // center controls/info
+  },
+  rightContainerLandscape: {
+    width: '60%',      // occupy right 60% (from album edge to screen edge)
+    alignItems: 'center', // center content horizontally in landscape
   },
   infoContainer: {
     alignItems: 'center',
@@ -153,6 +225,11 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 30,
   },
+  progressContainerLandscape: {
+    width: '80%',
+    alignSelf: 'center',
+    marginVertical: 20,
+  },
   slider: {
     width: '100%',
     height: 40,
@@ -174,6 +251,11 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     width: '80%',
   },
+  controlsLandscape: {
+    width: '100%',      // full width of right container
+    justifyContent: 'space-around',
+    marginVertical: 20,
+  },
   controlButton: {
     paddingHorizontal: 20,
   },
@@ -190,6 +272,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '80%',
+    marginBottom: 20,
+  },
+  additionalControlsLandscape: {
+    width: '100%',      // full width of right container
+    justifyContent: 'space-around',
     marginBottom: 20,
   },
   additionalControlButton: {
