@@ -20,6 +20,13 @@ const Slider = Platform.OS === 'web'
 
 import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
 
+// Helper to format seconds to mm:ss
+const formatTime = (secs: number) => {
+  const m = Math.floor(secs / 60);
+  const s = Math.floor(secs % 60);
+  return `${m}:${s < 10 ? '0' + s : s}`;
+};
+
 const MusicScreen: React.FC = () => {
   const currentTime = useCurrentTime(); // Use the hook
   // Mock music data
@@ -31,12 +38,15 @@ const MusicScreen: React.FC = () => {
   const artistName = 'Karnivool';
   const albumName = 'Asymmetry';
   const totalTime = '5:12';
-  
+  // parse total duration once
+  const [totalMinutes, totalSecondsStr] = totalTime.split(':').map(v => parseInt(v, 10));
+  const totalSecondsAll = totalMinutes * 60 + totalSecondsStr;
+
   // Toggle play/pause
   const togglePlayback = () => {
     setIsPlaying(!isPlaying);
   };
-  
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -72,13 +82,10 @@ const MusicScreen: React.FC = () => {
           <Slider
             value={progress}
             onValueChange={(value: number) => setProgress(value)}
-            minimumTrackTintColor="#3498db"
-            maximumTrackTintColor="#333"
-            thumbTintColor="#fff"
             style={styles.slider}
           />
           <View style={styles.timeContainer}>
-            <Text style={styles.timeText}>{currentTime}</Text>
+            <Text style={styles.timeText}>{formatTime(progress * totalSecondsAll)}</Text>
             <Text style={styles.timeText}>{totalTime}</Text>
           </View>
         </View>
@@ -128,6 +135,7 @@ const MusicScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    width: '100%', // full width for web responsiveness
     backgroundColor: '#000',
   },
   statusBar: {
@@ -156,12 +164,16 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    width: '100%',
+    maxWidth: 600,      // constrain width on large screens
+    alignSelf: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 20,
   },
   albumContainer: {
     width: '60%',
+    maxWidth: 400,  // limit size on wide displays
     aspectRatio: 1,
     marginBottom: 30,
     shadowColor: '#3498db',
