@@ -35,7 +35,7 @@ const ClimateScreen: React.FC = () => {
       <View key="topBar" style={styles.statusBar}>{[
         <Text key="label" style={styles.statusText}>空調控制</Text>,
         <View key="right" style={styles.statusRight}>{[
-          <Text key="temp" style={styles.statusTemp}>室外 28°C</Text>,
+          <Text key="temp" style={styles.statusTemp}>30°C</Text>,
           <Text key="time" style={styles.statusTime}>{currentTime}</Text>,
         ]}</View>,
       ]}</View>,

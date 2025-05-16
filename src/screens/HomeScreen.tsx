@@ -12,7 +12,7 @@ const HomeScreen: React.FC = () => {
 
   // Mock data for status
   const batteryLevel = '315 km';
-  const temperature = '17°C';
+  const temperature = '30°C';
   // const time = '10:21 AM'; // Removed hardcoded time
 
   // Mock location for map preview (e.g., Taipei 101)

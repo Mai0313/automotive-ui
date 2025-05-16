@@ -37,7 +37,7 @@ const AIAssistantScreen: React.FC = () => {
   // Mock responses for demo purposes
   const mockResponses: Record<string, string> = {
     '你好': '您好！很高興為您服務。',
-    '天氣': '目前外部溫度為 17°C，天氣晴朗。今日預計溫度為 15-22°C，無降雨機率。',
+    '天氣': '目前外部溫度為 30°C，天氣晴朗。今日預計溫度為 15-22°C，無降雨機率。',
     '播放音樂': '好的，正在播放您喜愛的播放清單。',
     '導航': '請問您要前往哪裡？您可以說出地點名稱或地址。',
     '設定溫度': '已將車內溫度設定為 22°C。',
@@ -99,7 +99,7 @@ const AIAssistantScreen: React.FC = () => {
       <View style={styles.statusBar}>
         <Text style={styles.statusText}>AI 助理</Text>
         <View style={styles.statusRight}>
-          <Text style={styles.statusTemp}>25°C</Text>
+          <Text style={styles.statusTemp}>30°C</Text>
           <Text style={styles.statusTime}>{currentTime}</Text> {/* Display real-time */}
         </View>
       </View>

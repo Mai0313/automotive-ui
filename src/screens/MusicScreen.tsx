@@ -57,7 +57,7 @@ const MusicScreen: React.FC = () => {
       <View style={styles.statusBar}>
         <Text style={styles.statusText}>音樂</Text>
         <View style={styles.statusRight}>
-          <Text style={styles.statusInfo}>25°C</Text>
+          <Text style={styles.statusInfo}>30°C</Text>
           <Text style={[styles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>
         </View>
       </View>
