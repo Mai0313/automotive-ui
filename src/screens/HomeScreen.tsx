@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView from '../components/MapView'; // Import MapView
 import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
+import commonStyles from '../styles/commonStyles';
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -24,13 +25,16 @@ const HomeScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>{[
+    <SafeAreaView style={commonStyles.container}>{[
       <StatusBar key="statusbar" barStyle="light-content" />,  
 
       // Top Status Bar
-      <View key="status" style={styles.statusBar}>{[
-        <Text key="temp" style={styles.statusInfo}>{temperature}</Text>,
-        <Text key="time" style={[styles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>,
+      <View key="topBar" style={commonStyles.statusBar}>{[
+        <Text key="label" style={commonStyles.statusText}>Home</Text>,
+        <View key="right" style={commonStyles.statusRight}>{[
+          <Text key="temp" style={commonStyles.statusInfo}>30°C</Text>,
+          <Text key="time" style={[commonStyles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>,
+        ]}</View>,
       ]}</View>,
 
       // Main Content Grid
@@ -101,20 +105,6 @@ const HomeScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  statusBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  statusInfo: { // Unified style for temperature and time in top bar
-    color: '#fff',
-    fontSize: 16,
-  },
   gridContainer: {
     flex: 1,
     flexDirection: 'row',

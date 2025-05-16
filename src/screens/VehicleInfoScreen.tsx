@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, StatusBar } from 'reac
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
-import Svg, { Circle, Path } from 'react-native-svg';
+import commonStyles from '../styles/commonStyles';
 
 const VehicleInfoScreen: React.FC = () => {
   const currentTime = useCurrentTime(); // Use the hook
@@ -15,14 +15,14 @@ const VehicleInfoScreen: React.FC = () => {
   const batteryLevel = 70; // percentage
   
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={commonStyles.container}>
       <StatusBar barStyle="light-content" />
       {/* Top Status Bar */}
-      <View style={styles.statusBar}>
-        <Text style={styles.statusText}>車輛資訊</Text>
-        <View style={styles.statusRight}>
-          <Text style={styles.statusInfo}>30°C</Text>
-          <Text style={[styles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>
+      <View style={commonStyles.statusBar}>
+        <Text style={commonStyles.statusText}>車輛資訊</Text>
+        <View style={commonStyles.statusRight}>
+          <Text style={commonStyles.statusInfo}>30°C</Text>
+          <Text style={[commonStyles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>
         </View>
       </View>
 
@@ -116,34 +116,6 @@ const VehicleInfoScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  statusInfo: { color: '#fff', fontSize: 16 },
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  statusBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  statusText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  statusRight: {
-    flexDirection: 'row',
-  },
-  statusTemp: {
-    color: '#fff',
-    fontSize: 16,
-    marginRight: 10,
-  },
-  statusTime: {
-    color: '#fff',
-  },
   content: {
     flex: 1,
     paddingHorizontal: 20,

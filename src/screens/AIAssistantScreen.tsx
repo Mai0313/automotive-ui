@@ -13,6 +13,7 @@ import {
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
+import commonStyles from '../styles/commonStyles';
 
 interface Message {
   id: number;
@@ -93,14 +94,13 @@ const AIAssistantScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={commonStyles.container}>
       <StatusBar barStyle="light-content" />
-      {/* Top Status Bar */}
-      <View style={styles.statusBar}>
-        <Text style={styles.statusText}>AI 助理</Text>
-        <View style={styles.statusRight}>
-          <Text style={styles.statusInfo}>30°C</Text>
-          <Text style={[styles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text> {/* Display real-time */}
+      <View style={commonStyles.statusBar}>
+        <Text style={commonStyles.statusText}>AI 助理</Text>
+        <View style={commonStyles.statusRight}>
+          <Text style={commonStyles.statusInfo}>30°C</Text>
+          <Text style={[commonStyles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>
         </View>
       </View>
 
@@ -143,39 +143,6 @@ const AIAssistantScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  statusInfo: { color: '#fff', fontSize: 16 },
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  statusBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 15,
-    paddingTop: Platform.OS === 'ios' ? 40 : 10,
-    paddingBottom: 10,
-    backgroundColor: '#111',
-    borderBottomWidth: 1,
-    borderBottomColor: '#222',
-  },
-  statusText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  statusRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusTemp: {
-    color: '#fff',
-    fontSize: 16,
-    marginRight: 10,
-  },
-  statusTime: {
-    color: '#fff',
-  },
   chatContainer: {
     flex: 1,
     paddingHorizontal: 10,

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from 'react-nativ
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider'; // Ensure this is installed or use a different slider
 import { SafeAreaView } from 'react-native-safe-area-context';
+import commonStyles from '../styles/commonStyles';
 import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
 
 const ClimateScreen: React.FC = () => {
@@ -29,14 +30,14 @@ const ClimateScreen: React.FC = () => {
   const toggleRearDefrost = () => setIsRearDefrost(!isRearDefrost);
   
   return (
-    <SafeAreaView style={styles.container}>{[
+    <SafeAreaView style={commonStyles.container}>{[
       <StatusBar key="statusbar" barStyle="light-content" />,  
       /* Top Status Bar */
-      <View key="topBar" style={styles.statusBar}>{[
-        <Text key="label" style={styles.statusText}>空調控制</Text>,
-        <View key="right" style={styles.statusRight}>{[
-          <Text key="temp" style={styles.statusInfo}>30°C</Text>,
-          <Text key="time" style={[styles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>,
+      <View key="topBar" style={commonStyles.statusBar}>{[
+        <Text key="label" style={commonStyles.statusText}>空調控制</Text>,
+        <View key="right" style={commonStyles.statusRight}>{[
+          <Text key="temp" style={commonStyles.statusInfo}>30°C</Text>,
+          <Text key="time" style={[commonStyles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>,
         ]}</View>,
       ]}</View>,
       /* Main Climate Controls */
@@ -187,34 +188,6 @@ const ClimateScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  statusInfo: { color: '#fff', fontSize: 16 },
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  statusBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  statusText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  statusRight: { // Added style for statusRight
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusTemp: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  statusTime: {
-    color: '#fff',
-  },
   controlsContainer: {
     flex: 1,
     paddingHorizontal: 20,
