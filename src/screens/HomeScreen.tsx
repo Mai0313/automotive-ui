@@ -49,7 +49,7 @@ const HomeScreen: React.FC = () => {
           />
           <View style={styles.mapOverlay}>
             <MaterialIcons name="map" size={30} color="#fff" />
-            <Text style={styles.gridText}>導航</Text>
+            {/* overlay text removed */}
           </View>
         </TouchableOpacity>
 
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   },
   gridItem: {
     width: '45%',
-    aspectRatio: 1.5,
+    aspectRatio: 1.2, // Adjusted to increase height
     backgroundColor: '#121212',
     borderRadius: 15,
     justifyContent: 'center',
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden', // Needed for map preview
   },
   mapGridItem: { // Style for the map grid item specifically
-    aspectRatio: 1.5, // Adjust as needed, or set fixed height/width
+    aspectRatio: 1.2, // Adjusted to increase height
   },
   mapPreview: {
     ...StyleSheet.absoluteFillObject, // Make map fill the grid item
