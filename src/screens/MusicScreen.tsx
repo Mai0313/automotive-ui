@@ -63,12 +63,12 @@ const MusicScreen: React.FC = () => {
       </View>
       
       {/* Main Content: responsive to orientation */}
-      <View style={[styles.content, isLandscape && styles.contentLandscape]}>
-        <View style={styles.albumContainer}>
+      <View style={[styles.content, isLandscape ? styles.contentLandscape : styles.contentPortrait]}>
+        <View style={[styles.albumContainer, isLandscape ? styles.albumContainerLandscape : styles.albumContainerPortrait]}>
           {/* full white album art placeholder */}
           <View style={[styles.albumArt, { backgroundColor: '#fff' }]} />
         </View>
-        <View style={[styles.rightContainer, isLandscape && styles.rightContainerLandscape]}>
+        <View style={[styles.rightContainer, isLandscape ? styles.rightContainerLandscape : styles.rightContainerPortrait]}>
           {/* Song Info */}
           <View style={styles.infoContainer}>
             <Text style={styles.songTitle}>{songTitle}</Text>
@@ -77,7 +77,7 @@ const MusicScreen: React.FC = () => {
           </View>
           
           {/* Playback Progress */}
-          <View style={styles.progressContainer}>
+          <View style={[styles.progressContainer, isLandscape && styles.progressContainerLandscape]}>
             <Slider
               value={progress}
               onValueChange={(value: number) => setProgress(value)}
@@ -88,9 +88,9 @@ const MusicScreen: React.FC = () => {
               <Text style={styles.timeText}>{totalTime}</Text>
             </View>
           </View>
-          
+
           {/* Playback Controls */}
-          <View style={styles.controls}>
+          <View style={[styles.controls, isLandscape && styles.controlsLandscape]}>
             <TouchableOpacity style={styles.controlButton}>
               <MaterialIcons name="skip-previous" size={50} color="#fff" />
             </TouchableOpacity>
@@ -109,7 +109,7 @@ const MusicScreen: React.FC = () => {
           </View>
           
           {/* Additional Controls */}
-          <View style={styles.additionalControls}>
+          <View style={[styles.additionalControls, isLandscape && styles.additionalControlsLandscape]}>
             <TouchableOpacity style={styles.additionalControlButton}>
               <MaterialIcons name="shuffle" size={25} color="#888" />
             </TouchableOpacity>
@@ -158,18 +158,23 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     width: '100%',
-    maxWidth: 600,      // constrain width on large screens
-    alignSelf: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 0,  // no horizontal padding in portrait for center alignment
     paddingTop: 20,
   },
   contentLandscape: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 20, // margin from edges
+  },
+  contentPortrait: {
+    paddingHorizontal: 0,  // override for portrait
+    maxWidth: 600,         // limit width in portrait for centering
+    alignSelf: 'center',   // center container
   },
   albumContainer: {
-    width: '60%',
+    // width is overridden per orientation
     maxWidth: 400,  // limit size on wide displays
     aspectRatio: 1,
     marginBottom: 30,
@@ -179,6 +184,14 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 5,
   },
+  albumContainerPortrait: {
+    width: '80%',     // wider in portrait
+    alignSelf: 'center',  // center album cover horizontally
+  },
+  albumContainerLandscape: {
+    width: '40%',      // occupy left 40%
+    marginLeft: 20,    // from left edge
+  },
   albumArt: {
     width: '100%',
     height: '100%',
@@ -187,10 +200,16 @@ const styles = StyleSheet.create({
   rightContainer: {
     flex: 1,
     justifyContent: 'center',
-    paddingLeft: 20,
+    alignItems: 'center',  // center in portrait
+    paddingLeft: 0,        // remove left offset
+  },
+  rightContainerPortrait: {
+    width: '80%',      // match album width in portrait
+    alignSelf: 'center',  // center controls/info
   },
   rightContainerLandscape: {
-    paddingLeft: 40,
+    width: '60%',      // occupy right 60% (from album edge to screen edge)
+    alignItems: 'center', // center content horizontally in landscape
   },
   infoContainer: {
     alignItems: 'center',
@@ -216,6 +235,11 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 30,
   },
+  progressContainerLandscape: {
+    width: '80%',
+    alignSelf: 'center',
+    marginVertical: 20,
+  },
   slider: {
     width: '100%',
     height: 40,
@@ -237,6 +261,11 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     width: '80%',
   },
+  controlsLandscape: {
+    width: '100%',      // full width of right container
+    justifyContent: 'space-around',
+    marginVertical: 20,
+  },
   controlButton: {
     paddingHorizontal: 20,
   },
@@ -253,6 +282,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '80%',
+    marginBottom: 20,
+  },
+  additionalControlsLandscape: {
+    width: '100%',      // full width of right container
+    justifyContent: 'space-around',
     marginBottom: 20,
   },
   additionalControlButton: {

@@ -2,6 +2,8 @@
 
 # 車機 UI Demo 專案需求（React Native + TypeScript）
 
+每一次你進行功能修改/增減 請記得對應編輯這份文件 好讓其他人可以更快熟悉此專案
+
 ## 1. 專案目標
 
 從零開始製作一個全新的車機 UI Demo，使用 TypeScript 搭配 React Native，方便未來跨平台（iOS/Android/Web UI）發展。本 Demo 著重於界面與互動展示，不需實作實際功能。
