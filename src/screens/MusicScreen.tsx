@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, StatusBar, Platform } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, StatusBar, Platform, useWindowDimensions } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -29,6 +29,8 @@ const formatTime = (secs: number) => {
 
 const MusicScreen: React.FC = () => {
   const currentTime = useCurrentTime(); // Use the hook
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
   // Mock music data
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0.3); // Current song progress (0-1)
@@ -36,7 +38,7 @@ const MusicScreen: React.FC = () => {
   // Mock song info
   const songTitle = 'Alpha Omega';
   const artistName = 'Karnivool';
-  const albumName = 'Asymmetry';
+  const albumName = 'For Demo use'; // updated album name
   const totalTime = '5:12';
   // parse total duration once
   const [totalMinutes, totalSecondsStr] = totalTime.split(':').map(v => parseInt(v, 10));
@@ -55,77 +57,75 @@ const MusicScreen: React.FC = () => {
       <View style={styles.statusBar}>
         <Text style={styles.statusText}>音樂</Text>
         <View style={styles.statusRight}>
-          <Text style={styles.statusTemp}>25°C</Text>
-          <Text style={styles.statusTime}>{currentTime}</Text>
+          <Text style={styles.statusInfo}>25°C</Text>
+          <Text style={[styles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>
         </View>
       </View>
       
-      {/* Main Content */}
-      <View style={styles.content}>
-        {/* Album Art */}
+      {/* Main Content: responsive to orientation */}
+      <View style={[styles.content, isLandscape && styles.contentLandscape]}>
         <View style={styles.albumContainer}>
-          <Image 
-            source={{ uri: 'https://via.placeholder.com/500x500/333/fff?text=Album+Art' }} 
-            style={styles.albumArt} 
-          />
+          {/* full white album art placeholder */}
+          <View style={[styles.albumArt, { backgroundColor: '#fff' }]} />
         </View>
-        
-        {/* Song Info */}
-        <View style={styles.infoContainer}>
-          <Text style={styles.songTitle}>{songTitle}</Text>
-          <Text style={styles.artistName}>{artistName}</Text>
-          <Text style={styles.albumName}>{albumName}</Text>
-        </View>
-        
-        {/* Playback Progress */}
-        <View style={styles.progressContainer}>
-          <Slider
-            value={progress}
-            onValueChange={(value: number) => setProgress(value)}
-            style={styles.slider}
-          />
-          <View style={styles.timeContainer}>
-            <Text style={styles.timeText}>{formatTime(progress * totalSecondsAll)}</Text>
-            <Text style={styles.timeText}>{totalTime}</Text>
+        <View style={[styles.rightContainer, isLandscape && styles.rightContainerLandscape]}>
+          {/* Song Info */}
+          <View style={styles.infoContainer}>
+            <Text style={styles.songTitle}>{songTitle}</Text>
+            <Text style={styles.artistName}>{artistName}</Text>
+            <Text style={styles.albumName}>{albumName}</Text>
           </View>
-        </View>
-        
-        {/* Playback Controls */}
-        <View style={styles.controls}>
-          <TouchableOpacity style={styles.controlButton}>
-            <MaterialIcons name="skip-previous" size={50} color="#fff" />
-          </TouchableOpacity>
           
-          <TouchableOpacity style={styles.playButton} onPress={togglePlayback}>
-            <MaterialIcons 
-              name={isPlaying ? "pause" : "play-arrow"} 
-              size={70} 
-              color="#fff" 
+          {/* Playback Progress */}
+          <View style={styles.progressContainer}>
+            <Slider
+              value={progress}
+              onValueChange={(value: number) => setProgress(value)}
+              style={styles.slider}
             />
-          </TouchableOpacity>
+            <View style={styles.timeContainer}>
+              <Text style={styles.timeText}>{formatTime(progress * totalSecondsAll)}</Text>
+              <Text style={styles.timeText}>{totalTime}</Text>
+            </View>
+          </View>
           
-          <TouchableOpacity style={styles.controlButton}>
-            <MaterialIcons name="skip-next" size={50} color="#fff" />
-          </TouchableOpacity>
-        </View>
-        
-        {/* Additional Controls */}
-        <View style={styles.additionalControls}>
-          <TouchableOpacity style={styles.additionalControlButton}>
-            <MaterialIcons name="shuffle" size={25} color="#888" />
-          </TouchableOpacity>
+          {/* Playback Controls */}
+          <View style={styles.controls}>
+            <TouchableOpacity style={styles.controlButton}>
+              <MaterialIcons name="skip-previous" size={50} color="#fff" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.playButton} onPress={togglePlayback}>
+              <MaterialIcons 
+                name={isPlaying ? "pause" : "play-arrow"} 
+                size={70} 
+                color="#fff" 
+              />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.controlButton}>
+              <MaterialIcons name="skip-next" size={50} color="#fff" />
+            </TouchableOpacity>
+          </View>
           
-          <TouchableOpacity style={styles.additionalControlButton}>
-            <MaterialIcons name="repeat" size={25} color="#888" />
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.additionalControlButton}>
-            <MaterialIcons name="queue-music" size={25} color="#888" />
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.additionalControlButton}>
-            <MaterialIcons name="devices" size={25} color="#888" />
-          </TouchableOpacity>
+          {/* Additional Controls */}
+          <View style={styles.additionalControls}>
+            <TouchableOpacity style={styles.additionalControlButton}>
+              <MaterialIcons name="shuffle" size={25} color="#888" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.additionalControlButton}>
+              <MaterialIcons name="repeat" size={25} color="#888" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.additionalControlButton}>
+              <MaterialIcons name="queue-music" size={25} color="#888" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.additionalControlButton}>
+              <MaterialIcons name="devices" size={25} color="#888" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -133,6 +133,7 @@ const MusicScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  statusInfo: { color: '#fff', fontSize: 16 },
   container: {
     flex: 1,
     width: '100%', // full width for web responsiveness
@@ -154,14 +155,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  statusTemp: { // Added style for statusTemp
-    color: '#fff',
-    fontSize: 16,
-    marginRight: 10,
-  },
-  statusTime: {
-    color: '#fff',
-  },
   content: {
     flex: 1,
     width: '100%',
@@ -170,6 +163,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 20,
+  },
+  contentLandscape: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   albumContainer: {
     width: '60%',
@@ -186,6 +183,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 8,
+  },
+  rightContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingLeft: 20,
+  },
+  rightContainerLandscape: {
+    paddingLeft: 40,
   },
   infoContainer: {
     alignItems: 'center',

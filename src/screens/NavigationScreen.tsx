@@ -58,8 +58,8 @@ const NavigationScreen: React.FC = () => {
       <View style={styles.statusBar}>
         <Text style={styles.statusText}>導航</Text>
         <View style={styles.statusRight}>
-          <Text style={styles.statusTemp}>25°C</Text>
-          <Text style={styles.statusTime}>{currentTime}</Text>
+          <Text style={styles.statusInfo}>25°C</Text>
+          <Text style={[styles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>
         </View>
       </View>
 
@@ -146,6 +146,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000',
   },
+  statusInfo: { color: '#fff', fontSize: 16 },
   statusBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -163,11 +164,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   statusTemp: {
-    color: '#fff',
-    marginRight: 20,
+    // replaced by statusInfo
   },
   statusTime: {
-    color: '#fff',
+    // replaced by statusInfo
   },
   map: {
     width: Dimensions.get('window').width,

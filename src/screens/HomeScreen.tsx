@@ -29,8 +29,8 @@ const HomeScreen: React.FC = () => {
 
       // Top Status Bar
       <View key="status" style={styles.statusBar}>{[
-        <Text key="temp" style={styles.statusText}>{temperature}</Text>,
-        <Text key="time" style={styles.statusText}>{currentTime}</Text>,
+        <Text key="temp" style={styles.statusInfo}>{temperature}</Text>,
+        <Text key="time" style={[styles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>,
       ]}</View>,
 
       // Main Content Grid
@@ -111,10 +111,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
   },
-  statusText: {
+  statusInfo: { // Unified style for temperature and time in top bar
     color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
   },
   gridContainer: {
     flex: 1,
