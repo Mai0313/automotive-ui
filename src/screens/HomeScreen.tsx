@@ -1,30 +1,27 @@
 import React from 'react';
-import styled from 'styled-components/native';
+import { View, Text, StyleSheet } from 'react-native';
 
-const Container = styled.View`
-  flex: 1;
-  background-color: #181A1B;
-  align-items: center;
-  justify-content: center;
-`;
-
-const Title = styled.Text`
-  color: #fff;
-  font-size: 32px;
-  font-weight: bold;
-  margin-bottom: 16px;
-`;
-
-const Description = styled.Text`
-  color: #bbb;
-  font-size: 18px;
-`;
-
-export default function HomeScreen() {
+const HomeScreen: React.FC = () => {
   return (
-    <Container>
-      <Title>車機 UI Demo</Title>
-      <Description>這是首頁，請從下方切換各功能頁</Description>
-    </Container>
+    <View style={styles.container}>
+      <Text style={styles.title}>首頁</Text>
+      {/* 這裡可以加入功能入口按鈕等內容 */}
+    </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#111', // 特斯拉風格深色背景
+  },
+  title: {
+    fontSize: 32,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+});
+
+export default HomeScreen;
