@@ -3,9 +3,19 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, StatusBar,
 import { MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Use native slider on mobile, fallback to web input on web
+// Slider fallback for web with proper HTML attributes
 const Slider = Platform.OS === 'web'
-  ? ({ style, ...props }: any) => <input type="range" style={StyleSheet.flatten(style)} {...props} />
+  ? ({ value, onValueChange, minimumValue = 0, maximumValue = 1, step = 0.01, style, ..._omit }: any) => (
+      <input
+        type="range"
+        value={value}
+        min={minimumValue}
+        max={maximumValue}
+        step={step}
+        onChange={e => onValueChange(parseFloat(e.target.value))}
+        style={StyleSheet.flatten(style)}
+      />
+    )
   : require('@react-native-community/slider').default;
 
 import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
