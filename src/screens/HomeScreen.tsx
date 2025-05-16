@@ -109,12 +109,11 @@ const HomeScreen: React.FC = () => {
             key={btn.key}
             onPress={() => {
               if (activeOverlay === btn.key) {
-                // click again to close
                 setActiveOverlay(null);
               } else {
-                // open overlay, music opens fullscreen to show album art and controls
                 setActiveOverlay(btn.key as any);
-                setFullScreenOverlay(btn.key === 'music');
+                // initial overlay always in portrait mode
+                setFullScreenOverlay(false);
               }
             }}
           >
