@@ -35,8 +35,8 @@ const ClimateScreen: React.FC = () => {
       <View key="topBar" style={styles.statusBar}>{[
         <Text key="label" style={styles.statusText}>空調控制</Text>,
         <View key="right" style={styles.statusRight}>{[
-          <Text key="temp" style={styles.statusTemp}>30°C</Text>,
-          <Text key="time" style={styles.statusTime}>{currentTime}</Text>,
+          <Text key="temp" style={styles.statusInfo}>30°C</Text>,
+          <Text key="time" style={[styles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>,
         ]}</View>,
       ]}</View>,
       /* Main Climate Controls */
@@ -187,6 +187,7 @@ const ClimateScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  statusInfo: { color: '#fff', fontSize: 16 },
   container: {
     flex: 1,
     backgroundColor: '#000',

@@ -21,8 +21,8 @@ const VehicleInfoScreen: React.FC = () => {
       <View style={styles.statusBar}>
         <Text style={styles.statusText}>車輛資訊</Text>
         <View style={styles.statusRight}>
-          <Text style={styles.statusTemp}>30°C</Text>
-          <Text style={styles.statusTime}>{currentTime}</Text>
+          <Text style={styles.statusInfo}>30°C</Text>
+          <Text style={[styles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>
         </View>
       </View>
 
@@ -116,6 +116,7 @@ const VehicleInfoScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  statusInfo: { color: '#fff', fontSize: 16 },
   container: {
     flex: 1,
     backgroundColor: '#000',
