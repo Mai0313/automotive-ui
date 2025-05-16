@@ -17,22 +17,19 @@ export interface MapViewProps {
 // A simplified web version that mimics MapView for web platforms
 const WebMapView: React.FC<MapViewProps> = ({ style, initialRegion, children }) => {
   return (
-    <View style={[styles.container, style]}>
-      <Text style={styles.mapFallbackText}>導航地圖</Text>
-      <Text style={styles.mapFallbackSubtext}>
-        {initialRegion ? 
-          `位置：${initialRegion.latitude.toFixed(4)}, ${initialRegion.longitude.toFixed(4)}` : 
-          '未設定位置'}
-      </Text>
-      
-      <View style={styles.routeSimulation}>
+    <View style={[styles.container, style]}>{[
+      <Text key="title" style={styles.mapFallbackText}>導航地圖</Text>,
+      <Text key="subtext" style={styles.mapFallbackSubtext}>
+        {initialRegion ? `位置：${initialRegion.latitude.toFixed(4)}, ${initialRegion.longitude.toFixed(4)}` : '未設定位置'}
+      </Text>,
+      <View key="route" style={styles.routeSimulation}>
         <View style={styles.routeOriginDot} />
         <View style={styles.routeLine} />
         <View style={styles.routeWaypoint} />
         <View style={styles.routeLine} />
         <View style={styles.routeDestinationDot} />
       </View>
-    </View>
+    ]}</View>
   );
 };
 

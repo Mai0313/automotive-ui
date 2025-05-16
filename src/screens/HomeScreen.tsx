@@ -24,81 +24,79 @@ const HomeScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={styles.container}>{[
+      <StatusBar key="statusbar" barStyle="light-content" />,  
 
-      {/* Top Status Bar */}
-      <View style={styles.statusBar}>
-        <Text style={styles.statusText}>{temperature}</Text>
-        <Text style={styles.statusText}>{currentTime}</Text> {/* Display real-time */}
-      </View>
+      // Top Status Bar
+      <View key="status" style={styles.statusBar}>{[
+        <Text key="temp" style={styles.statusText}>{temperature}</Text>,
+        <Text key="time" style={styles.statusText}>{currentTime}</Text>,
+      ]}</View>,
 
-      {/* Main Content Grid */}
-      <View style={styles.gridContainer}>
-        <TouchableOpacity
-          style={[styles.gridItem, styles.mapGridItem]} // Added mapGridItem for specific styling
-          onPress={() => navigation.navigate('Navigation' as never)} // Corrected navigation name
-        >
-          <MapView
-            style={styles.mapPreview}
-            initialRegion={mapPreviewLocation}
-            scrollEnabled={false}
-            zoomEnabled={false}
-            pitchEnabled={false}
-            rotateEnabled={false}
-          />
-          <View style={styles.mapOverlay}>
-            <MaterialIcons name="map" size={30} color="#fff" />
-            {/* overlay text removed */}
-          </View>
-        </TouchableOpacity>
+      // Main Content Grid
+      <View key="grid" style={styles.gridContainer}>{[
+        <TouchableOpacity key="map" 
+           style={[styles.gridItem, styles.mapGridItem]} // Added mapGridItem for specific styling
+           onPress={() => navigation.navigate('Navigation' as never)} // Corrected navigation name
+         >
+           <MapView
+             style={styles.mapPreview}
+             initialRegion={mapPreviewLocation}
+             scrollEnabled={false}
+             zoomEnabled={false}
+             pitchEnabled={false}
+             rotateEnabled={false}
+           />
+           {/* Map overlay icon only, inlined to avoid stray text nodes */}
+          <View style={styles.mapOverlay}><MaterialIcons name="map" size={30} color="#fff" /></View>
+        </TouchableOpacity>,
 
-        <TouchableOpacity 
-          style={styles.gridItem}
-          onPress={() => navigation.navigate('Music' as never)} // Corrected navigation name
-        >
-          <MaterialIcons name="music-note" size={50} color="#fff" />
-          <Text style={styles.gridText}>音樂</Text>
-        </TouchableOpacity>
+        <TouchableOpacity key="music" 
+           style={styles.gridItem}
+           onPress={() => navigation.navigate('Music' as never)} // Corrected navigation name
+         >
+           <MaterialIcons name="music-note" size={50} color="#fff" />
+           <Text style={styles.gridText}>音樂</Text>
+        </TouchableOpacity>,
 
-        <TouchableOpacity 
-          style={styles.gridItem}
-          onPress={() => navigation.navigate('Vehicle' as never)} // Corrected navigation name
-        >
-          <MaterialCommunityIcons name="car" size={50} color="#fff" />
-          <Text style={styles.gridText}>車輛資訊</Text>
-        </TouchableOpacity>
+        <TouchableOpacity key="vehicle" 
+           style={styles.gridItem}
+           onPress={() => navigation.navigate('Vehicle' as never)} // Corrected navigation name
+         >
+           <MaterialCommunityIcons name="car" size={50} color="#fff" />
+           <Text style={styles.gridText}>車輛資訊</Text>
+        </TouchableOpacity>,
 
-        <TouchableOpacity 
-          style={styles.gridItem}
-          onPress={() => navigation.navigate('Climate' as never)} // Corrected navigation name
-        >
-          <MaterialCommunityIcons name="air-conditioner" size={50} color="#fff" />
-          <Text style={styles.gridText}>空調控制</Text>
-        </TouchableOpacity>
+        <TouchableOpacity key="climate" 
+           style={styles.gridItem}
+           onPress={() => navigation.navigate('Climate' as never)} // Corrected navigation name
+         >
+           <MaterialCommunityIcons name="air-conditioner" size={50} color="#fff" />
+           <Text style={styles.gridText}>空調控制</Text>
+        </TouchableOpacity>,
 
-        <TouchableOpacity 
-          style={styles.gridItem}
-          onPress={() => navigation.navigate('AI' as never)} // Corrected navigation name
-        >
-          <MaterialCommunityIcons name="robot" size={50} color="#fff" />
-          <Text style={styles.gridText}>AI 助理</Text>
-        </TouchableOpacity>
+        <TouchableOpacity key="ai" 
+           style={styles.gridItem}
+           onPress={() => navigation.navigate('AI' as never)} // Corrected navigation name
+         >
+           <MaterialCommunityIcons name="robot" size={50} color="#fff" />
+           <Text style={styles.gridText}>AI 助理</Text>
+        </TouchableOpacity>,
 
-        <View style={styles.gridItem}>
-          <MaterialCommunityIcons name="cog" size={50} color="#fff" />
-          <Text style={styles.gridText}>設定</Text>
-        </View>
-      </View>
+        <View key="settings" style={styles.gridItem}>
+           <MaterialCommunityIcons name="cog" size={50} color="#fff" />
+           <Text style={styles.gridText}>設定</Text>
+        </View>,
+      ]}</View>,
 
-      {/* Bottom Status */}
-      <View style={styles.bottomStatus}>
+      // Bottom Status
+      <View key="bottom" style={styles.bottomStatus}>
         <View style={styles.batteryInfo}>
           <MaterialCommunityIcons name="battery-70" size={30} color="#4CAF50" />
           <Text style={styles.batteryText}>{batteryLevel}</Text>
         </View>
-      </View>
-    </SafeAreaView>
+      </View>,
+    ]}</SafeAreaView>
   );
 };
 

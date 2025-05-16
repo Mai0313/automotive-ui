@@ -59,7 +59,7 @@ const NavigationScreen: React.FC = () => {
         <Text style={styles.statusText}>導航</Text>
         <View style={styles.statusRight}>
           <Text style={styles.statusTemp}>25°C</Text>
-          <Text style={styles.statusTime}>{currentTime}</Text> {/* Display real-time */}
+          <Text style={styles.statusTime}>{currentTime}</Text>
         </View>
       </View>
 

@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, StatusBar, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Slider from '@react-native-community/slider'; // Changed import
+
+// Use native slider on mobile, fallback to web input on web
+const Slider = Platform.OS === 'web'
+  ? ({ style, ...props }: any) => <input type="range" style={StyleSheet.flatten(style)} {...props} />
+  : require('@react-native-community/slider').default;
+
 import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
 
 const MusicScreen: React.FC = () => {
@@ -25,15 +30,17 @@ const MusicScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
+      
       {/* Top Status Bar */}
       <View style={styles.statusBar}>
         <Text style={styles.statusText}>音樂</Text>
         <View style={styles.statusRight}>
           <Text style={styles.statusTemp}>25°C</Text>
-          <Text style={styles.statusTime}>{currentTime}</Text> {/* Display real-time */}
+          <Text style={styles.statusTime}>{currentTime}</Text>
         </View>
       </View>
-
+      
+      {/* Main Content */}
       <View style={styles.content}>
         {/* Album Art */}
         <View style={styles.albumContainer}>

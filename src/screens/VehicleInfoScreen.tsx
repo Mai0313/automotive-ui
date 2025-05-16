@@ -22,7 +22,7 @@ const VehicleInfoScreen: React.FC = () => {
         <Text style={styles.statusText}>車輛資訊</Text>
         <View style={styles.statusRight}>
           <Text style={styles.statusTemp}>25°C</Text>
-          <Text style={styles.statusTime}>{currentTime}</Text> {/* Display real-time */}
+          <Text style={styles.statusTime}>{currentTime}</Text>
         </View>
       </View>
 

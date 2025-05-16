@@ -29,20 +29,19 @@ const ClimateScreen: React.FC = () => {
   const toggleRearDefrost = () => setIsRearDefrost(!isRearDefrost);
   
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      {/* Top Status Bar */}
-      <View style={styles.statusBar}>
-        <Text style={styles.statusText}>空調控制</Text>
-        <View style={styles.statusRight}>
-          <Text style={styles.statusTemp}>室外 28°C</Text>
-          <Text style={styles.statusTime}>{currentTime}</Text> {/* Display real-time */}
-        </View>
-      </View>
-
-      {/* Main Climate Controls */}
-      <View style={styles.controlsContainer}>
-        {/* Temperature Display */}
+    <SafeAreaView style={styles.container}>{[
+      <StatusBar key="statusbar" barStyle="light-content" />,  
+      /* Top Status Bar */
+      <View key="topBar" style={styles.statusBar}>{[
+        <Text key="label" style={styles.statusText}>空調控制</Text>,
+        <View key="right" style={styles.statusRight}>{[
+          <Text key="temp" style={styles.statusTemp}>室外 28°C</Text>,
+          <Text key="time" style={styles.statusTime}>{currentTime}</Text>,
+        ]}</View>,
+      ]}</View>,
+      /* Main Climate Controls */
+      <View key="controls" style={styles.controlsContainer}>{[
+        /* Temperature Display */
         <View style={styles.tempDisplay}>
           <Text style={styles.tempText}>{temperature}°C</Text>
           
@@ -55,9 +54,9 @@ const ClimateScreen: React.FC = () => {
               <MaterialCommunityIcons name="plus" size={30} color="#fff" />
             </TouchableOpacity>
           </View>
-        </View>
+        </View>,
         
-        {/* Fan Speed Control */}
+        /* Fan Speed Control */
         <View style={styles.fanControl}>
           <Text style={styles.controlLabel}>風速控制</Text>
           
@@ -94,9 +93,9 @@ const ClimateScreen: React.FC = () => {
               />
             ))}
           </View>
-        </View>
+        </View>,
         
-        {/* Climate Controls */}
+        /* Climate Controls */
         <View style={styles.climateControls}>
           <TouchableOpacity 
             style={[styles.climateButton, isAuto && styles.activeButton]} 
@@ -153,9 +152,9 @@ const ClimateScreen: React.FC = () => {
               後除霜
             </Text>
           </TouchableOpacity>
-        </View>
+        </View>,
         
-        {/* Air Flow Direction */}
+        /* Air Flow Direction */
         <View style={styles.airFlowContainer}>
           <Text style={styles.controlLabel}>出風方向</Text>
           
@@ -175,15 +174,15 @@ const ClimateScreen: React.FC = () => {
               <Text style={styles.buttonText}>腳部</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </View>,
 
-        {/* Power Button */}
+        /* Power Button */
         <TouchableOpacity style={styles.powerButton}>
           <MaterialCommunityIcons name="power" size={30} color="#e74c3c" />
           <Text style={styles.powerText}>關閉空調</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+        </TouchableOpacity>,
+      ]}</View>,
+    ]}</SafeAreaView>
   );
 };
 
