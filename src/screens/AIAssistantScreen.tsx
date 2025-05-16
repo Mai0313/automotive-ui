@@ -8,12 +8,12 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  StatusBar,
 } from 'react-native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
+import useCurrentTime from '../hooks/useCurrentTime';
 import commonStyles from '../styles/commonStyles';
+import FloatingStatusBar from '../components/FloatingStatusBar';
 
 interface Message {
   id: number;
@@ -23,7 +23,7 @@ interface Message {
 }
 
 const AIAssistantScreen: React.FC = () => {
-  const currentTime = useCurrentTime(); // Use the hook
+  const currentTime = useCurrentTime();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -95,14 +95,7 @@ const AIAssistantScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={commonStyles.container}>
-      <StatusBar barStyle="light-content" />
-      <View style={commonStyles.statusBar}>
-        <Text style={commonStyles.statusText}>AI 助理</Text>
-        <View style={commonStyles.statusRight}>
-          <Text style={commonStyles.statusInfo}>30°C</Text>
-          <Text style={[commonStyles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>
-        </View>
-      </View>
+      <FloatingStatusBar temperature="30°C" />
 
       {/* Chat Area */}
       <View style={styles.chatContainer}>

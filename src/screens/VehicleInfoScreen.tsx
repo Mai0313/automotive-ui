@@ -1,33 +1,27 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
+import useCurrentTime from '../hooks/useCurrentTime';
 import commonStyles from '../styles/commonStyles';
+import FloatingStatusBar from '../components/FloatingStatusBar';
 
 const VehicleInfoScreen: React.FC = () => {
   const currentTime = useCurrentTime(); // Use the hook
+  const temperature = '30°C';
 
   // Mock vehicle data
-  const speed = 20;
+  const speed = 0;
   const range = '315 mi';
-  const gear: string = 'D'; // Drive mode
+  const gear: string = 'P'; // Drive mode
   const batteryLevel = 70; // percentage
   
   return (
     <SafeAreaView style={commonStyles.container}>
-      <StatusBar barStyle="light-content" />
-      {/* Top Status Bar */}
-      <View style={commonStyles.statusBar}>
-        <Text style={commonStyles.statusText}>車輛資訊</Text>
-        <View style={commonStyles.statusRight}>
-          <Text style={commonStyles.statusInfo}>30°C</Text>
-          <Text style={[commonStyles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>
-        </View>
-      </View>
+      <FloatingStatusBar temperature={temperature} />
 
-      {/* Main Content */}
-      <View style={styles.content}>
+       {/* Main Content */}
+       <View style={styles.content}>
         {/* Main Speed Display */}
         <View style={styles.speedContainer}>
           <Text style={styles.speedText}>{speed}</Text>

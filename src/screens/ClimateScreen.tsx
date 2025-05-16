@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider'; // Ensure this is installed or use a different slider
 import { SafeAreaView } from 'react-native-safe-area-context';
 import commonStyles from '../styles/commonStyles';
 import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
+import FloatingStatusBar from '../components/FloatingStatusBar';
 
 const ClimateScreen: React.FC = () => {
   const currentTime = useCurrentTime(); // Use the hook
@@ -30,19 +31,12 @@ const ClimateScreen: React.FC = () => {
   const toggleRearDefrost = () => setIsRearDefrost(!isRearDefrost);
   
   return (
-    <SafeAreaView style={commonStyles.container}>{[
-      <StatusBar key="statusbar" barStyle="light-content" />,  
-      /* Top Status Bar */
-      <View key="topBar" style={commonStyles.statusBar}>{[
-        <Text key="label" style={commonStyles.statusText}>空調控制</Text>,
-        <View key="right" style={commonStyles.statusRight}>{[
-          <Text key="temp" style={commonStyles.statusInfo}>30°C</Text>,
-          <Text key="time" style={[commonStyles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>,
-        ]}</View>,
-      ]}</View>,
-      /* Main Climate Controls */
-      <View key="controls" style={styles.controlsContainer}>{[
-        /* Temperature Display */
+    <SafeAreaView style={commonStyles.container}>
+      <FloatingStatusBar temperature={`${temperature}°C`} />
+
+      {/* Main Climate Controls */}
+      <View style={styles.controlsContainer}>
+        {/* Temperature Display */}
         <View style={styles.tempDisplay}>
           <Text style={styles.tempText}>{temperature}°C</Text>
           
@@ -55,9 +49,9 @@ const ClimateScreen: React.FC = () => {
               <MaterialCommunityIcons name="plus" size={30} color="#fff" />
             </TouchableOpacity>
           </View>
-        </View>,
+        </View>
         
-        /* Fan Speed Control */
+        {/* Fan Speed Control */}
         <View style={styles.fanControl}>
           <Text style={styles.controlLabel}>風速控制</Text>
           
@@ -75,7 +69,7 @@ const ClimateScreen: React.FC = () => {
               minimumTrackTintColor="#3498db"
               maximumTrackTintColor="#333"
               thumbTintColor="#fff"
-              onValueChange={(value: number) => setFanSpeed(value)}
+              onValueChange={setFanSpeed}
             />
             
             <TouchableOpacity onPress={increaseFan}>
@@ -94,74 +88,73 @@ const ClimateScreen: React.FC = () => {
               />
             ))}
           </View>
-        </View>,
+        </View>
         
-        /* Climate Controls */
+        {/* Climate Controls */}
         <View style={styles.climateControls}>
-          <TouchableOpacity 
-            style={[styles.climateButton, isAuto && styles.activeButton]} 
+          {/* Auto */}
+          <TouchableOpacity
+            style={[styles.climateButton, isAuto && styles.activeButton]}
             onPress={toggleAuto}
           >
-            <MaterialCommunityIcons 
-              name="auto-fix" 
-              size={24} 
-              color={isAuto ? "#fff" : "#aaa"} 
+            <MaterialCommunityIcons
+              name="auto-fix"
+              size={24}
+              color={isAuto ? '#fff' : '#aaa'}
             />
-            <Text style={[styles.buttonText, isAuto && styles.activeText]}>
-              自動
-            </Text>
+            <Text style={[styles.buttonText, isAuto && styles.activeText]}>自動</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity 
+          {/* AC */}
+          <TouchableOpacity
             style={[styles.climateButton, isAC && styles.activeButton]}
             onPress={toggleAC}
           >
-            <MaterialCommunityIcons 
-              name="snowflake" 
-              size={24} 
-              color={isAC ? "#fff" : "#aaa"} 
+            <MaterialCommunityIcons
+              name="snowflake"
+              size={24}
+              color={isAC ? '#fff' : '#aaa'}
             />
-            <Text style={[styles.buttonText, isAC && styles.activeText]}>
-              AC
-            </Text>
+            <Text style={[styles.buttonText, isAC && styles.activeText]}>AC</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity 
+          {/* Defrost */}
+          <TouchableOpacity
             style={[styles.climateButton, isFrontDefrost && styles.activeButton]}
             onPress={toggleFrontDefrost}
           >
-            <MaterialCommunityIcons 
-              name="car-defrost-front" 
-              size={24} 
-              color={isFrontDefrost ? "#fff" : "#aaa"} 
+            <MaterialCommunityIcons
+              name="car-defrost-front"
+              size={24}
+              color={isFrontDefrost ? '#fff' : '#aaa'}
             />
-            <Text style={[styles.buttonText, isFrontDefrost && styles.activeText]}>
-              前除霜
-            </Text>
+            <Text style={[styles.buttonText, isFrontDefrost && styles.activeText]}>前除霜</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.climateButton, isRearDefrost && styles.activeButton]}
             onPress={toggleRearDefrost}
           >
-            <MaterialCommunityIcons 
-              name="car-defrost-rear" 
-              size={24} 
-              color={isRearDefrost ? "#fff" : "#aaa"} 
+            <MaterialCommunityIcons
+              name="car-defrost-rear"
+              size={24}
+              color={isRearDefrost ? '#fff' : '#aaa'}
             />
-            <Text style={[styles.buttonText, isRearDefrost && styles.activeText]}>
-              後除霜
-            </Text>
+            <Text style={[styles.buttonText, isRearDefrost && styles.activeText]}>後除霜</Text>
           </TouchableOpacity>
-        </View>,
+        </View>
         
-        /* Air Flow Direction */
+        {/* Air Flow Direction */}
         <View style={styles.airFlowContainer}>
           <Text style={styles.controlLabel}>出風方向</Text>
           
           <View style={styles.airFlowButtons}>
             <TouchableOpacity style={[styles.airFlowButton, styles.activeButton]}>
-              <MaterialCommunityIcons name="emoticon-outline" size={24} color="#fff" />
+              <MaterialCommunityIcons
+                name="emoticon-outline"
+                size={24}
+                color="#fff"
+              />
               <Text style={[styles.buttonText, styles.activeText]}>面部</Text>
             </TouchableOpacity>
             
@@ -175,15 +168,15 @@ const ClimateScreen: React.FC = () => {
               <Text style={styles.buttonText}>腳部</Text>
             </TouchableOpacity>
           </View>
-        </View>,
-
-        /* Power Button */
-        <TouchableOpacity style={styles.powerButton}>
+        </View>
+        
+        {/* Power Button */}
+        <TouchableOpacity style={styles.powerButton} onPress={toggleAC}>
           <MaterialCommunityIcons name="power" size={30} color="#e74c3c" />
           <Text style={styles.powerText}>關閉空調</Text>
-        </TouchableOpacity>,
-      ]}</View>,
-    ]}</SafeAreaView>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 

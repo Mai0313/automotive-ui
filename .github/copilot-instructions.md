@@ -110,3 +110,12 @@ App.tsx            # 專案入口
 - 色系僅黑/白/灰及極簡點綴，字體、布局及交互皆比照 Tesla 車機設計稿。
 
 > ![Sample Tesla UI](https://user-images.githubusercontent.com/10957127/196008635-313bad82-5168-4bde-ae3c-7166db7ea158.png)
+
+---
+
+### 更新紀錄
+- 2025-05-16: 在 HomeScreen 中實作全螢幕地圖與底部控制欄驅動的懸浮浮層卡片
+  - 使用 `useState` 管理 `activeOverlay`，按鈕切換開啟對應功能面板
+  - 使用 `Animated` API 實現浮層淡入、滑動展開和收回動畫
+  - 點擊地圖空白區域或重複點擊按鈕關閉浮層
+  - 懸浮卡片半透明黑底、圓角、陰影，支援未來左右滑動切頁

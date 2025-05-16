@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, SafeAreaView } from 'react-native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, Polyline } from '../components/MapView'; // Corrected import path
-import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
+import useCurrentTime from '../hooks/useCurrentTime';
 import commonStyles from '../styles/commonStyles';
+import FloatingStatusBar from '../components/FloatingStatusBar';
 
 const NavigationScreen: React.FC = () => {
   const currentTime = useCurrentTime(); // Use the hook
@@ -54,15 +55,8 @@ const NavigationScreen: React.FC = () => {
   ];
 
   return (
-    <SafeAreaView style={commonStyles.container}>
-      {/* Top Status Bar */}
-      <View style={commonStyles.statusBar}>
-        <Text style={commonStyles.statusText}>導航</Text>
-        <View style={commonStyles.statusRight}>
-          <Text style={commonStyles.statusInfo}>30°C</Text>
-          <Text style={[commonStyles.statusInfo, { marginLeft: 10 }]}>{currentTime}</Text>
-        </View>
-      </View>
+    <RNSafeAreaView style={commonStyles.container}>
+      <FloatingStatusBar temperature="30°C" />
 
       {/* Main Navigation Map */}
       <MapView
@@ -138,7 +132,7 @@ const NavigationScreen: React.FC = () => {
           <MaterialIcons name="remove" size={30} color="#fff" />
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </RNSafeAreaView>
   );
 };
 
