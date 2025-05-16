@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, StatusBar } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider'; // Changed import
+import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
 
 const MusicScreen: React.FC = () => {
+  const currentTime = useCurrentTime(); // Use the hook
   // Mock music data
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0.3); // Current song progress (0-1)
@@ -13,7 +15,6 @@ const MusicScreen: React.FC = () => {
   const songTitle = 'Alpha Omega';
   const artistName = 'Karnivool';
   const albumName = 'Asymmetry';
-  const currentTime = '1:34';
   const totalTime = '5:12';
   
   // Toggle play/pause
@@ -23,12 +24,16 @@ const MusicScreen: React.FC = () => {
   
   return (
     <SafeAreaView style={styles.container}>
-      {/* Status Bar */}
+      <StatusBar barStyle="light-content" />
+      {/* Top Status Bar */}
       <View style={styles.statusBar}>
-        <Text style={styles.statusText}>音樂播放器</Text>
-        <Text style={styles.statusTime}>10:21 AM</Text>
+        <Text style={styles.statusText}>音樂</Text>
+        <View style={styles.statusRight}>
+          <Text style={styles.statusTemp}>25°C</Text>
+          <Text style={styles.statusTime}>{currentTime}</Text> {/* Display real-time */}
+        </View>
       </View>
-      
+
       <View style={styles.content}>
         {/* Album Art */}
         <View style={styles.albumContainer}>
@@ -120,9 +125,17 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-  statusTime: {
+  statusRight: { // Added style for statusRight
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusTemp: { // Added style for statusTemp
     color: '#fff',
     fontSize: 16,
+    marginRight: 10,
+  },
+  statusTime: {
+    color: '#fff',
   },
   content: {
     flex: 1,

@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  TextInput, 
-  ScrollView, 
-  KeyboardAvoidingView, 
-  Platform 
+import React, { useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StatusBar,
 } from 'react-native';
-import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
 
 interface Message {
   id: number;
@@ -20,6 +22,7 @@ interface Message {
 }
 
 const AIAssistantScreen: React.FC = () => {
+  const currentTime = useCurrentTime(); // Use the hook
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -28,8 +31,8 @@ const AIAssistantScreen: React.FC = () => {
       timestamp: '10:18 AM',
     },
   ]);
-  const [input, setInput] = useState('');
-  const [isListening, setIsListening] = useState(false);
+  const [inputText, setInputText] = useState('');
+  const flatListRef = useRef<FlatList>(null);
 
   // Mock responses for demo purposes
   const mockResponses: Record<string, string> = {
@@ -43,18 +46,18 @@ const AIAssistantScreen: React.FC = () => {
 
   // Function to send a message
   const sendMessage = () => {
-    if (!input.trim()) return;
+    if (!inputText.trim()) return;
 
     // Add user message
     const newMessage: Message = {
       id: messages.length + 1,
-      text: input,
+      text: inputText,
       isUser: true,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
     setMessages([...messages, newMessage]);
-    setInput('');
+    setInputText('');
 
     // Simulate AI response with a slight delay
     setTimeout(() => {
@@ -62,7 +65,7 @@ const AIAssistantScreen: React.FC = () => {
       
       // Check for keywords in input
       for (const keyword in mockResponses) {
-        if (input.includes(keyword)) {
+        if (inputText.includes(keyword)) {
           responseText = mockResponses[keyword];
           break;
         }
@@ -78,126 +81,63 @@ const AIAssistantScreen: React.FC = () => {
     }, 1000);
   };
 
-  // Function to toggle voice listening
-  const toggleVoiceInput = () => {
-    setIsListening(!isListening);
-    
-    // If turning on voice, simulate voice recognition after a delay
-    if (!isListening) {
-      setTimeout(() => {
-        setIsListening(false);
-        setInput('播放音樂');
-        
-        // Automatically send the recognized command
-        setTimeout(() => {
-          sendMessage();
-        }, 500);
-      }, 2000);
-    }
-  };
+  const renderMessage = ({ item }: { item: Message }) => (
+    <View
+      style={[
+        styles.messageBubble,
+        item.isUser ? styles.userMessage : styles.aiMessage,
+      ]}
+    >
+      <Text style={styles.messageText}>{item.text}</Text>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Status Bar */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>AI 助理</Text>
-        <Text style={styles.statusTime}>10:21 AM</Text>
+      <StatusBar barStyle="light-content" />
+      {/* Top Status Bar */}
+      <View style={styles.statusBar}>
+        <Text style={styles.statusText}>AI 助理</Text>
+        <View style={styles.statusRight}>
+          <Text style={styles.statusTemp}>25°C</Text>
+          <Text style={styles.statusTime}>{currentTime}</Text> {/* Display real-time */}
+        </View>
       </View>
 
-      {/* Messages Area */}
-      <ScrollView 
-        style={styles.messagesContainer}
-        contentContainerStyle={styles.messagesList}
-      >
-        {messages.map(message => (
-          <View 
-            key={message.id} 
-            style={[
-              styles.messageBubble, 
-              message.isUser ? styles.userBubble : styles.aiBubble
-            ]}
-          >
-            {!message.isUser && (
-              <View style={styles.aiIconContainer}>
-                <MaterialCommunityIcons name="robot" size={24} color="#3498db" />
-              </View>
-            )}
-            <View style={styles.messageContent}>
-              <Text style={styles.messageText}>{message.text}</Text>
-              <Text style={styles.timestamp}>{message.timestamp}</Text>
-            </View>
-          </View>
-        ))}
-      </ScrollView>
+      {/* Chat Area */}
+      <View style={styles.chatContainer}>
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={styles.messagesList}
+          showsVerticalScrollIndicator={false}
+        />
 
-      {/* Voice Listening Indicator - shown when voice is active */}
-      {isListening && (
-        <View style={styles.listeningIndicator}>
-          <Text style={styles.listeningText}>正在聆聽...</Text>
-          <View style={styles.waveContainer}>
-            {[...Array(5)].map((_, i) => (
-              <View 
-                key={i} 
-                style={[
-                  styles.wave,
-                  { height: 15 + Math.random() * 20, marginHorizontal: 3 }
-                ]} 
-              />
-            ))}
-          </View>
-        </View>
-      )}
-
-      {/* Input Area */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.inputContainer}
-      >
-        <View style={styles.inputRow}>
-          <TextInput
-            style={styles.input}
-            placeholder="請輸入訊息..."
-            placeholderTextColor="#777"
-            value={input}
-            onChangeText={setInput}
-            onSubmitEditing={sendMessage}
-          />
-          <TouchableOpacity 
-            style={[styles.iconButton, isListening && styles.listeningButton]} 
-            onPress={toggleVoiceInput}
-          >
-            <Ionicons 
-              name={isListening ? "radio" : "mic-outline"} 
-              size={24} 
-              color={isListening ? "#3498db" : "#fff"} 
+        {/* Input Area */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.inputContainer}
+        >
+          <View style={styles.inputRow}>
+            <TextInput
+              style={styles.input}
+              placeholder="請輸入訊息..."
+              placeholderTextColor="#777"
+              value={inputText}
+              onChangeText={setInputText}
+              onSubmitEditing={sendMessage}
             />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.iconButton, !input.trim() && styles.disabledButton]} 
-            onPress={sendMessage}
-            disabled={!input.trim()}
-          >
-            <Ionicons name="send" size={24} color={input.trim() ? "#3498db" : "#555"} />
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
-
-      {/* Quick Action Suggestions */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.suggestionsContainer}
-      >
-        {['播放音樂', '導航回家', '天氣狀況', '電量狀態', '設定溫度'].map((suggestion, index) => (
-          <TouchableOpacity 
-            key={index}
-            style={styles.suggestionButton}
-            onPress={() => setInput(suggestion)}
-          >
-            <Text style={styles.suggestionText}>{suggestion}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+            <TouchableOpacity 
+              style={[styles.iconButton]} 
+              onPress={sendMessage}
+            >
+              <MaterialIcons name="send" size={24} color="#3498db" />
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -207,29 +147,41 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000',
   },
-  header: {
+  statusBar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    paddingTop: Platform.OS === 'ios' ? 40 : 10,
+    paddingBottom: 10,
+    backgroundColor: '#111',
     borderBottomWidth: 1,
     borderBottomColor: '#222',
   },
-  headerTitle: {
+  statusText: {
     color: '#fff',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
   },
-  statusTime: {
-    color: '#aaa',
-    fontSize: 16,
+  statusRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  messagesContainer: {
+  statusTemp: {
+    color: '#fff',
+    fontSize: 16,
+    marginRight: 10,
+  },
+  statusTime: {
+    color: '#fff',
+  },
+  chatContainer: {
     flex: 1,
+    paddingHorizontal: 10,
+    paddingBottom: 10,
   },
   messagesList: {
-    padding: 15,
+    paddingVertical: 10,
   },
   messageBubble: {
     marginBottom: 15,
@@ -239,33 +191,19 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     flexDirection: 'row',
   },
-  userBubble: {
+  userMessage: {
     backgroundColor: '#333',
     alignSelf: 'flex-end',
     borderBottomRightRadius: 5,
   },
-  aiBubble: {
+  aiMessage: {
     backgroundColor: '#222',
     alignSelf: 'flex-start',
     borderBottomLeftRadius: 5,
   },
-  aiIconContainer: {
-    marginRight: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  messageContent: {
-    flex: 1,
-  },
   messageText: {
     color: '#fff',
     fontSize: 16,
-  },
-  timestamp: {
-    color: '#999',
-    fontSize: 12,
-    alignSelf: 'flex-end',
-    marginTop: 5,
   },
   inputContainer: {
     paddingHorizontal: 10,
@@ -294,47 +232,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 5,
-  },
-  disabledButton: {
-    backgroundColor: '#1A1A1A',
-  },
-  listeningButton: {
-    backgroundColor: 'rgba(52, 152, 219, 0.2)',
-  },
-  suggestionsContainer: {
-    paddingHorizontal: 10,
-    paddingVertical: 15,
-  },
-  suggestionButton: {
-    backgroundColor: '#222',
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 20,
-    marginHorizontal: 5,
-  },
-  suggestionText: {
-    color: '#3498db',
-    fontSize: 14,
-  },
-  listeningIndicator: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 20,
-  },
-  listeningText: {
-    color: '#3498db',
-    fontSize: 18,
-    marginBottom: 10,
-  },
-  waveContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 40,
-  },
-  wave: {
-    width: 4,
-    backgroundColor: '#3498db',
-    borderRadius: 2,
   },
 });
 

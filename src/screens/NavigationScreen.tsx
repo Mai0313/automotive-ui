@@ -2,9 +2,11 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView, { Marker, Polyline } from '../components/MapView'; // Adjusted import path
+import MapView, { Marker, Polyline } from '../components/MapView'; // Corrected import path
+import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
 
 const NavigationScreen: React.FC = () => {
+  const currentTime = useCurrentTime(); // Use the hook
   // Mock navigation data
   const origin = { latitude: 25.0330, longitude: 121.5654 }; // Taipei
   const destination = { latitude: 24.1477, longitude: 120.6736 }; // Taichung
@@ -54,13 +56,10 @@ const NavigationScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       {/* Top Status Bar */}
       <View style={styles.statusBar}>
-        <TouchableOpacity>
-          <MaterialIcons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
         <Text style={styles.statusText}>導航</Text>
         <View style={styles.statusRight}>
           <Text style={styles.statusTemp}>25°C</Text>
-          <Text style={styles.statusTime}>10:21 AM</Text>
+          <Text style={styles.statusTime}>{currentTime}</Text> {/* Display real-time */}
         </View>
       </View>
 

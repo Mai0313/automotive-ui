@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import Slider from '@react-native-community/slider'; // Ensure this is installed or use a different slider
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Slider from '@react-native-community/slider'; // Changed import
+import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
 
 const ClimateScreen: React.FC = () => {
-  // State for climate controls
-  const [temperature, setTemperature] = useState(20);
+  const currentTime = useCurrentTime(); // Use the hook
+  const [temperature, setTemperature] = useState(22); // Initial temperature
   const [fanSpeed, setFanSpeed] = useState(3);
   const [isAuto, setIsAuto] = useState(true);
   const [isAC, setIsAC] = useState(true);
@@ -29,13 +30,18 @@ const ClimateScreen: React.FC = () => {
   
   return (
     <SafeAreaView style={styles.container}>
-      {/* Status Bar */}
+      <StatusBar barStyle="light-content" />
+      {/* Top Status Bar */}
       <View style={styles.statusBar}>
         <Text style={styles.statusText}>空調控制</Text>
-        <Text style={styles.statusTime}>10:21 AM</Text>
+        <View style={styles.statusRight}>
+          <Text style={styles.statusTemp}>室外 28°C</Text>
+          <Text style={styles.statusTime}>{currentTime}</Text> {/* Display real-time */}
+        </View>
       </View>
-      
-      <View style={styles.content}>
+
+      {/* Main Climate Controls */}
+      <View style={styles.controlsContainer}>
         {/* Temperature Display */}
         <View style={styles.tempDisplay}>
           <Text style={styles.tempText}>{temperature}°C</Text>
@@ -198,11 +204,18 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-  statusTime: {
+  statusRight: { // Added style for statusRight
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusTemp: {
     color: '#fff',
     fontSize: 16,
   },
-  content: {
+  statusTime: {
+    color: '#fff',
+  },
+  controlsContainer: {
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 20,

@@ -1,10 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, StatusBar } from 'react-native';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import useCurrentTime from '../hooks/useCurrentTime'; // Import the hook
 import Svg, { Circle, Path } from 'react-native-svg';
 
 const VehicleInfoScreen: React.FC = () => {
+  const currentTime = useCurrentTime(); // Use the hook
+
   // Mock vehicle data
   const speed = 20;
   const range = '315 mi';
@@ -13,14 +16,17 @@ const VehicleInfoScreen: React.FC = () => {
   
   return (
     <SafeAreaView style={styles.container}>
-      {/* Status Bar */}
+      <StatusBar barStyle="light-content" />
+      {/* Top Status Bar */}
       <View style={styles.statusBar}>
         <Text style={styles.statusText}>車輛資訊</Text>
         <View style={styles.statusRight}>
-          <Text style={styles.statusTime}>10:21 AM</Text>
+          <Text style={styles.statusTemp}>25°C</Text>
+          <Text style={styles.statusTime}>{currentTime}</Text> {/* Display real-time */}
         </View>
       </View>
-      
+
+      {/* Main Content */}
       <View style={styles.content}>
         {/* Main Speed Display */}
         <View style={styles.speedContainer}>
@@ -129,9 +135,13 @@ const styles = StyleSheet.create({
   statusRight: {
     flexDirection: 'row',
   },
-  statusTime: {
+  statusTemp: {
     color: '#fff',
     fontSize: 16,
+    marginRight: 10,
+  },
+  statusTime: {
+    color: '#fff',
   },
   content: {
     flex: 1,
