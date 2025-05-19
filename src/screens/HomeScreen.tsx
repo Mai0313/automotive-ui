@@ -78,26 +78,27 @@ const HomeScreen: React.FC = () => {
 
       {/* Animated overlay panel */}
       <Animated.View
-        pointerEvents={activeOverlay ? 'auto' : 'none'}
         style={[
           styles.overlayCard,
           { width: overlayWidth, opacity: anim, left: 0, transform: [{ translateX }] }
         ]}
       >
-        {/* Header with close and expand */}
-        <View style={styles.overlayHeader}>
-          <TouchableOpacity onPress={() => setActiveOverlay(null)}>
-            <MaterialIcons name="close" size={24} color="#fff" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setFullScreenOverlay(!fullScreenOverlay)}>
-            <MaterialIcons name={fullScreenOverlay ? "fullscreen-exit" : "fullscreen"} size={24} color="#fff" />
-          </TouchableOpacity>
+        <View style={{ flex: 1, pointerEvents: activeOverlay ? 'auto' : 'none' }}>
+          {/* Header with close and expand */}
+          <View style={styles.overlayHeader}>
+            <TouchableOpacity onPress={() => setActiveOverlay(null)}>
+              <MaterialIcons name="close" size={24} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setFullScreenOverlay(!fullScreenOverlay)}>
+              <MaterialIcons name={fullScreenOverlay ? "fullscreen-exit" : "fullscreen"} size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          {/* Render corresponding screen inside overlay */}
+          {activeOverlay === 'vehicle' && <VehicleInfoScreen />}
+          {activeOverlay === 'music'   && <MusicScreen />}
+          {activeOverlay === 'climate' && <ClimateScreen />}
+          {activeOverlay === 'ai'      && <AIAssistantScreen />}
         </View>
-        {/* Render corresponding screen inside overlay */}
-        {activeOverlay === 'vehicle' && <VehicleInfoScreen />}
-        {activeOverlay === 'music'   && <MusicScreen />}
-        {activeOverlay === 'climate' && <ClimateScreen />}
-        {activeOverlay === 'ai'      && <AIAssistantScreen />}
       </Animated.View>
 
       {/* Bottom control bar fixed at bottom */}
@@ -141,10 +142,7 @@ const styles = StyleSheet.create({
     bottom: 100,
     backgroundColor: 'rgba(0,0,0,0.8)',
     borderRadius: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 10,
+    boxShadow: '0 4px 24px rgba(0,0,0,0.5)', // web only, RN web 支援
     overflow: 'hidden',
   },
   overlayHeader: {

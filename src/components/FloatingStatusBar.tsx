@@ -9,7 +9,7 @@ interface FloatingStatusBarProps {
 const FloatingStatusBar: React.FC<FloatingStatusBarProps> = ({ temperature = '30°C' }) => {
   const currentTime = useCurrentTime();
   return (
-    <View style={styles.container} pointerEvents="none">
+    <View style={[styles.container, { pointerEvents: 'none' }]}>
       <Text style={styles.info}>{temperature}</Text>
       <Text style={[styles.info, { marginLeft: 10 }]}>{currentTime}</Text>
     </View>
