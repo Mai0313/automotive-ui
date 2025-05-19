@@ -1,6 +1,6 @@
-declare module 'react-native-maps' {
-  import * as React from 'react';
-  import { ViewProps, ViewStyle, ImageSourcePropType } from 'react-native';
+declare module "react-native-maps" {
+  import * as React from "react";
+  import { ViewProps, ViewStyle, ImageSourcePropType } from "react-native";
 
   export interface LatLng {
     latitude: number;
@@ -18,7 +18,7 @@ declare module 'react-native-maps' {
   }
 
   export interface MapViewProps extends ViewProps {
-    provider?: 'google' | null;
+    provider?: "google" | null;
     style?: ViewStyle;
     customMapStyle?: Array<any>;
     initialRegion?: Region;
@@ -42,7 +42,9 @@ declare module 'react-native-maps' {
     loadingBackgroundColor?: string;
     moveOnMarkerPress?: boolean;
     onMapReady?: () => void;
-    onPress?: (event: { nativeEvent: { coordinate: LatLng, position: Point } }) => void;
+    onPress?: (event: {
+      nativeEvent: { coordinate: LatLng; position: Point };
+    }) => void;
     // Add other props as needed from the library's documentation
   }
 
@@ -69,8 +71,8 @@ declare module 'react-native-maps' {
     coordinates: LatLng[];
     strokeColor?: string;
     strokeWidth?: number;
-    lineCap?: 'butt' | 'round' | 'square';
-    lineJoin?: 'miter' | 'round' | 'bevel';
+    lineCap?: "butt" | "round" | "square";
+    lineJoin?: "miter" | "round" | "bevel";
     miterLimit?: number;
     geodesic?: boolean;
     lineDashPattern?: number[];

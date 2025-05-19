@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { View, Button, StyleSheet } from 'react-native';
+import React, { useRef, useState } from "react";
+import { View, Button, StyleSheet } from "react-native";
 
 // Define props interface for the component
 export interface MapViewProps {
@@ -34,18 +34,18 @@ const WebMapView: React.FC<MapViewProps> = ({ style, initialRegion }) => {
   const handleLocate = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        pos => {
+        (pos) => {
           setCenter({
             latitude: pos.coords.latitude,
             longitude: pos.coords.longitude,
           });
         },
-        err => {
-          alert('無法取得您的位置');
-        }
+        (err) => {
+          alert("無法取得您的位置");
+        },
       );
     } else {
-      alert('瀏覽器不支援定位');
+      alert("瀏覽器不支援定位");
     }
   };
 
@@ -57,11 +57,11 @@ const WebMapView: React.FC<MapViewProps> = ({ style, initialRegion }) => {
       {center && (
         <iframe
           ref={iframeRef}
-          title="Google Map"
-          src={getGoogleMapsUrl(center.latitude, center.longitude)}
-          style={styles.iframe}
           allowFullScreen
           loading="lazy"
+          src={getGoogleMapsUrl(center.latitude, center.longitude)}
+          style={styles.iframe}
+          title="Google Map"
         />
       )}
     </View>
@@ -84,24 +84,24 @@ MapViewComposite.Polyline = Polyline;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: 'relative',
-    backgroundColor: '#242f3e',
+    position: "relative",
+    backgroundColor: "#242f3e",
   },
   toolbar: {
-    position: 'absolute',
+    position: "absolute",
     top: 10,
     left: 10,
     zIndex: 10,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: "rgba(255,255,255,0.9)",
     borderRadius: 8,
     padding: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   iframe: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 8,
   },
 });
