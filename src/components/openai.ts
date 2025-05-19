@@ -4,6 +4,7 @@ import type {
 } from "openai/resources";
 import { AzureOpenAI, OpenAI } from "openai";
 import { Stream } from "openai/streaming";
+import { Platform } from "react-native"; // Added import
 
 // Initialize the appropriate client based on api_type
 const createClient = () => {
@@ -66,4 +67,99 @@ export async function streamChatCompletion({
     console.error("OpenAI API error:", error);
     throw error;
   }
+}
+
+export async function transcribeAudio(audioUri: string): Promise<string> {
+  const client = createClient();
+  try {
+    console.log(`Transcribing audio from URI: ${audioUri}`);
+
+    const response = await fetch(audioUri);
+    const blob = await response.blob();
+
+    // Determine filename and type based on platform and URI
+    // Whisper supports: mp3, mp4, mpeg, mpga, m4a, wav, webm
+    let filename = "audio.m4a"; // Default for Android or if type is generic
+    let audioFile: File;
+
+    // It's crucial that the file extension in `filename` matches the actual audio format.
+    // Whisper uses the filename extension to determine how to process the file.
+    if (Platform.OS === 'ios' && (audioUri.endsWith('.caf') || blob.type === 'audio/x-caf' || blob.type === 'audio/caf')) {
+      filename = "audio.caf";
+      audioFile = new File([blob], filename, { type: "audio/x-caf" });
+    } else if (Platform.OS === 'android' && (audioUri.endsWith('.mp4') || audioUri.endsWith('.m4a') || blob.type === 'audio/mp4' || blob.type === 'audio/m4a')) {
+      // Android often records in .mp4 (which is m4a audio in an mp4 container) or .m4a
+      filename = "audio.m4a"; // Whisper prefers .m4a for this format
+      audioFile = new File([blob], filename, { type: "audio/m4a" });
+    } else if (blob.type && (blob.type.startsWith("audio/webm"))) {
+      filename = "audio.webm";
+      audioFile = new File([blob], filename, { type: blob.type });
+    } else if (blob.type && (blob.type.startsWith("audio/wav") || blob.type.startsWith("audio/wave"))) {
+      filename = "audio.wav";
+      audioFile = new File([blob], filename, { type: blob.type });
+    } else if (blob.type && (blob.type.startsWith("audio/mpeg"))) {
+      filename = "audio.mp3"; // Assuming mpeg is mp3
+      audioFile = new File([blob], filename, { type: blob.type });
+    } else {
+      // Fallback, trying to infer from blob type or defaulting to m4a
+      const extensionFromType = blob.type ? blob.type.split('/')[1] : null;
+      if (extensionFromType && ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'].includes(extensionFromType.split('+')[0])) {
+        filename = `audio.${extensionFromType.split('+')[0]}`;
+      } else {
+        // Default if type is unknown or not directly supported by a simple extension mapping
+        console.warn(`Unknown audio type: ${blob.type}, defaulting to audio.m4a for transcription.`);
+        filename = "audio.m4a";
+      }
+      audioFile = new File([blob], filename, { type: blob.type || "audio/m4a" });
+    }
+    
+    console.log(`Attempting to transcribe with filename: ${filename} and type: ${audioFile.type}`);
+
+    const transcription = await client.audio.transcriptions.create({
+      file: audioFile,
+      model: "whisper-1",
+    });
+
+    console.log("Transcription successful:", transcription.text);
+    return transcription.text;
+  } catch (error) {
+    console.error("OpenAI Transcription API error:", error);
+    let errorMessage = "Unknown error during transcription";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      // If the error object has more specific properties from the OpenAI SDK, 
+      // you might need to cast it to a more specific error type or check for those properties.
+      // For example, if it's an APIError from 'openai' library:
+      // if (error instanceof OpenAI.APIError) {
+      //   console.error("OpenAI API Error Status:", error.status);
+      //   console.error("OpenAI API Error Headers:", error.headers);
+      //   console.error("OpenAI API Error Code:", error.code);
+      // }
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+    // The following console.error lines for error.response, error.request, error.message
+    // were for a generic Axios-like error structure. 
+    // With the OpenAI SDK, errors are typically instances of Error or OpenAI.APIError.
+    // Consider adjusting based on the actual error objects you encounter from the SDK.
+
+    // Example of checking for OpenAI SDK specific error details if needed:
+    // if (error && typeof error === 'object' && 'response' in error) {
+    //   const apiError = error as { response?: { data?: any, status?: number, headers?: any }, request?: any, message?: string };
+    //   if (apiError.response) {
+    //     console.error("Error response data:", apiError.response.data);
+    //     console.error("Error response status:", apiError.response.status);
+    //     console.error("Error response headers:", apiError.response.headers);
+    //   } else if (apiError.request) {
+    //     console.error("Error request:", apiError.request);
+    //   } else if (apiError.message) {
+    //     console.error('Error message:', apiError.message);
+    //   }
+    // }
+
+    throw new Error(`Failed to transcribe audio: ${errorMessage}`);
+  }
+  // Ensure a string is always returned or an error is thrown.
+  // This path should ideally not be reached if errors are handled correctly above.
+  return ""; 
 }

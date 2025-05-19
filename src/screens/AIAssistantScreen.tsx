@@ -13,8 +13,10 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { ChatCompletionMessageParam } from "openai/resources";
+// import { Audio } from "expo-audio"; // Corrected import for expo-audio types if needed, or use specific hooks
+import { AudioModule, useAudioRecorder, RecordingPresets } from "expo-audio"; // Import AudioModule and hooks from expo-audio
 
-import { streamChatCompletion } from "../components/openai";
+import { streamChatCompletion, transcribeAudio } from "../components/openai";
 import commonStyles from "../styles/commonStyles";
 
 interface Message {
@@ -36,6 +38,9 @@ const AIAssistantScreen: React.FC = () => {
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY); // Use expo-audio hook
+
   const flatListRef = useRef<FlatList>(null);
   const nextIdRef = useRef(2); // Start from 2 since initial message has id 1
 
@@ -57,6 +62,16 @@ const AIAssistantScreen: React.FC = () => {
     };
   }, [abortController]);
 
+  // Request microphone permissions when component mounts
+  useEffect(() => {
+    (async () => {
+      const { status } = await AudioModule.requestPermissionsAsync(); // Use AudioModule from expo-audio
+      if (status !== "granted") {
+        alert("無法取得麥克風權限，錄音功能將無法使用。");
+      }
+    })();
+  }, []);
+
   // Generate current time in HH:MM AM/PM format
   const getCurrentTime = () => {
     return new Date().toLocaleTimeString([], {
@@ -75,8 +90,9 @@ const AIAssistantScreen: React.FC = () => {
   }, [abortController]);
 
   // Function to send a message to the AI
-  const sendMessage = async () => {
-    if (!inputText.trim() || isTyping) return;
+  const sendMessage = async (textToSend?: string) => {
+    const currentText = textToSend || inputText;
+    if (!currentText.trim() || isTyping) return;
 
     // Cancel any ongoing request
     if (abortController) {
@@ -86,13 +102,15 @@ const AIAssistantScreen: React.FC = () => {
     // Add user message
     const userMessage: Message = {
       id: nextIdRef.current++,
-      text: inputText,
+      text: currentText, // Use currentText instead of inputText
       isUser: true,
       timestamp: getCurrentTime(),
     };
 
     setMessages((prevMessages) => [...prevMessages, userMessage]);
-    setInputText("");
+    if (!textToSend) { // Clear input only if it's not from voice input
+      setInputText("");
+    }
     setIsTyping(true);
 
     // Create placeholder for AI response
@@ -155,6 +173,117 @@ const AIAssistantScreen: React.FC = () => {
     }
   };
 
+  // Function to start recording audio
+  const startRecording = async () => {
+    if (Platform.OS === 'web') {
+      // For web, check if MediaRecorder is available, which expo-audio uses under the hood.
+      // Also, ensure the site is served over HTTPS for microphone access.
+      if (typeof MediaRecorder === 'undefined') {
+        alert("瀏覽器不支援錄音功能。");
+        return;
+      }
+      if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+        alert("麥克風錄音需要在 HTTPS 安全連線下執行。");
+        return;
+      }
+    }
+    try {
+      const { granted } = await AudioModule.getPermissionsAsync(); // Use AudioModule
+      if (!granted) {
+        const { status } = await AudioModule.requestPermissionsAsync(); // Use AudioModule
+        if (status !== "granted") {
+          alert("無法取得麥克風權限");
+          return;
+        }
+      }
+
+      console.log("Starting recording with expo-audio...");
+      await audioRecorder.prepareToRecordAsync();
+      await audioRecorder.record(); // Corrected method to start recording
+      setIsRecording(true);
+      console.log("Recording started with expo-audio");
+    } catch (err) {
+      console.error("Failed to start recording with expo-audio", err);
+      alert("錄音失敗，請檢查權限或裝置狀態。");
+      setIsRecording(false); // Ensure isRecording is reset on error
+    }
+  };
+
+  // Function to stop recording audio and transcribe
+  const stopRecordingAndTranscribe = async () => {
+    let transcriptionPlaceholderId: number | null = null; // Declare here for wider scope
+
+    if (!audioRecorder.isRecording) {
+        if (audioRecorder.uri) { // If already stopped but URI exists
+             console.log("Recording was already stopped. URI:", audioRecorder.uri);
+        } else {
+            console.log("Recorder is not active and no URI available.");
+            setIsRecording(false); // Ensure UI consistency
+            return;
+        }
+    } else {
+        console.log("Stopping recording with expo-audio..");
+        try {
+            await audioRecorder.stop();
+            console.log("Recording stopped. URI:", audioRecorder.uri);
+        } catch (error) {
+            console.error("Failed to stop recording:", error);
+            alert("停止錄音失敗。");
+            setIsRecording(false);
+            return;
+        }
+    }
+    
+    setIsRecording(false);
+    const uri = audioRecorder.uri;
+
+    if (uri) {
+      try {
+        setIsTyping(true);
+        transcriptionPlaceholderId = nextIdRef.current++; // Assign here
+        const transcriptionPlaceholder: Message = {
+          id: transcriptionPlaceholderId,
+          text: "[正在辨識語音...]",
+          isUser: true,
+          timestamp: getCurrentTime(),
+        };
+        setMessages((prevMessages) => [...prevMessages, transcriptionPlaceholder]);
+
+        const transcribedText = await transcribeAudio(uri);
+        console.log("Transcribed text:", transcribedText);
+
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === transcriptionPlaceholderId
+              ? { ...msg, text: transcribedText }
+              : msg
+          )
+        );
+
+        if (transcribedText.trim()) {
+          await sendMessage(transcribedText); 
+        } else {
+          setMessages((prevMessages) => prevMessages.filter(msg => msg.id !== transcriptionPlaceholderId));
+          setIsTyping(false);
+        }
+      } catch (error) {
+        console.error("Transcription error:", error);
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            transcriptionPlaceholderId && msg.id === transcriptionPlaceholderId // Check if ID was set
+              ? { ...msg, text: "[語音辨識失敗]" }
+              : msg
+          )
+        );
+        setIsTyping(false);
+      }
+    } else {
+      console.log("No recording URI found after stopping.");
+      setIsTyping(false); // Ensure typing indicator is turned off
+    }
+  };
+
+
   const renderMessage = ({ item }: { item: Message }) => (
     <View
       style={[
@@ -190,29 +319,37 @@ const AIAssistantScreen: React.FC = () => {
               placeholderTextColor="#777"
               style={styles.input}
               value={inputText}
-              editable={!isTyping}
+              editable={!isTyping && !isRecording} // Disable input when recording
               onChangeText={setInputText}
-              onSubmitEditing={sendMessage}
+              onSubmitEditing={() => sendMessage()}
             />
-            {isTyping ? (
+            {isTyping && !isRecording ? ( // Show close icon only when typing and not recording
               <TouchableOpacity style={styles.iconButton} onPress={cancelRequest}>
                 <MaterialIcons color="#e74c3c" name="close" size={24} />
               </TouchableOpacity>
-            ) : (
-              <TouchableOpacity 
-                style={[styles.iconButton, !inputText.trim() && styles.iconButtonDisabled]} 
-                disabled={!inputText.trim()}
-                onPress={sendMessage}
+            ) : !isRecording ? ( // Show send icon only when not recording
+              <TouchableOpacity
+                style={[styles.iconButton, (!inputText.trim() || isTyping) && styles.iconButtonDisabled]}
+                disabled={!inputText.trim() || isTyping}
+                onPress={() => sendMessage()}
               >
                 <MaterialIcons color="#3498db" name="send" size={24} />
               </TouchableOpacity>
-            )}
+            ) : null}
+            {/* Microphone Button */}
+            <TouchableOpacity 
+              style={[styles.iconButton, isTyping && styles.iconButtonDisabled]} // Disable mic when AI is typing
+              onPress={isRecording ? stopRecordingAndTranscribe : startRecording}
+              disabled={isTyping && !isRecording} // Disable mic if AI is responding (but allow stopping if already recording)
+            >
+              <MaterialIcons color={isRecording ? "#e74c3c" : "#3498db"} name={isRecording ? "stop" : "mic"} size={24} />
+            </TouchableOpacity>
           </View>
           
-          {isTyping && (
+          {(isTyping || isRecording) && ( // Show indicator if AI is typing OR user is recording
             <View style={styles.typingIndicator}>
               <ActivityIndicator size="small" color="#3498db" />
-              <Text style={styles.typingText}>AI 正在回應中...</Text>
+              <Text style={styles.typingText}>{isRecording ? "正在錄音中..." : isTyping ? "AI 正在回應中..." : ""}</Text>
             </View>
           )}
         </KeyboardAvoidingView>
