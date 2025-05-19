@@ -8,6 +8,7 @@ import {
   Dimensions,
   PanResponder,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 
@@ -61,7 +62,16 @@ const HomeScreen: React.FC = () => {
   ).current;
 
   // 地圖預設中心座標
-  const { location: mapPreviewLocation } = useCurrentLocation();
+  const { location: mapPreviewLocation, errorMsg } = useCurrentLocation();
+
+  // show white loading spinner until location fetched
+  if (!mapPreviewLocation) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>

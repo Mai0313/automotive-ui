@@ -42,7 +42,7 @@ const useCurrentLocation = () => {
     })();
   }, []);
 
-  return { location: location || DEFAULT_LOCATION, errorMsg };
+  return { location, errorMsg };
 };
 
 export default useCurrentLocation;
