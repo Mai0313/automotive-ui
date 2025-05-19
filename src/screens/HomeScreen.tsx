@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Animated, TouchableWithoutFeedback, Dimensions, PanResponder } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Animated, Pressable, Dimensions, PanResponder, Platform } from 'react-native';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -34,7 +34,11 @@ const HomeScreen: React.FC = () => {
   const overlayWidth = fullScreenOverlay ? screenW : overlayWidthState;
 
   useEffect(() => {
-    Animated.timing(anim, { toValue: activeOverlay ? 1 : 0, duration: 300, useNativeDriver: true }).start();
+    Animated.timing(anim, {
+      toValue: activeOverlay ? 1 : 0,
+      duration: 300,
+      useNativeDriver: Platform.OS !== 'web', // web 平台設為 false，避免警告
+    }).start();
   }, [activeOverlay, fullScreenOverlay]);
   // panel slides in/out horizontally from left
   const translateX = anim.interpolate({ inputRange: [0,1], outputRange: [-overlayWidth, 0] });
@@ -59,9 +63,9 @@ const HomeScreen: React.FC = () => {
     <View style={commonStyles.container}>
       {/* Map area shrinks when overlay is active */}
       <Animated.View style={[styles.mapContainer, { width: mapWidth, transform: [{ translateX: mapTranslateX }] }]}>          
-        <TouchableWithoutFeedback onPress={() => setActiveOverlay(null)}>
+        <Pressable onPress={() => setActiveOverlay(null)} style={{ flex: 1 }}>
           <MapView style={{ flex: 1 }} initialRegion={mapPreviewLocation} />
-        </TouchableWithoutFeedback>
+        </Pressable>
       </Animated.View>
 
       {/* Drag handle between map and overlay for resizing */}

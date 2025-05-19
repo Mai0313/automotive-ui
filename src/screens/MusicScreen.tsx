@@ -28,6 +28,9 @@ const formatTime = (secs: number) => {
   return `${m}:${s < 10 ? '0' + s : s}`;
 };
 
+const SPOTIFY_PLAYLIST_URL =
+  'https://open.spotify.com/embed/playlist/1b8pUgOU6mdmKbBQ3mSFc8?utm_source=generator&theme=0';
+
 const MusicScreen: React.FC = () => {
   const currentTime = useCurrentTime(); // Use the hook
   const { width, height } = useWindowDimensions();
@@ -49,6 +52,35 @@ const MusicScreen: React.FC = () => {
   const togglePlayback = () => {
     setIsPlaying(!isPlaying);
   };
+
+  if (Platform.OS === 'web') {
+    return (
+      <SafeAreaView style={[commonStyles.container, styles.overlayCard]}>
+        <View style={styles.iframeContainer}>
+          <iframe
+            style={{
+              borderRadius: 12,
+              border: 'none',
+              width: '100%',
+              minWidth: 320,
+              maxWidth: 600,
+              height: 352,
+              background: 'transparent',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+            }}
+            src={SPOTIFY_PLAYLIST_URL}
+            width="100%"
+            height="352"
+            frameBorder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            allowFullScreen
+            title="Spotify Player"
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={commonStyles.container}>
@@ -281,6 +313,27 @@ const styles = StyleSheet.create({
   },
   additionalControlButton: {
     padding: 15,
+  },
+  overlayCard: {
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    borderRadius: 20,
+    margin: 20,
+    padding: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  iframeContainer: {
+    width: '100%',
+    maxWidth: 600,
+    minWidth: 320,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 0,
   },
 });
 
