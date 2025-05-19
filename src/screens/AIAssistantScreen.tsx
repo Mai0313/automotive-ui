@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,10 +8,13 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import type { ChatCompletionMessageParam } from "openai/resources";
 
+import { streamChatCompletion } from "../components/openai";
 import commonStyles from "../styles/commonStyles";
 
 interface Message {
@@ -31,60 +34,125 @@ const AIAssistantScreen: React.FC = () => {
     },
   ]);
   const [inputText, setInputText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
   const flatListRef = useRef<FlatList>(null);
+  const nextIdRef = useRef(2); // Start from 2 since initial message has id 1
 
-  // Mock responses for demo purposes
-  const mockResponses: Record<string, string> = {
-    你好: "您好！很高興為您服務。",
-    天氣: "目前外部溫度為 30°C，天氣晴朗。今日預計溫度為 15-22°C，無降雨機率。",
-    播放音樂: "好的，正在播放您喜愛的播放清單。",
-    導航: "請問您要前往哪裡？您可以說出地點名稱或地址。",
-    設定溫度: "已將車內溫度設定為 22°C。",
-    電量: "目前電池電量為 70%，預估剩餘里程為 315 公里。",
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (flatListRef.current && messages.length > 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [messages]);
+
+  // Abort ongoing request if component unmounts
+  useEffect(() => {
+    return () => {
+      if (abortController) {
+        abortController.abort();
+      }
+    };
+  }, [abortController]);
+
+  // Generate current time in HH:MM AM/PM format
+  const getCurrentTime = () => {
+    return new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
-  // Function to send a message
-  const sendMessage = () => {
-    if (!inputText.trim()) return;
+  // Function to cancel ongoing request
+  const cancelRequest = useCallback(() => {
+    if (abortController) {
+      abortController.abort();
+      setAbortController(null);
+      setIsTyping(false);
+    }
+  }, [abortController]);
+
+  // Function to send a message to the AI
+  const sendMessage = async () => {
+    if (!inputText.trim() || isTyping) return;
+
+    // Cancel any ongoing request
+    if (abortController) {
+      cancelRequest();
+    }
 
     // Add user message
-    const newMessage: Message = {
-      id: messages.length + 1,
+    const userMessage: Message = {
+      id: nextIdRef.current++,
       text: inputText,
       isUser: true,
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      timestamp: getCurrentTime(),
     };
 
-    setMessages([...messages, newMessage]);
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
     setInputText("");
+    setIsTyping(true);
 
-    // Simulate AI response with a slight delay
-    setTimeout(() => {
-      let responseText = "我不確定如何回應。請嘗試用其他方式提問。";
+    // Create placeholder for AI response
+    const aiPlaceholderId = nextIdRef.current++;
+    const aiPlaceholder: Message = {
+      id: aiPlaceholderId,
+      text: "",
+      isUser: false,
+      timestamp: getCurrentTime(),
+    };
 
-      // Check for keywords in input
-      for (const keyword in mockResponses) {
-        if (inputText.includes(keyword)) {
-          responseText = mockResponses[keyword];
-          break;
-        }
+    setMessages((prevMessages) => [...prevMessages, aiPlaceholder]);
+
+    // Create abort controller for this request
+    const controller = new AbortController();
+    setAbortController(controller);
+
+    try {
+      // Prepare context with conversation history
+      const conversationHistory: ChatCompletionMessageParam[] = messages
+        .concat(userMessage)
+        .map((msg) => ({
+          role: msg.isUser ? "user" : "assistant",
+          content: msg.text,
+        })) as ChatCompletionMessageParam[];
+
+      // Start streaming response
+      await streamChatCompletion({
+        messages: conversationHistory,
+        signal: controller.signal,
+        onDelta: (delta: string) => {
+          // Update AI response with streaming text
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg.id === aiPlaceholderId
+                ? { ...msg, text: msg.text + delta }
+                : msg
+            )
+          );
+        },
+      });
+    } catch (error) {
+      // Handle errors - only show error if not aborted
+      if ((error as Error).name !== "AbortError") {
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === aiPlaceholderId
+              ? {
+                  ...msg,
+                  text: "抱歉，我無法處理您的請求。請稍後再試。",
+                }
+              : msg
+          )
+        );
+        console.error("AI Response error:", error);
       }
-
-      const aiResponse: Message = {
-        id: messages.length + 2,
-        text: responseText,
-        isUser: false,
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-
-      setMessages((prevMessages) => [...prevMessages, aiResponse]);
-    }, 1000);
+    } finally {
+      setIsTyping(false);
+      setAbortController(null);
+    }
   };
 
   const renderMessage = ({ item }: { item: Message }) => (
@@ -122,23 +190,33 @@ const AIAssistantScreen: React.FC = () => {
               placeholderTextColor="#777"
               style={styles.input}
               value={inputText}
+              editable={!isTyping}
               onChangeText={setInputText}
               onSubmitEditing={sendMessage}
             />
-            <TouchableOpacity style={[styles.iconButton]} onPress={sendMessage}>
-              <MaterialIcons color="#3498db" name="send" size={24} />
-            </TouchableOpacity>
+            {isTyping ? (
+              <TouchableOpacity style={styles.iconButton} onPress={cancelRequest}>
+                <MaterialIcons color="#e74c3c" name="close" size={24} />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity 
+                style={[styles.iconButton, !inputText.trim() && styles.iconButtonDisabled]} 
+                disabled={!inputText.trim()}
+                onPress={sendMessage}
+              >
+                <MaterialIcons color="#3498db" name="send" size={24} />
+              </TouchableOpacity>
+            )}
           </View>
+          
+          {isTyping && (
+            <View style={styles.typingIndicator}>
+              <ActivityIndicator size="small" color="#3498db" />
+              <Text style={styles.typingText}>AI 正在回應中...</Text>
+            </View>
+          )}
         </KeyboardAvoidingView>
       </View>
-
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "center",
-          margin: 10,
-        }}
-      />
     </SafeAreaView>
   );
 };
@@ -202,6 +280,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginLeft: 5,
   },
+  iconButtonDisabled: {
+    opacity: 0.5,
+  },
+  typingIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+    marginLeft: 15,
+  },
+  typingText: {
+    color: "#3498db",
+    marginLeft: 8,
+    fontSize: 14,
+  }
 });
 
 export default AIAssistantScreen;
