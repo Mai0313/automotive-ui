@@ -77,6 +77,7 @@ export async function transcribeAudio(audioUri: string): Promise<string> {
 
     const response = await fetch(audioUri);
     const blob = await response.blob();
+    console.log("[Transcribe] Fetched blob. Size:", blob.size, "Type:", blob.type);
 
     // Determine filename and type based on platform and URI
     // Whisper supports: mp3, mp4, mpeg, mpga, m4a, wav, webm
@@ -113,6 +114,7 @@ export async function transcribeAudio(audioUri: string): Promise<string> {
       }
       audioFile = new File([blob], filename, { type: blob.type || "audio/m4a" });
     }
+    console.log("[Transcribe] Created File object. Size:", audioFile.size, "Name:", audioFile.name, "Type:", audioFile.type);
     
     console.log(`Attempting to transcribe with filename: ${filename} and type: ${audioFile.type}`);
 
