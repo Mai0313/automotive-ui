@@ -119,3 +119,5 @@ App.tsx            # 專案入口
 - 2025-05-19: MusicScreen web 版改為直接嵌入 Spotify 播放器 iframe，並以特斯拉車機風格半透明黑底浮層包覆，僅 web 顯示，行動裝置維持原假資料 UI。
 - 2025-05-19: HomeScreen 地圖鋪滿全畫面，overlayCard 上下空間皆為地圖，不再出現黑色背景區塊。
 - 2025-05-19: MapView.web.tsx 移除 border 樣式，修正 React Native StyleSheet 型別錯誤。
+- 2025-05-19: ESLint 設定升級為 Flat Config，並針對專案結構簡化 ignore 與 plugin 設定。
+- 2025-05-19: 所有未使用變數與 import lint warning 已清除，專案維持乾淨。
