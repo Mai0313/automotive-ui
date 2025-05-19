@@ -4,7 +4,8 @@ import type {
 } from "openai/resources";
 import { AzureOpenAI, OpenAI } from "openai";
 import { Stream } from "openai/streaming";
-import { Platform } from "react-native"; // Added import
+import { Platform } from "react-native";
+import * as FileSystem from 'expo-file-system'; // Added import
 
 // Initialize the appropriate client based on api_type
 const createClient = () => {
@@ -162,4 +163,70 @@ export async function transcribeAudio(audioUri: string): Promise<string> {
   // Ensure a string is always returned or an error is thrown.
   // This path should ideally not be reached if errors are handled correctly above.
   return ""; 
+}
+
+export async function textToSpeech(text: string): Promise<string | null> {
+  const client = createClient();
+  try {
+    console.log(`[TTS] Attempting to generate speech for text: "${text.substring(0, 30)}..."`);
+    const response = await client.audio.speech.create({
+      model: "tts-1-hd",
+      voice: "alloy",
+      input: text,
+      response_format: "mp3",
+    });
+    console.log("[TTS] OpenAI API call successful, attempting to get blob.");
+
+    const blob = await response.blob();
+    console.log("[TTS] Blob received, size:", blob.size, "type:", blob.type, "attempting to read with FileReader.");
+
+    const reader = new FileReader();
+    return new Promise((resolve, reject) => {
+      reader.onloadend = async () => {
+        console.log("[TTS] FileReader onloadend.");
+        if (typeof reader.result !== 'string') {
+          console.error("[TTS] FileReader result is not a string.");
+          return reject(new Error("Failed to read audio data as base64."));
+        }
+
+        if (Platform.OS === 'web') {
+          // On web, play directly from data URL
+          console.log("[TTS] Web platform. Resolving with data URI.");
+          resolve(reader.result); // reader.result is the base64 data URI
+        } else {
+          // On native, save to file and play from file URI
+          const base64Data = reader.result.split(',')[1];
+          const fileUri = FileSystem.documentDirectory + `speech_${Date.now()}.mp3`;
+          console.log("[TTS] Native platform. Attempting to write audio to FileSystem at:", fileUri);
+          try {
+            await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+            console.log("[TTS] FileSystem write successful. Resolving with file URI:", fileUri);
+            resolve(fileUri);
+          } catch (fileSystemError) {
+            console.error("[TTS] FileSystem write error:", fileSystemError);
+            reject(fileSystemError);
+          }
+        }
+      };
+      reader.onerror = (error) => {
+        console.error("[TTS] FileReader onerror:", error);
+        reject(new Error("Failed to read audio blob for TTS."));
+      };
+      reader.readAsDataURL(blob);
+      console.log("[TTS] FileReader.readAsDataURL(blob) called.");
+    });
+
+  } catch (error) {
+    console.error("[TTS] OpenAI TTS API error or other error in textToSpeech:", error);
+    let errorMessage = "Unknown error during text-to-speech conversion";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+    // Consider more specific error handling for OpenAI.APIError if needed
+    throw new Error(`Failed to generate speech: ${errorMessage}`);
+  }
 }

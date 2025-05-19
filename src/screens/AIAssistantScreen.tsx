@@ -13,10 +13,16 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { ChatCompletionMessageParam } from "openai/resources";
-// import { Audio } from "expo-audio"; // Corrected import for expo-audio types if needed, or use specific hooks
-import { AudioModule, useAudioRecorder, RecordingPresets } from "expo-audio"; // Import AudioModule and hooks from expo-audio
+import { 
+  AudioModule, 
+  useAudioRecorder, 
+  RecordingPresets, 
+  AudioPlayer, 
+  createAudioPlayer, // Import createAudioPlayer directly
+  type AudioStatus    // Import AudioStatus type
+} from "expo-audio"; 
 
-import { streamChatCompletion, transcribeAudio } from "../components/openai";
+import { streamChatCompletion, transcribeAudio, textToSpeech } from "../components/openai"; // Added textToSpeech
 import commonStyles from "../styles/commonStyles";
 
 interface Message {
@@ -39,7 +45,8 @@ const AIAssistantScreen: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [isRecording, setIsRecording] = useState(false);
-  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY); // Use expo-audio hook
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const [currentSound, setCurrentSound] = useState<AudioPlayer | null>(null); // For playing TTS audio
 
   const flatListRef = useRef<FlatList>(null);
   const nextIdRef = useRef(2); // Start from 2 since initial message has id 1
@@ -59,15 +66,19 @@ const AIAssistantScreen: React.FC = () => {
       if (abortController) {
         abortController.abort();
       }
+      // Clean up sound object when component unmounts
+      currentSound?.release(); 
     };
-  }, [abortController]);
+  }, [abortController, currentSound]);
 
   // Request microphone permissions when component mounts
   useEffect(() => {
     (async () => {
-      const { status } = await AudioModule.requestPermissionsAsync(); // Use AudioModule from expo-audio
-      if (status !== "granted") {
-        alert("無法取得麥克風權限，錄音功能將無法使用。");
+      if (Platform.OS !== 'web') { // Only run on native platforms
+        const { status } = await AudioModule.requestPermissionsAsync();
+        if (status !== "granted") {
+          alert("無法取得麥克風權限，錄音功能將無法使用。");
+        }
       }
     })();
   }, []);
@@ -131,17 +142,21 @@ const AIAssistantScreen: React.FC = () => {
     try {
       // Prepare context with conversation history
       const conversationHistory: ChatCompletionMessageParam[] = messages
-        .concat(userMessage)
+        .concat(userMessage) // Ensure userMessage is included for context
+        .filter(msg => msg.text.trim() !== "[正在辨識語音...]" && msg.text.trim() !== "[語音辨識失敗]") // Filter out placeholders
         .map((msg) => ({
           role: msg.isUser ? "user" : "assistant",
           content: msg.text,
         })) as ChatCompletionMessageParam[];
+
+      let accumulatedResponse = ""; // Accumulate full AI response for TTS
 
       // Start streaming response
       await streamChatCompletion({
         messages: conversationHistory,
         signal: controller.signal,
         onDelta: (delta: string) => {
+          accumulatedResponse += delta;
           // Update AI response with streaming text
           setMessages((prevMessages) =>
             prevMessages.map((msg) =>
@@ -152,6 +167,37 @@ const AIAssistantScreen: React.FC = () => {
           );
         },
       });
+
+      // After streaming is complete, play TTS if response is not empty
+      if (accumulatedResponse.trim()) {
+        if (currentSound) {
+          console.log("[SendMessage] Stopping and releasing previous sound.");
+          await currentSound.pause();
+          currentSound.release();
+        }
+        console.log("[SendMessage] Attempting to call textToSpeech.");
+        const audioUri = await textToSpeech(accumulatedResponse);
+
+        if (audioUri) {
+          console.log("[SendMessage] Playing TTS from URI:", audioUri);
+          const player = createAudioPlayer({ uri: audioUri });
+          setCurrentSound(player);
+          console.log("[SendMessage] Attempting to play sound.");
+          await player.play();
+          console.log("[SendMessage] player.play() awaited successfully (or returned void).");
+          const subscription = player.addListener("playbackStatusUpdate", (status: AudioStatus) => { // Add AudioStatus type
+            if (status.didJustFinish) {
+              console.log("TTS playback finished.");
+              player.release();
+              setCurrentSound(null);
+              subscription.remove(); // Clean up listener
+            }
+          });
+        } else {
+          console.warn("TTS audio URI is null, cannot play.");
+        }
+      }
+
     } catch (error) {
       // Handle errors - only show error if not aborted
       if ((error as Error).name !== "AbortError") {
@@ -170,6 +216,7 @@ const AIAssistantScreen: React.FC = () => {
     } finally {
       setIsTyping(false);
       setAbortController(null);
+      console.log("[SendMessage] Main finally block reached. isTyping set to false.");
     }
   };
 
@@ -182,24 +229,38 @@ const AIAssistantScreen: React.FC = () => {
         alert("瀏覽器不支援錄音功能。");
         return;
       }
-      if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+      if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
         alert("麥克風錄音需要在 HTTPS 安全連線下執行。");
         return;
       }
-    }
-    try {
-      const { granted } = await AudioModule.getPermissionsAsync(); // Use AudioModule
+      // On web, permission is typically requested by the browser when prepareToRecordAsync or record is called.
+      // So, we skip the explicit AudioModule.getPermissionsAsync/requestPermissionsAsync calls here.
+    } else {
+      // Native platforms still use AudioModule for permissions
+      const { granted } = await AudioModule.getPermissionsAsync();
       if (!granted) {
-        const { status } = await AudioModule.requestPermissionsAsync(); // Use AudioModule
+        const { status } = await AudioModule.requestPermissionsAsync();
         if (status !== "granted") {
           alert("無法取得麥克風權限");
           return;
         }
       }
+    }
 
+    try {
       console.log("Starting recording with expo-audio...");
+      // Ensure recorder is not already in a recording state or has a pending operation
+      if (audioRecorder.isRecording || audioRecorder.uri) {
+        console.log("Recorder is busy or has a previous recording, resetting...");
+        // Attempt to stop and unload if there's a URI, or just reset state
+        if(audioRecorder.isRecording){
+            await audioRecorder.stop();
+        }
+        // It's good practice to ensure the recorder is in a clean state before preparing a new recording.
+        // The expo-audio hook should handle much of this, but explicit checks can help.
+      }
       await audioRecorder.prepareToRecordAsync();
-      await audioRecorder.record(); // Corrected method to start recording
+      await audioRecorder.record();
       setIsRecording(true);
       console.log("Recording started with expo-audio");
     } catch (err) {

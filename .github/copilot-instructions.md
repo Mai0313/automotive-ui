@@ -34,7 +34,13 @@
    - 溫度調整、風量設定、模式切換
 
 6. **AI 助理頁**
-   - 語音/文字互動，展示 AI 回應
+   - 語音/文字互動，展示 AI 回應。
+   - **新增功能：**
+     - 支援麥克風錄音輸入 (`expo-audio`)。
+     - 整合 OpenAI Whisper API 進行語音轉文字。
+     - 整合 OpenAI TTS API (`tts-1-hd` 模型) 將 AI 文字回應轉為語音輸出。
+     - 實現完整的語音輸入 -> AI 處理 -> 語音輸出流程。
+     - Web 平台支援直接從 Base64 Data URL 播放 TTS 音訊，原生平台則儲存至檔案系統後播放 (`expo-file-system`)。
 
 ---
 
@@ -67,7 +73,13 @@
 - **UI**：React Native Paper 或 styled-components
 - **導航**：React Navigation
 - **資料**：全部功能可用假資料模擬
-- **AI 部分**：以簡單對話框展示回應（類 ChatGPT 風格）
+- **AI 部分**：
+  - 以簡單對話框展示回應（類 ChatGPT 風格）。
+  - **語音互動**：
+    - 使用 `expo-audio` 進行錄音及播放。
+    - 語音轉文字：OpenAI Whisper API。
+    - 文字轉語音：OpenAI TTS API (`tts-1-hd` 模型)。
+    - 使用 `expo-file-system` 處理音訊檔案（僅限原生平台）。
 - **地圖元件與未來發展**：首頁全螢幕地圖預計用 Google Navigation React（或相容套件），現階段請以可佈局自訂浮層板且可外掛額外元件為主。需留意浮層疊加、互動與地圖手勢衝突的處理。
 
 ---
@@ -121,3 +133,4 @@ App.tsx            # 專案入口
 - 2025-05-19: MapView.web.tsx 移除 border 樣式，修正 React Native StyleSheet 型別錯誤。
 - 2025-05-19: ESLint 設定升級為 Flat Config，並針對專案結構簡化 ignore 與 plugin 設定。
 - 2025-05-19: 所有未使用變數與 import lint warning 已清除，專案維持乾淨。
+- 2025-05-19: AI 助理頁面新增完整語音互動功能：整合麥克風錄音 (`expo-audio`)、OpenAI Whisper 語音轉文字、Chat Completion 文字理解與回應、OpenAI TTS (`tts-1-hd`) 文字轉語音播放。區分 Web 與原生平台 TTS 音訊處理方式。
