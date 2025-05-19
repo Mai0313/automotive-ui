@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, Button, StyleSheet } from 'react-native';
 
 // Define props interface for the component
 export interface MapViewProps {
@@ -14,28 +14,63 @@ export interface MapViewProps {
   children?: React.ReactNode;
 }
 
-// A simplified web version that mimics MapView for web platforms
-const WebMapView: React.FC<MapViewProps> = ({ style, initialRegion, children }) => {
+// Generate the Google Maps URL with the given latitude, longitude, and zoom level
+const getGoogleMapsUrl = (lat: number, lng: number, zoom = 13) =>
+  `https://www.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed`;
+
+// Default center coordinates
+const DEFAULT_CENTER = { latitude: 25.0339639, longitude: 121.5644722 };
+
+// A simplified web version that embeds a Google Maps iframe
+const WebMapView: React.FC<MapViewProps> = ({ style, initialRegion }) => {
+  const [center, setCenter] = useState<{
+    latitude: number;
+    longitude: number;
+  }>(initialRegion || DEFAULT_CENTER);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // 不再自動請求 geolocation，僅在 handleLocate 時才請求
+
+  const handleLocate = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          setCenter({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          });
+        },
+        err => {
+          alert('無法取得您的位置');
+        }
+      );
+    } else {
+      alert('瀏覽器不支援定位');
+    }
+  };
+
   return (
-    <View style={[styles.container, style]}>{[
-      <Text key="title" style={styles.mapFallbackText}>導航地圖</Text>,
-      <Text key="subtext" style={styles.mapFallbackSubtext}>
-        {initialRegion ? `位置：${initialRegion.latitude.toFixed(4)}, ${initialRegion.longitude.toFixed(4)}` : '未設定位置'}
-      </Text>,
-      <View key="route" style={styles.routeSimulation}>
-        <View style={styles.routeOriginDot} />
-        <View style={styles.routeLine} />
-        <View style={styles.routeWaypoint} />
-        <View style={styles.routeLine} />
-        <View style={styles.routeDestinationDot} />
+    <View style={[styles.container, style]}>
+      <View style={styles.toolbar}>
+        <Button title="取得目前位置" onPress={handleLocate} />
       </View>
-    ]}</View>
+      {center && (
+        <iframe
+          ref={iframeRef}
+          title="Google Map"
+          src={getGoogleMapsUrl(center.latitude, center.longitude)}
+          style={styles.iframe}
+          allowFullScreen
+          loading="lazy"
+        />
+      )}
+    </View>
   );
 };
 
 // Stub components for web compatibility
-export const Marker = ({ coordinate, pinColor }: any) => null;
-export const Polyline = ({ coordinates, strokeColor, strokeWidth }: any) => null;
+export const Marker = () => null;
+export const Polyline = () => null;
 
 // Create a composite component that includes nested components
 const MapViewComposite = WebMapView as typeof WebMapView & {
@@ -48,50 +83,26 @@ MapViewComposite.Polyline = Polyline;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#242f3e',
-    justifyContent: 'center',
-    alignItems: 'center',
     flex: 1,
+    position: 'relative',
+    backgroundColor: '#242f3e',
   },
-  mapFallbackText: {
-    color: '#fff',
-    fontSize: 30,
-    fontWeight: 'bold',
-  },
-  mapFallbackSubtext: {
-    color: '#aaa',
-    fontSize: 16,
-    marginTop: 10,
-  },
-  routeSimulation: {
+  toolbar: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    zIndex: 10,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 8,
+    padding: 4,
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 30,
-    width: '60%',
+    gap: 8,
   },
-  routeOriginDot: {
-    width: 16,
-    height: 16,
+  iframe: {
+    width: '100%',
+    height: '100%',
     borderRadius: 8,
-    backgroundColor: '#3498db',
-  },
-  routeDestinationDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#e74c3c',
-  },
-  routeWaypoint: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#f39c12',
-  },
-  routeLine: {
-    flex: 1,
-    height: 4,
-    backgroundColor: '#3498db',
-    marginHorizontal: 5,
   },
 });
 
