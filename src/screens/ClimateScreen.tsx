@@ -5,10 +5,8 @@ import Slider from "@react-native-community/slider"; // Ensure this is installed
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import commonStyles from "../styles/commonStyles";
-import useCurrentTime from "../hooks/useCurrentTime"; // Import the hook
 
 const ClimateScreen: React.FC = () => {
-  const currentTime = useCurrentTime(); // Use the hook
   const [temperature, setTemperature] = useState(22); // Initial temperature
   const [fanSpeed, setFanSpeed] = useState(3);
   const [isAuto, setIsAuto] = useState(true);

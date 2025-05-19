@@ -3,13 +3,9 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import useCurrentTime from "../hooks/useCurrentTime";
 import commonStyles from "../styles/commonStyles";
 
 const VehicleInfoScreen: React.FC = () => {
-  const currentTime = useCurrentTime(); // Use the hook
-  const temperature = "30°C";
-
   // Mock vehicle data
   const speed = 0;
   const range = "315 mi";

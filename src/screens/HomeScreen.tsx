@@ -10,10 +10,8 @@ import {
   Platform,
 } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 
 import MapView from "../components/MapView"; // Import MapView
-import useCurrentTime from "../hooks/useCurrentTime"; // Import the hook
 
 import VehicleInfoScreen from "./VehicleInfoScreen";
 import MusicScreen from "./MusicScreen";
@@ -21,23 +19,11 @@ import ClimateScreen from "./ClimateScreen";
 import AIAssistantScreen from "./AIAssistantScreen";
 
 const HomeScreen: React.FC = () => {
-  const navigation = useNavigation();
-  const currentTime = useCurrentTime(); // Use the hook
-  const temperature = "30°C";
-  const mapPreviewLocation = {
-    latitude: 25.0339639,
-    longitude: 121.5644722,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
-  };
-
-  // overlay state and animation
   const [activeOverlay, setActiveOverlay] = useState<
     "vehicle" | "music" | "climate" | "ai" | null
   >(null);
   const [fullScreenOverlay, setFullScreenOverlay] = useState(false);
   const anim = useRef(new Animated.Value(0)).current;
-  const screenH = Dimensions.get("window").height;
   const screenW = Dimensions.get("window").width;
   const baseOverlayWidth = screenW * 0.45;
   // overlay width state for resizing
@@ -56,15 +42,6 @@ const HomeScreen: React.FC = () => {
     inputRange: [0, 1],
     outputRange: [-overlayWidth, 0],
   });
-  // map shifts right to share space
-  const mapTranslateX = anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, overlayWidth],
-  });
-  const mapWidth = anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [screenW, screenW - overlayWidth],
-  });
 
   // add PanResponder for horizontal resize
   const panResponder = useRef(
@@ -81,6 +58,14 @@ const HomeScreen: React.FC = () => {
       onPanResponderTerminationRequest: () => false,
     }),
   ).current;
+
+  // 地圖預設中心座標
+  const mapPreviewLocation = {
+    latitude: 25.0339639,
+    longitude: 121.5644722,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
+  };
 
   return (
     <View style={{ flex: 1 }}>

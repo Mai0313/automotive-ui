@@ -12,7 +12,6 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import useCurrentTime from "../hooks/useCurrentTime";
 import commonStyles from "../styles/commonStyles";
 
 interface Message {
@@ -23,7 +22,6 @@ interface Message {
 }
 
 const AIAssistantScreen: React.FC = () => {
-  const currentTime = useCurrentTime();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,

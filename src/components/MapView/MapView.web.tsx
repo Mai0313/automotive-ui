@@ -40,7 +40,7 @@ const WebMapView: React.FC<MapViewProps> = ({ style, initialRegion }) => {
             longitude: pos.coords.longitude,
           });
         },
-        (err) => {
+        (_err) => {
           alert("無法取得您的位置");
         },
       );

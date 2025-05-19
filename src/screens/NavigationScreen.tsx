@@ -10,11 +10,9 @@ import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 
 import MapView, { Marker, Polyline } from "../components/MapView"; // Corrected import path
-import useCurrentTime from "../hooks/useCurrentTime";
 import commonStyles from "../styles/commonStyles";
 
 const NavigationScreen: React.FC = () => {
-  const currentTime = useCurrentTime(); // Use the hook
   // Mock navigation data
   const origin = { latitude: 25.033, longitude: 121.5654 }; // Taipei
   const destination = { latitude: 24.1477, longitude: 120.6736 }; // Taichung

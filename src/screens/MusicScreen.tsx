@@ -36,8 +36,6 @@ const Slider =
       )
     : require("@react-native-community/slider").default;
 
-import useCurrentTime from "../hooks/useCurrentTime"; // Import the hook
-
 // Helper to format seconds to mm:ss
 const formatTime = (secs: number) => {
   const m = Math.floor(secs / 60);
@@ -47,7 +45,6 @@ const formatTime = (secs: number) => {
 };
 
 const MusicScreen: React.FC = () => {
-  const currentTime = useCurrentTime(); // Use the hook
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   // Mock music data
