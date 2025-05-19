@@ -60,9 +60,9 @@ const HomeScreen: React.FC = () => {
   })).current;
 
   return (
-    <View style={commonStyles.container}>
-      {/* Map area shrinks when overlay is active */}
-      <Animated.View style={[styles.mapContainer, { width: mapWidth, transform: [{ translateX: mapTranslateX }] }]}>          
+    <View style={{ flex: 1 }}>
+      {/* Map 絕對鋪滿全畫面 */}
+      <Animated.View style={[styles.mapContainer]}>          
         <Pressable onPress={() => setActiveOverlay(null)} style={{ flex: 1 }}>
           <MapView style={{ flex: 1 }} initialRegion={mapPreviewLocation} />
         </Pressable>
@@ -132,14 +132,20 @@ const HomeScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   mapContainer: {
-    height: '100%',
-    backgroundColor: '#000',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: undefined,
+    height: undefined,
+    backgroundColor: 'transparent',
   },
   overlayCard: {
     position: 'absolute',
     // float between status bar and bottom buttons
-    top: 60,
-    bottom: 100,
+    top: 80, // 原本 60，往下縮小
+    bottom: 120, // 原本 100，往上縮小
     backgroundColor: 'rgba(0,0,0,0.8)',
     borderRadius: 20,
     boxShadow: '0 4px 24px rgba(0,0,0,0.5)', // web only, RN web 支援
