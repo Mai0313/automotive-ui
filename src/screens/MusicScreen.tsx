@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Audio } from "expo-av";
 
 import commonStyles from "../styles/commonStyles";
 
@@ -55,8 +54,6 @@ const MusicScreen: React.FC = () => {
   // Mock music data
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0.3); // Current song progress (0-1)
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   // Mock song info
   const songTitle = "Alpha Omega";
@@ -72,27 +69,6 @@ const MusicScreen: React.FC = () => {
   // Toggle play/pause
   const togglePlayback = () => {
     setIsPlaying(!isPlaying);
-  };
-
-  // 播放一段音樂（示範用，請換成你自己的 mp3 連結）
-  const playDemo = async () => {
-    setIsLoading(true);
-    try {
-      if (sound) {
-        await sound.unloadAsync();
-        setSound(null);
-      }
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        {
-          uri: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-        },
-        { shouldPlay: true },
-      );
-
-      setSound(newSound);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
@@ -201,19 +177,13 @@ const MusicScreen: React.FC = () => {
       </View>
       {Platform.OS !== "web" && (
         <TouchableOpacity
-          disabled={isLoading}
           style={{
             margin: 20,
             backgroundColor: "#3498db",
             padding: 10,
             borderRadius: 8,
           }}
-          onPress={playDemo}
-        >
-          <Text style={{ color: "#fff" }}>
-            {isLoading ? "載入中..." : "播放範例音樂 (expo-av)"}
-          </Text>
-        </TouchableOpacity>
+        />
       )}
     </SafeAreaView>
   );
