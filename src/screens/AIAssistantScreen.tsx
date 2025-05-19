@@ -90,23 +90,6 @@ const AIAssistantScreen: React.FC = () => {
     }, 1000);
   };
 
-  // Expo 實用功能示範
-  const copyLastMessage = async () => {
-    if (messages.length > 0) {
-      await Clipboard.setStringAsync(messages[messages.length - 1].text);
-    }
-  };
-  const shareLastMessage = async () => {
-    if (messages.length > 0 && (await Sharing.isAvailableAsync())) {
-      const fileUri = FileSystem.cacheDirectory + "ai-message.txt";
-      await FileSystem.writeAsStringAsync(
-        fileUri,
-        messages[messages.length - 1].text
-      );
-      await Sharing.shareAsync(fileUri);
-    }
-  };
-
   const renderMessage = ({ item }: { item: Message }) => (
     <View
       style={[
@@ -159,27 +142,6 @@ const AIAssistantScreen: React.FC = () => {
           margin: 10,
         }}
       >
-        <TouchableOpacity
-          style={{
-            backgroundColor: "#3498db",
-            padding: 10,
-            borderRadius: 8,
-            marginRight: 10,
-          }}
-          onPress={copyLastMessage}
-        >
-          <Text style={{ color: "#fff" }}>複製最後訊息 (expo-clipboard)</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            backgroundColor: "#27ae60",
-            padding: 10,
-            borderRadius: 8,
-          }}
-          onPress={shareLastMessage}
-        >
-          <Text style={{ color: "#fff" }}>分享最後訊息 (expo-sharing)</Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
