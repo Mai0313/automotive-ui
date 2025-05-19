@@ -12,6 +12,7 @@ import {
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 
 import MapView from "../components/MapView"; // Import MapView
+import useCurrentLocation from "../hooks/useCurrentLocation";
 
 import VehicleInfoScreen from "./VehicleInfoScreen";
 import MusicScreen from "./MusicScreen";
@@ -60,12 +61,7 @@ const HomeScreen: React.FC = () => {
   ).current;
 
   // 地圖預設中心座標
-  const mapPreviewLocation = {
-    latitude: 25.0339639,
-    longitude: 121.5644722,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
-  };
+  const { location: mapPreviewLocation } = useCurrentLocation();
 
   return (
     <View style={{ flex: 1 }}>
