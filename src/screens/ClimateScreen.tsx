@@ -1,8 +1,14 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+// TODO: 若需感測器數據請用 expo-sensors
+// import { Accelerometer, Gyroscope, Magnetometer, Barometer } from "expo-sensors";
+// 參考：https://docs.expo.dev/versions/latest/sdk/sensors/
+
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider"; // Ensure this is installed or use a different slider
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Accelerometer } from "expo-sensors";
+import * as Haptics from "expo-haptics";
 
 import commonStyles from "../styles/commonStyles";
 
@@ -13,6 +19,18 @@ const ClimateScreen: React.FC = () => {
   const [isAC, setIsAC] = useState(true);
   const [isFrontDefrost, setIsFrontDefrost] = useState(false);
   const [isRearDefrost, setIsRearDefrost] = useState(false);
+  const [accel, setAccel] = useState({ x: 0, y: 0, z: 0 });
+
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+    const sub = Accelerometer.addListener(setAccel);
+    return () => sub && sub.remove();
+  }, []);
+
+  // 震動回饋
+  const vibrate = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
 
   // Temperature controls
   const increaseTemp = () => setTemperature((prev) => Math.min(prev + 0.5, 28));
@@ -193,6 +211,29 @@ const ClimateScreen: React.FC = () => {
           <Text style={styles.powerText}>關閉空調</Text>
         </TouchableOpacity>
       </View>
+
+      {/* 加速度感測器數據展示與震動回饋按鈕 */}
+      {Platform.OS !== "web" ? (
+        <View style={{ margin: 20, alignItems: "center" }}>
+          <Text style={{ color: "#fff" }}>加速度感測 (expo-sensors):</Text>
+          <Text style={{ color: "#fff" }}>{`x: ${accel.x.toFixed(2)} y: ${accel.y.toFixed(2)} z: ${accel.z.toFixed(2)}`}</Text>
+          <TouchableOpacity
+            style={{
+              marginTop: 10,
+              backgroundColor: "#e67e22",
+              padding: 10,
+              borderRadius: 8,
+            }}
+            onPress={vibrate}
+          >
+            <Text style={{ color: "#fff" }}>震動回饋 (expo-haptics)</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={{ margin: 20, alignItems: "center" }}>
+          <Text style={{ color: "#fff" }}>加速度感測（僅支援行動裝置）</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };

@@ -1,7 +1,13 @@
-import React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+// TODO: 若需圖片選取請用 expo-image-picker，若需相機請用 expo-camera
+// import * as ImagePicker from "expo-image-picker";
+// import { Camera } from "expo-camera";
+// 參考：https://docs.expo.dev/versions/latest/sdk/image-picker/  https://docs.expo.dev/versions/latest/sdk/camera/
+
+import React, { useState } from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity, Platform } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as ImagePicker from "expo-image-picker";
 
 import commonStyles from "../styles/commonStyles";
 
@@ -11,6 +17,22 @@ const VehicleInfoScreen: React.FC = () => {
   const range = "315 mi";
   const gear: string = "P"; // Drive mode
   const batteryLevel = 70; // percentage
+
+  const [pickedImage, setPickedImage] = useState<string | null>(null);
+
+  // 圖片選取功能（僅行動裝置）
+  const pickImage = async () => {
+    if (Platform.OS === "web") return;
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setPickedImage(result.assets[0].uri);
+    }
+  };
 
   return (
     <SafeAreaView style={commonStyles.container}>
@@ -128,6 +150,37 @@ const VehicleInfoScreen: React.FC = () => {
             <Text style={styles.assistanceText}>自動駕駛</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Image Picker Button (Mobile Only) */}
+        {Platform.OS !== "web" && (
+          <TouchableOpacity
+            style={{
+              margin: 20,
+              backgroundColor: "#3498db",
+              padding: 10,
+              borderRadius: 8,
+            }}
+            onPress={pickImage}
+          >
+            <Text style={{ color: "#fff" }}>
+              選取圖片 (expo-image-picker)
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Display Picked Image */}
+        {pickedImage && (
+          <Image
+            source={{ uri: pickedImage }}
+            style={{
+              width: 200,
+              height: 150,
+              alignSelf: "center",
+              margin: 10,
+              borderRadius: 8,
+            }}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
