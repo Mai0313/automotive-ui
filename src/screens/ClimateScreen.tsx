@@ -3,7 +3,13 @@
 // 參考：https://docs.expo.dev/versions/latest/sdk/sensors/
 
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider"; // Ensure this is installed or use a different slider
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -24,6 +30,7 @@ const ClimateScreen: React.FC = () => {
   useEffect(() => {
     if (Platform.OS === "web") return;
     const sub = Accelerometer.addListener(setAccel);
+
     return () => sub && sub.remove();
   }, []);
 
@@ -216,7 +223,9 @@ const ClimateScreen: React.FC = () => {
       {Platform.OS !== "web" ? (
         <View style={{ margin: 20, alignItems: "center" }}>
           <Text style={{ color: "#fff" }}>加速度感測 (expo-sensors):</Text>
-          <Text style={{ color: "#fff" }}>{`x: ${accel.x.toFixed(2)} y: ${accel.y.toFixed(2)} z: ${accel.z.toFixed(2)}`}</Text>
+          <Text
+            style={{ color: "#fff" }}
+          >{`x: ${accel.x.toFixed(2)} y: ${accel.y.toFixed(2)} z: ${accel.z.toFixed(2)}`}</Text>
           <TouchableOpacity
             style={{
               marginTop: 10,

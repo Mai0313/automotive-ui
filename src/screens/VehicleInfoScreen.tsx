@@ -4,7 +4,14 @@
 // 參考：https://docs.expo.dev/versions/latest/sdk/image-picker/  https://docs.expo.dev/versions/latest/sdk/camera/
 
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
@@ -29,6 +36,7 @@ const VehicleInfoScreen: React.FC = () => {
       aspect: [4, 3],
       quality: 1,
     });
+
     if (!result.canceled && result.assets && result.assets.length > 0) {
       setPickedImage(result.assets[0].uri);
     }
@@ -162,9 +170,7 @@ const VehicleInfoScreen: React.FC = () => {
             }}
             onPress={pickImage}
           >
-            <Text style={{ color: "#fff" }}>
-              選取圖片 (expo-image-picker)
-            </Text>
+            <Text style={{ color: "#fff" }}>選取圖片 (expo-image-picker)</Text>
           </TouchableOpacity>
         )}
 

@@ -14,8 +14,10 @@ const createClient = () => {
     // Azure OpenAI
     const apiKey = process.env.AZURE_OPENAI_API_KEY!;
     const baseURL = (process.env.AZURE_OPENAI_ENDPOINT || "") + "/openai";
-    const deployment = process.env.AZURE_OPENAI_DEPLOYMENT || process.env.OPENAI_MODEL;
+    const deployment =
+      process.env.AZURE_OPENAI_DEPLOYMENT || process.env.OPENAI_MODEL;
     const apiVersion = process.env.OPENAI_API_VERSION;
+
     return new AzureOpenAI({
       apiKey,
       baseURL,
@@ -26,6 +28,7 @@ const createClient = () => {
   } else {
     const apiKey = process.env.OPENAI_API_KEY!;
     const baseURL = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
+
     return new OpenAI({
       apiKey,
       baseURL,
@@ -49,14 +52,18 @@ export async function streamChatCompletion({
   const client = createClient();
   // AzureOpenAI and OpenAI both support .chat.completions.create
   // with stream: true for streaming
-  const stream = await client.chat.completions.create({
-    model: model || process.env.OPENAI_MODEL || "gpt-3.5-turbo",
-    messages,
-    stream: true,
-  }, { signal });
+  const stream = await client.chat.completions.create(
+    {
+      model: model || process.env.OPENAI_MODEL || "gpt-3.5-turbo",
+      messages,
+      stream: true,
+    },
+    { signal },
+  );
 
   for await (const chunk of stream as Stream<ChatCompletionChunk>) {
     const delta = chunk.choices?.[0]?.delta?.content;
+
     if (delta) onDelta(delta);
   }
 }

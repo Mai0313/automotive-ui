@@ -83,9 +83,12 @@ const MusicScreen: React.FC = () => {
         setSound(null);
       }
       const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
-        { shouldPlay: true }
+        {
+          uri: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+        },
+        { shouldPlay: true },
       );
+
       setSound(newSound);
     } finally {
       setIsLoading(false);
@@ -198,6 +201,7 @@ const MusicScreen: React.FC = () => {
       </View>
       {Platform.OS !== "web" && (
         <TouchableOpacity
+          disabled={isLoading}
           style={{
             margin: 20,
             backgroundColor: "#3498db",
@@ -205,7 +209,6 @@ const MusicScreen: React.FC = () => {
             borderRadius: 8,
           }}
           onPress={playDemo}
-          disabled={isLoading}
         >
           <Text style={{ color: "#fff" }}>
             {isLoading ? "載入中..." : "播放範例音樂 (expo-av)"}

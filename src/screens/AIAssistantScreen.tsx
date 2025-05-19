@@ -11,9 +11,6 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as Clipboard from "expo-clipboard";
-import * as Sharing from "expo-sharing";
-import * as FileSystem from "expo-file-system";
 
 import commonStyles from "../styles/commonStyles";
 
@@ -141,8 +138,7 @@ const AIAssistantScreen: React.FC = () => {
           justifyContent: "center",
           margin: 10,
         }}
-      >
-      </View>
+      />
     </SafeAreaView>
   );
 };

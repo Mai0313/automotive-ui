@@ -23,12 +23,15 @@ const useCurrentLocation = () => {
     (async () => {
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
+
         if (status !== "granted") {
           setErrorMsg("定位權限被拒絕");
           setLocation(DEFAULT_LOCATION);
+
           return;
         }
         let loc = await Location.getCurrentPositionAsync({});
+
         setLocation({
           latitude: loc.coords.latitude,
           longitude: loc.coords.longitude,
@@ -38,6 +41,7 @@ const useCurrentLocation = () => {
       } catch (e) {
         setErrorMsg("取得定位失敗");
         setLocation(DEFAULT_LOCATION);
+        console.error("Error getting location:", e);
       }
     })();
   }, []);

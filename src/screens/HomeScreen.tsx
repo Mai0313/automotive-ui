@@ -64,10 +64,22 @@ const HomeScreen: React.FC = () => {
   // 地圖預設中心座標
   const { location: mapPreviewLocation, errorMsg } = useCurrentLocation();
 
+  console.log("mapPreviewLocation", mapPreviewLocation);
+  if (errorMsg) {
+    console.error("Error getting location:", errorMsg);
+  }
+
   // show white loading spinner until location fetched
   if (!mapPreviewLocation) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#fff",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <ActivityIndicator size="large" />
       </View>
     );
