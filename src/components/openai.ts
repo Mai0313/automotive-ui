@@ -39,7 +39,7 @@ const createClient = () => {
 };
 
 // Export a streaming chat completion function
-export async function streamChatCompletion({
+export async function chatCompletion({
   messages,
   onDelta,
   signal,
@@ -50,7 +50,7 @@ export async function streamChatCompletion({
 }): Promise<void> {
   try {
     const client = createClient();
-    console.log("streamChatCompletion called with model:", process.env.EXPO_PUBLIC_OPENAI_MODEL);
+    console.log("chatCompletion called with model:", process.env.EXPO_PUBLIC_OPENAI_MODEL);
 
     const stream = await client.chat.completions.create(
       {

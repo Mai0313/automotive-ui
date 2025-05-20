@@ -56,10 +56,10 @@ const MusicScreen: React.FC = () => {
   const [progress, setProgress] = useState(0.3); // Current song progress (0-1)
 
   // Mock song info
-  const songTitle = "Alpha Omega";
-  const artistName = "Karnivool";
-  const albumName = "For Demo use"; // updated album name
-  const totalTime = "5:12";
+  const songTitle = "Demo Music";
+  const artistName = "Demo Artist";
+  const albumName = "Demo Album"; // updated album name
+  const totalTime = "8:07";
   // parse total duration once
   const [totalMinutes, totalSecondsStr] = totalTime
     .split(":")

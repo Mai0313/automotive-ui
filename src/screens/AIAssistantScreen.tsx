@@ -22,7 +22,7 @@ import {
   type AudioStatus    // Import AudioStatus type
 } from "expo-audio"; 
 
-import { streamChatCompletion, transcribeAudio, textToSpeech } from "../components/openai"; // Added textToSpeech
+import { chatCompletion, transcribeAudio, textToSpeech } from "../components/openai"; // Added textToSpeech
 import commonStyles from "../styles/commonStyles";
 
 interface Message {
@@ -152,7 +152,7 @@ const AIAssistantScreen: React.FC = () => {
       let accumulatedResponse = ""; // Accumulate full AI response for TTS
 
       // Start streaming response
-      await streamChatCompletion({
+      await chatCompletion({
         messages: conversationHistory,
         signal: controller.signal,
         onDelta: (delta: string) => {
