@@ -33,6 +33,15 @@ const HomeScreen: React.FC = () => {
   const [overlayWidthState, setOverlayWidthState] = useState(baseOverlayWidth);
   const overlayWidth = fullScreenOverlay ? screenW : overlayWidthState;
 
+  // 新增：溫度狀態與調整
+  const [temperature, setTemperature] = useState(22);
+  const increaseTemp = () => setTemperature((prev) => Math.min(prev + 0.5, 28));
+  const decreaseTemp = () => setTemperature((prev) => Math.max(prev - 0.5, 16));
+
+  // 新增：AC 開關狀態
+  const [isAC, setIsAC] = useState(true);
+  const toggleAC = () => setIsAC((prev) => !prev);
+
   useEffect(() => {
     Animated.timing(anim, {
       toValue: activeOverlay ? 1 : 0,
@@ -144,46 +153,77 @@ const HomeScreen: React.FC = () => {
 
       {/* Bottom control bar fixed at bottom */}
       <View style={styles.bottomBar}>
-        {/* Shared control buttons */}
-        {[
-          {
-            key: "vehicle",
-            icon: <MaterialCommunityIcons color="#fff" name="car" size={30} />,
-          },
-          {
-            key: "climate",
-            icon: (
-              <MaterialCommunityIcons
-                color="#fff"
-                name="air-conditioner"
-                size={30}
-              />
-            ),
-          },
-          {
-            key: "music",
-            icon: <MaterialIcons color="#fff" name="music-note" size={30} />,
-          },
-          {
-            key: "ai",
-            icon: <MaterialIcons color="#fff" name="mic" size={30} />,
-          },
-        ].map((btn) => (
-          <TouchableOpacity
-            key={btn.key}
-            onPress={() => {
-              if (activeOverlay === btn.key) {
-                setActiveOverlay(null);
-              } else {
-                setActiveOverlay(btn.key as any);
-                // initial overlay always in portrait mode
-                setFullScreenOverlay(false);
-              }
-            }}
-          >
-            {btn.icon}
+        {/* 車輛 icon */}
+        <TouchableOpacity
+          style={styles.bottomBarBtn}
+          onPress={() => {
+            if (activeOverlay === "vehicle") {
+              setActiveOverlay(null);
+            } else {
+              setActiveOverlay("vehicle");
+              setFullScreenOverlay(false);
+            }
+          }}
+        >
+          <MaterialCommunityIcons color="#fff" name="car" size={30} />
+        </TouchableOpacity>
+        {/* AC icon */}
+        <TouchableOpacity
+          style={styles.bottomBarBtn}
+          onPress={() => {
+            if (activeOverlay === "climate") {
+              setActiveOverlay(null);
+            } else {
+              setActiveOverlay("climate");
+              setFullScreenOverlay(false);
+            }
+          }}
+        >
+          <MaterialCommunityIcons color="#fff" name="air-conditioner" size={30} />
+        </TouchableOpacity>
+        {/* 溫度調整區（顯示溫度本身為 AC 開關按鈕） */}
+        <View style={styles.tempBarWrap}>
+          <TouchableOpacity style={styles.bottomBarBtn} onPress={decreaseTemp}>
+            <MaterialCommunityIcons color="#fff" name="chevron-down" size={28} />
           </TouchableOpacity>
-        ))}
+          <TouchableOpacity style={[styles.tempTextWrap, isAC ? null : styles.tempOff]} onPress={toggleAC}>
+            <Animated.Text style={[styles.tempText, !isAC && styles.tempTextOff]}>{temperature}°C</Animated.Text>
+            {!isAC && (
+              <MaterialCommunityIcons name="power" color="#e74c3c" size={18} style={{ marginLeft: 4 }} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.bottomBarBtn} onPress={increaseTemp}>
+            <MaterialCommunityIcons color="#fff" name="chevron-up" size={28} />
+          </TouchableOpacity>
+        </View>
+        {/* 音樂 icon */}
+        <TouchableOpacity
+          style={styles.bottomBarBtn}
+          onPress={() => {
+            if (activeOverlay === "music") {
+              setActiveOverlay(null);
+            } else {
+              setActiveOverlay("music");
+              setFullScreenOverlay(false);
+            }
+          }}
+        >
+          <MaterialIcons color="#fff" name="music-note" size={30} />
+        </TouchableOpacity>
+        {/* AI icon */}
+        <TouchableOpacity
+          style={styles.bottomBarBtn}
+          onPress={() => {
+            if (activeOverlay === "ai") {
+              setActiveOverlay(null);
+            } else {
+              setActiveOverlay("ai");
+              setFullScreenOverlay(false);
+            }
+          }}
+        >
+          <MaterialIcons color="#fff" name="mic" size={30} />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -237,6 +277,50 @@ const styles = StyleSheet.create({
     width: 20,
     backgroundColor: "transparent",
     zIndex: 5,
+  },
+  // bottomBar 內新增溫度調整區樣式
+  bottomBarBtn: {
+    backgroundColor: "#222",
+    borderRadius: 20,
+    padding: 10,
+    marginHorizontal: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 44,
+    minHeight: 44,
+  },
+  tempBarWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "transparent",
+    borderRadius: 20,
+    marginHorizontal: 4,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+  tempTextWrap: {
+    minWidth: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 16,
+    backgroundColor: "#333",
+  },
+  tempOff: {
+    backgroundColor: "#222",
+    borderColor: "#e74c3c",
+    borderWidth: 2,
+  },
+  tempText: {
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "bold",
+  },
+  tempTextOff: {
+    color: "#e74c3c",
+    textDecorationLine: "line-through",
   },
 });
 

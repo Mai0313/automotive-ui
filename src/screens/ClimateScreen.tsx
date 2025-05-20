@@ -57,21 +57,6 @@ const ClimateScreen: React.FC = () => {
     <SafeAreaView style={commonStyles.container}>
       {/* Main Climate Controls */}
       <View style={styles.controlsContainer}>
-        {/* Temperature Display */}
-        <View style={styles.tempDisplay}>
-          <Text style={styles.tempText}>{temperature}°C</Text>
-
-          <View style={styles.tempControls}>
-            <TouchableOpacity style={styles.tempButton} onPress={decreaseTemp}>
-              <MaterialCommunityIcons color="#fff" name="minus" size={30} />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.tempButton} onPress={increaseTemp}>
-              <MaterialCommunityIcons color="#fff" name="plus" size={30} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
         {/* Fan Speed Control */}
         <View style={styles.fanControl}>
           <Text style={styles.controlLabel}>風速控制</Text>
@@ -125,21 +110,6 @@ const ClimateScreen: React.FC = () => {
             />
             <Text style={[styles.buttonText, isAuto && styles.activeText]}>
               自動
-            </Text>
-          </TouchableOpacity>
-
-          {/* AC */}
-          <TouchableOpacity
-            style={[styles.climateButton, isAC && styles.activeButton]}
-            onPress={toggleAC}
-          >
-            <MaterialCommunityIcons
-              color={isAC ? "#fff" : "#aaa"}
-              name="snowflake"
-              size={24}
-            />
-            <Text style={[styles.buttonText, isAC && styles.activeText]}>
-              AC
             </Text>
           </TouchableOpacity>
 
