@@ -181,15 +181,19 @@ const HomeScreen: React.FC = () => {
         >
           <MaterialCommunityIcons color="#fff" name="air-conditioner" size={30} />
         </TouchableOpacity>
-        {/* 溫度調整區（顯示溫度本身為 AC 開關按鈕） */}
+        {/* 溫度調整區（顯示溫度本身為 AC 開關按鈕，關閉時顯示紅色圓圈+icon） */}
         <View style={styles.tempBarWrap}>
           <TouchableOpacity style={styles.bottomBarBtn} onPress={decreaseTemp}>
             <MaterialCommunityIcons color="#fff" name="chevron-down" size={28} />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.tempTextWrap, isAC ? null : styles.tempOff]} onPress={toggleAC}>
-            <Animated.Text style={[styles.tempText, !isAC && styles.tempTextOff]}>{temperature}°C</Animated.Text>
-            {!isAC && (
-              <MaterialCommunityIcons name="power" color="#e74c3c" size={18} style={{ marginLeft: 4 }} />
+          <TouchableOpacity style={[styles.tempTextWrap, !isAC && styles.tempOff]} onPress={toggleAC}>
+            {isAC ? (
+              <Animated.Text style={styles.tempText}>{temperature}°C</Animated.Text>
+            ) : (
+              <View style={styles.tempOffContent}>
+                <MaterialCommunityIcons name="power" color="#e74c3c" size={18} style={{ marginRight: 4 }} />
+                <Animated.Text style={styles.tempTextOff}>{temperature}°C</Animated.Text>
+              </View>
             )}
           </TouchableOpacity>
           <TouchableOpacity style={styles.bottomBarBtn} onPress={increaseTemp}>
@@ -307,11 +311,17 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 16,
     backgroundColor: "#333",
+    minHeight: 36,
   },
   tempOff: {
-    backgroundColor: "#222",
+    backgroundColor: "#2a0000",
     borderColor: "#e74c3c",
     borderWidth: 2,
+  },
+  tempOffContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   tempText: {
     color: "#fff",
@@ -320,7 +330,8 @@ const styles = StyleSheet.create({
   },
   tempTextOff: {
     color: "#e74c3c",
-    textDecorationLine: "line-through",
+    fontSize: 22,
+    fontWeight: "bold",
   },
 });
 
