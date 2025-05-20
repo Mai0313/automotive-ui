@@ -183,10 +183,7 @@ const ClimateScreen: React.FC = () => {
         </View>
 
         {/* Power Button */}
-        <TouchableOpacity style={styles.powerButton} onPress={toggleAC}>
-          <MaterialCommunityIcons color="#e74c3c" name="power" size={30} />
-          <Text style={styles.powerText}>關閉空調</Text>
-        </TouchableOpacity>
+        {/* 已整合至底部溫度顯示區，這裡移除關閉空調按鈕 */}
       </View>
 
       {/* 加速度感測器數據展示與震動回饋按鈕 */}
@@ -313,21 +310,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#121212",
     width: "30%",
-  },
-  powerButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 15,
-    borderRadius: 10,
-    backgroundColor: "rgba(231, 76, 60, 0.2)",
-    marginTop: 20,
-  },
-  powerText: {
-    color: "#e74c3c",
-    fontWeight: "bold",
-    marginLeft: 10,
-    fontSize: 16,
   },
 });
 
