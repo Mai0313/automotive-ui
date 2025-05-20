@@ -19,6 +19,7 @@ import VehicleInfoScreen from "./VehicleInfoScreen";
 import MusicScreen from "./MusicScreen";
 import ClimateScreen from "./ClimateScreen";
 import AIAssistantScreen from "./AIAssistantScreen";
+// import NavigationScreen from "./NavigationScreen";
 
 const HomeScreen: React.FC = () => {
   const [activeOverlay, setActiveOverlay] = useState<
@@ -137,6 +138,7 @@ const HomeScreen: React.FC = () => {
           {activeOverlay === "music" && <MusicScreen />}
           {activeOverlay === "climate" && <ClimateScreen />}
           {activeOverlay === "ai" && <AIAssistantScreen />}
+          {/* {activeOverlay === null && <NavigationScreen />} */}
         </View>
       </Animated.View>
 

@@ -1,3 +1,5 @@
+import type { ChatCompletionMessageParam } from "openai/resources";
+
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   View,
@@ -12,17 +14,20 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { ChatCompletionMessageParam } from "openai/resources";
-import { 
-  AudioModule, 
-  useAudioRecorder, 
-  RecordingPresets, 
-  AudioPlayer, 
+import {
+  AudioModule,
+  useAudioRecorder,
+  RecordingPresets,
+  AudioPlayer,
   createAudioPlayer, // Import createAudioPlayer directly
-  type AudioStatus    // Import AudioStatus type
-} from "expo-audio"; 
+  type AudioStatus, // Import AudioStatus type
+} from "expo-audio";
 
-import { chatCompletion, transcribeAudio, textToSpeech } from "../components/openai"; // Added textToSpeech
+import {
+  chatCompletion,
+  transcribeAudio,
+  textToSpeech,
+} from "../components/openai"; // Added textToSpeech
 import commonStyles from "../styles/commonStyles";
 
 interface Message {
@@ -43,7 +48,8 @@ const AIAssistantScreen: React.FC = () => {
   ]);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [currentSound, setCurrentSound] = useState<AudioPlayer | null>(null); // For playing TTS audio
@@ -67,15 +73,17 @@ const AIAssistantScreen: React.FC = () => {
         abortController.abort();
       }
       // Clean up sound object when component unmounts
-      currentSound?.release(); 
+      currentSound?.release();
     };
   }, [abortController, currentSound]);
 
   // Request microphone permissions when component mounts
   useEffect(() => {
     (async () => {
-      if (Platform.OS !== 'web') { // Only run on native platforms
+      if (Platform.OS !== "web") {
+        // Only run on native platforms
         const { status } = await AudioModule.requestPermissionsAsync();
+
         if (status !== "granted") {
           alert("無法取得麥克風權限，錄音功能將無法使用。");
         }
@@ -103,6 +111,7 @@ const AIAssistantScreen: React.FC = () => {
   // Function to send a message to the AI
   const sendMessage = async (textToSend?: string) => {
     const currentText = textToSend || inputText;
+
     if (!currentText.trim() || isTyping) return;
 
     // Cancel any ongoing request
@@ -119,7 +128,8 @@ const AIAssistantScreen: React.FC = () => {
     };
 
     setMessages((prevMessages) => [...prevMessages, userMessage]);
-    if (!textToSend) { // Clear input only if it's not from voice input
+    if (!textToSend) {
+      // Clear input only if it's not from voice input
       setInputText("");
     }
     setIsTyping(true);
@@ -137,13 +147,18 @@ const AIAssistantScreen: React.FC = () => {
 
     // Create abort controller for this request
     const controller = new AbortController();
+
     setAbortController(controller);
 
     try {
       // Prepare context with conversation history
       const conversationHistory: ChatCompletionMessageParam[] = messages
         .concat(userMessage) // Ensure userMessage is included for context
-        .filter(msg => msg.text.trim() !== "[正在辨識語音...]" && msg.text.trim() !== "[語音辨識失敗]") // Filter out placeholders
+        .filter(
+          (msg) =>
+            msg.text.trim() !== "[正在辨識語音...]" &&
+            msg.text.trim() !== "[語音辨識失敗]",
+        ) // Filter out placeholders
         .map((msg) => ({
           role: msg.isUser ? "user" : "assistant",
           content: msg.text,
@@ -162,8 +177,8 @@ const AIAssistantScreen: React.FC = () => {
             prevMessages.map((msg) =>
               msg.id === aiPlaceholderId
                 ? { ...msg, text: msg.text + delta }
-                : msg
-            )
+                : msg,
+            ),
           );
         },
       });
@@ -181,23 +196,29 @@ const AIAssistantScreen: React.FC = () => {
         if (audioUri) {
           console.log("[SendMessage] Playing TTS from URI:", audioUri);
           const player = createAudioPlayer({ uri: audioUri });
+
           setCurrentSound(player);
           console.log("[SendMessage] Attempting to play sound.");
           await player.play();
-          console.log("[SendMessage] player.play() awaited successfully (or returned void).");
-          const subscription = player.addListener("playbackStatusUpdate", (status: AudioStatus) => { // Add AudioStatus type
-            if (status.didJustFinish) {
-              console.log("TTS playback finished.");
-              player.release();
-              setCurrentSound(null);
-              subscription.remove(); // Clean up listener
-            }
-          });
+          console.log(
+            "[SendMessage] player.play() awaited successfully (or returned void).",
+          );
+          const subscription = player.addListener(
+            "playbackStatusUpdate",
+            (status: AudioStatus) => {
+              // Add AudioStatus type
+              if (status.didJustFinish) {
+                console.log("TTS playback finished.");
+                player.release();
+                setCurrentSound(null);
+                subscription.remove(); // Clean up listener
+              }
+            },
+          );
         } else {
           console.warn("TTS audio URI is null, cannot play.");
         }
       }
-
     } catch (error) {
       // Handle errors - only show error if not aborted
       if ((error as Error).name !== "AbortError") {
@@ -208,29 +229,37 @@ const AIAssistantScreen: React.FC = () => {
                   ...msg,
                   text: "抱歉，我無法處理您的請求。請稍後再試。",
                 }
-              : msg
-          )
+              : msg,
+          ),
         );
         console.error("AI Response error:", error);
       }
     } finally {
       setIsTyping(false);
       setAbortController(null);
-      console.log("[SendMessage] Main finally block reached. isTyping set to false.");
+      console.log(
+        "[SendMessage] Main finally block reached. isTyping set to false.",
+      );
     }
   };
 
   // Function to start recording audio
   const startRecording = async () => {
-    if (Platform.OS === 'web') {
+    if (Platform.OS === "web") {
       // For web, check if MediaRecorder is available, which expo-audio uses under the hood.
       // Also, ensure the site is served over HTTPS for microphone access.
-      if (typeof MediaRecorder === 'undefined') {
+      if (typeof MediaRecorder === "undefined") {
         alert("瀏覽器不支援錄音功能。");
+
         return;
       }
-      if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      if (
+        window.location.protocol !== "https:" &&
+        window.location.hostname !== "localhost" &&
+        window.location.hostname !== "127.0.0.1"
+      ) {
         alert("麥克風錄音需要在 HTTPS 安全連線下執行。");
+
         return;
       }
       // On web, permission is typically requested by the browser when prepareToRecordAsync or record is called.
@@ -238,10 +267,13 @@ const AIAssistantScreen: React.FC = () => {
     } else {
       // Native platforms still use AudioModule for permissions
       const { granted } = await AudioModule.getPermissionsAsync();
+
       if (!granted) {
         const { status } = await AudioModule.requestPermissionsAsync();
+
         if (status !== "granted") {
           alert("無法取得麥克風權限");
+
           return;
         }
       }
@@ -251,10 +283,12 @@ const AIAssistantScreen: React.FC = () => {
       console.log("Starting recording with expo-audio...");
       // Ensure recorder is not already in a recording state or has a pending operation
       if (audioRecorder.isRecording || audioRecorder.uri) {
-        console.log("Recorder is busy or has a previous recording, resetting...");
+        console.log(
+          "Recorder is busy or has a previous recording, resetting...",
+        );
         // Attempt to stop and unload if there's a URI, or just reset state
-        if(audioRecorder.isRecording){
-            await audioRecorder.stop();
+        if (audioRecorder.isRecording) {
+          await audioRecorder.stop();
         }
         // It's good practice to ensure the recorder is in a clean state before preparing a new recording.
         // The expo-audio hook should handle much of this, but explicit checks can help.
@@ -275,26 +309,29 @@ const AIAssistantScreen: React.FC = () => {
     let transcriptionPlaceholderId: number | null = null; // Declare here for wider scope
 
     if (!audioRecorder.isRecording) {
-        if (audioRecorder.uri) { // If already stopped but URI exists
-             console.log("Recording was already stopped. URI:", audioRecorder.uri);
-        } else {
-            console.log("Recorder is not active and no URI available.");
-            setIsRecording(false); // Ensure UI consistency
-            return;
-        }
+      if (audioRecorder.uri) {
+        // If already stopped but URI exists
+        console.log("Recording was already stopped. URI:", audioRecorder.uri);
+      } else {
+        console.log("Recorder is not active and no URI available.");
+        setIsRecording(false); // Ensure UI consistency
+
+        return;
+      }
     } else {
-        console.log("Stopping recording with expo-audio..");
-        try {
-            await audioRecorder.stop();
-            console.log("Recording stopped. URI:", audioRecorder.uri);
-        } catch (error) {
-            console.error("Failed to stop recording:", error);
-            alert("停止錄音失敗。");
-            setIsRecording(false);
-            return;
-        }
+      console.log("Stopping recording with expo-audio..");
+      try {
+        await audioRecorder.stop();
+        console.log("Recording stopped. URI:", audioRecorder.uri);
+      } catch (error) {
+        console.error("Failed to stop recording:", error);
+        alert("停止錄音失敗。");
+        setIsRecording(false);
+
+        return;
+      }
     }
-    
+
     setIsRecording(false);
     const uri = audioRecorder.uri;
 
@@ -308,23 +345,30 @@ const AIAssistantScreen: React.FC = () => {
           isUser: true,
           timestamp: getCurrentTime(),
         };
-        setMessages((prevMessages) => [...prevMessages, transcriptionPlaceholder]);
+
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          transcriptionPlaceholder,
+        ]);
 
         const transcribedText = await transcribeAudio(uri);
+
         console.log("Transcribed text:", transcribedText);
 
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
             msg.id === transcriptionPlaceholderId
               ? { ...msg, text: transcribedText }
-              : msg
-          )
+              : msg,
+          ),
         );
 
         if (transcribedText.trim()) {
-          await sendMessage(transcribedText); 
+          await sendMessage(transcribedText);
         } else {
-          setMessages((prevMessages) => prevMessages.filter(msg => msg.id !== transcriptionPlaceholderId));
+          setMessages((prevMessages) =>
+            prevMessages.filter((msg) => msg.id !== transcriptionPlaceholderId),
+          );
           setIsTyping(false);
         }
       } catch (error) {
@@ -333,8 +377,8 @@ const AIAssistantScreen: React.FC = () => {
           prevMessages.map((msg) =>
             transcriptionPlaceholderId && msg.id === transcriptionPlaceholderId // Check if ID was set
               ? { ...msg, text: "[語音辨識失敗]" }
-              : msg
-          )
+              : msg,
+          ),
         );
         setIsTyping(false);
       }
@@ -343,7 +387,6 @@ const AIAssistantScreen: React.FC = () => {
       setIsTyping(false); // Ensure typing indicator is turned off
     }
   };
-
 
   const renderMessage = ({ item }: { item: Message }) => (
     <View
@@ -376,41 +419,59 @@ const AIAssistantScreen: React.FC = () => {
         >
           <View style={styles.inputRow}>
             <TextInput
+              editable={!isTyping && !isRecording} // Disable input when recording
               placeholder="請輸入訊息..."
               placeholderTextColor="#777"
               style={styles.input}
               value={inputText}
-              editable={!isTyping && !isRecording} // Disable input when recording
               onChangeText={setInputText}
               onSubmitEditing={() => sendMessage()}
             />
             {isTyping && !isRecording ? ( // Show close icon only when typing and not recording
-              <TouchableOpacity style={styles.iconButton} onPress={cancelRequest}>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={cancelRequest}
+              >
                 <MaterialIcons color="#e74c3c" name="close" size={24} />
               </TouchableOpacity>
             ) : !isRecording ? ( // Show send icon only when not recording
               <TouchableOpacity
-                style={[styles.iconButton, (!inputText.trim() || isTyping) && styles.iconButtonDisabled]}
                 disabled={!inputText.trim() || isTyping}
+                style={[
+                  styles.iconButton,
+                  (!inputText.trim() || isTyping) && styles.iconButtonDisabled,
+                ]}
                 onPress={() => sendMessage()}
               >
                 <MaterialIcons color="#3498db" name="send" size={24} />
               </TouchableOpacity>
             ) : null}
             {/* Microphone Button */}
-            <TouchableOpacity 
-              style={[styles.iconButton, isTyping && styles.iconButtonDisabled]} // Disable mic when AI is typing
-              onPress={isRecording ? stopRecordingAndTranscribe : startRecording}
+            <TouchableOpacity
               disabled={isTyping && !isRecording} // Disable mic if AI is responding (but allow stopping if already recording)
+              style={[styles.iconButton, isTyping && styles.iconButtonDisabled]} // Disable mic when AI is typing
+              onPress={
+                isRecording ? stopRecordingAndTranscribe : startRecording
+              }
             >
-              <MaterialIcons color={isRecording ? "#e74c3c" : "#3498db"} name={isRecording ? "stop" : "mic"} size={24} />
+              <MaterialIcons
+                color={isRecording ? "#e74c3c" : "#3498db"}
+                name={isRecording ? "stop" : "mic"}
+                size={24}
+              />
             </TouchableOpacity>
           </View>
-          
+
           {(isTyping || isRecording) && ( // Show indicator if AI is typing OR user is recording
             <View style={styles.typingIndicator}>
-              <ActivityIndicator size="small" color="#3498db" />
-              <Text style={styles.typingText}>{isRecording ? "正在錄音中..." : isTyping ? "AI 正在回應中..." : ""}</Text>
+              <ActivityIndicator color="#3498db" size="small" />
+              <Text style={styles.typingText}>
+                {isRecording
+                  ? "正在錄音中..."
+                  : isTyping
+                    ? "AI 正在回應中..."
+                    : ""}
+              </Text>
             </View>
           )}
         </KeyboardAvoidingView>
@@ -491,7 +552,7 @@ const styles = StyleSheet.create({
     color: "#3498db",
     marginLeft: 8,
     fontSize: 14,
-  }
+  },
 });
 
 export default AIAssistantScreen;
