@@ -105,6 +105,7 @@ const VehicleInfoScreen: React.FC = () => {
         </View>
 
         {/* Vehicle Visualization */}
+        {/* 移除 safetyFeatures 感測器線條區塊，只保留車輛圖片 */}
         <View style={styles.vehicleVisual}>
           <Image
             source={{
@@ -112,15 +113,6 @@ const VehicleInfoScreen: React.FC = () => {
             }}
             style={styles.carImage}
           />
-
-          <View style={styles.safetyFeatures}>
-            <View style={styles.sensorLines}>
-              <View style={[styles.sensorLine, styles.leftLine]} />
-              <View style={[styles.sensorLine, styles.rightLine]} />
-              <View style={[styles.sensorLine, styles.frontLine]} />
-              <View style={[styles.sensorLine, styles.rearLine]} />
-            </View>
-          </View>
         </View>
 
         {/* Quick Controls */}
@@ -299,45 +291,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 150,
     resizeMode: "contain",
-  },
-  safetyFeatures: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  sensorLines: {
-    position: "relative",
-    width: "80%",
-    height: "80%",
-  },
-  sensorLine: {
-    position: "absolute",
-    backgroundColor: "#3498db",
-    opacity: 0.3,
-  },
-  leftLine: {
-    width: 2,
-    height: "60%",
-    left: 0,
-    top: "20%",
-  },
-  rightLine: {
-    width: 2,
-    height: "60%",
-    right: 0,
-    top: "20%",
-  },
-  frontLine: {
-    width: "100%",
-    height: 2,
-    top: 0,
-  },
-  rearLine: {
-    width: "100%",
-    height: 2,
-    bottom: 0,
   },
   quickControls: {
     flexDirection: "row",

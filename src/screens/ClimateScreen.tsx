@@ -27,6 +27,11 @@ const ClimateScreen: React.FC = () => {
   const [isRearDefrost, setIsRearDefrost] = useState(false);
   const [accel, setAccel] = useState({ x: 0, y: 0, z: 0 });
 
+  // 新增：每個空調控制按鈕的開關狀態
+  const [autoOn, setAutoOn] = useState(isAuto);
+  const [frontDefrostOn, setFrontDefrostOn] = useState(isFrontDefrost);
+  const [rearDefrostOn, setRearDefrostOn] = useState(isRearDefrost);
+
   useEffect(() => {
     if (Platform.OS === "web") return;
     const sub = Accelerometer.addListener(setAccel);
@@ -100,51 +105,53 @@ const ClimateScreen: React.FC = () => {
         <View style={styles.climateControls}>
           {/* Auto */}
           <TouchableOpacity
-            style={[styles.climateButton, isAuto && styles.activeButton]}
-            onPress={toggleAuto}
+            style={[styles.climateButton, autoOn && styles.activeButton]}
+            onPress={() => {
+              setAutoOn((v) => !v);
+              setIsAuto((v) => !v);
+            }}
           >
             <MaterialCommunityIcons
-              color={isAuto ? "#fff" : "#aaa"}
+              color={autoOn ? "#3498db" : "#fff"}
               name="auto-fix"
               size={24}
             />
-            <Text style={[styles.buttonText, isAuto && styles.activeText]}>
+            <Text style={[styles.buttonText, autoOn && styles.activeText]}>
               自動
             </Text>
           </TouchableOpacity>
 
           {/* Defrost */}
           <TouchableOpacity
-            style={[
-              styles.climateButton,
-              isFrontDefrost && styles.activeButton,
-            ]}
-            onPress={toggleFrontDefrost}
+            style={[styles.climateButton, frontDefrostOn && styles.activeButton]}
+            onPress={() => {
+              setFrontDefrostOn((v) => !v);
+              setIsFrontDefrost((v) => !v);
+            }}
           >
             <MaterialCommunityIcons
-              color={isFrontDefrost ? "#fff" : "#aaa"}
+              color={frontDefrostOn ? "#3498db" : "#fff"}
               name="car-defrost-front"
               size={24}
             />
-            <Text
-              style={[styles.buttonText, isFrontDefrost && styles.activeText]}
-            >
+            <Text style={[styles.buttonText, frontDefrostOn && styles.activeText]}>
               前除霜
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.climateButton, isRearDefrost && styles.activeButton]}
-            onPress={toggleRearDefrost}
+            style={[styles.climateButton, rearDefrostOn && styles.activeButton]}
+            onPress={() => {
+              setRearDefrostOn((v) => !v);
+              setIsRearDefrost((v) => !v);
+            }}
           >
             <MaterialCommunityIcons
-              color={isRearDefrost ? "#fff" : "#aaa"}
+              color={rearDefrostOn ? "#3498db" : "#fff"}
               name="car-defrost-rear"
               size={24}
             />
-            <Text
-              style={[styles.buttonText, isRearDefrost && styles.activeText]}
-            >
+            <Text style={[styles.buttonText, rearDefrostOn && styles.activeText]}>
               後除霜
             </Text>
           </TouchableOpacity>
@@ -285,17 +292,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 15,
     borderRadius: 10,
-    backgroundColor: "#121212",
   },
   activeButton: {
-    backgroundColor: "rgba(52, 152, 219, 0.2)",
+    backgroundColor: "rgba(52, 152, 219, 0.15)",
   },
   buttonText: {
     color: "#aaa",
     marginTop: 5,
   },
   activeText: {
-    color: "#fff",
+    color: "#3498db",
+    fontWeight: "bold",
   },
   airFlowContainer: {
     marginBottom: 30,
