@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#222",
     borderRadius: 20,
     padding: 10,
-    marginHorizontal: 6,
+    marginHorizontal: 16, // 原本 6，調大間隔
     alignItems: "center",
     justifyContent: "center",
     minWidth: 44,
@@ -301,9 +301,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
     paddingHorizontal: 0,
     paddingVertical: 0,
+    minWidth: 220, // 固定整個溫度區寬度，避免小數點時影響按鈕位置
+    justifyContent: "center",
   },
   tempTextWrap: {
-    minWidth: 48,
+    width: 64, // 改為固定寬度，避免內容變動影響布局
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",

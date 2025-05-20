@@ -118,83 +118,39 @@ const VehicleInfoScreen: React.FC = () => {
         {/* Quick Controls */}
         <View style={styles.quickControls}>
           <TouchableOpacity
-            style={[styles.controlButton, lockOn && styles.activeButton]}
+            style={[commonStyles.controlButton, lockOn && commonStyles.activeButton]}
             onPress={() => setLockOn((v) => !v)}
           >
-            <MaterialCommunityIcons
-              color={lockOn ? "#3498db" : "#fff"}
-              name="car-door"
-              size={30}
-            />
-            <Text
-              style={[styles.controlText, lockOn && styles.activeText]}
-            >
-              門鎖
-            </Text>
+            <MaterialCommunityIcons color={lockOn ? "#3498db" : "#fff"} name="car-door" size={30} />
+            <Text style={[commonStyles.controlText, lockOn && commonStyles.activeText]}>門鎖</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
-            style={[styles.controlButton, lightOn && styles.activeButton]}
+            style={[commonStyles.controlButton, lightOn && commonStyles.activeButton]}
             onPress={() => setLightOn((v) => !v)}
           >
-            <MaterialCommunityIcons
-              color={lightOn ? "#3498db" : "#fff"}
-              name="car-light-high"
-              size={30}
-            />
-            <Text
-              style={[styles.controlText, lightOn && styles.activeText]}
-            >
-              車燈
-            </Text>
+            <MaterialCommunityIcons color={lightOn ? "#3498db" : "#fff"} name="car-light-high" size={30} />
+            <Text style={[commonStyles.controlText, lightOn && commonStyles.activeText]}>車燈</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
-            style={[styles.controlButton, batteryOn && styles.activeButton]}
+            style={[commonStyles.controlButton, batteryOn && commonStyles.activeButton]}
             onPress={() => setBatteryOn((v) => !v)}
           >
-            <MaterialCommunityIcons
-              color={batteryOn ? "#3498db" : "#fff"}
-              name="car-battery"
-              size={30}
-            />
-            <Text
-              style={[styles.controlText, batteryOn && styles.activeText]}
-            >
-              電量
-            </Text>
+            <MaterialCommunityIcons color={batteryOn ? "#3498db" : "#fff"} name="car-battery" size={30} />
+            <Text style={[commonStyles.controlText, batteryOn && commonStyles.activeText]}>電量</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
-            style={[styles.controlButton, tireOn && styles.activeButton]}
+            style={[commonStyles.controlButton, tireOn && commonStyles.activeButton]}
             onPress={() => setTireOn((v) => !v)}
           >
-            <MaterialCommunityIcons
-              color={tireOn ? "#3498db" : "#fff"}
-              name="tire"
-              size={30}
-            />
-            <Text
-              style={[styles.controlText, tireOn && styles.activeText]}
-            >
-              胎壓
-            </Text>
+            <MaterialCommunityIcons color={tireOn ? "#3498db" : "#fff"} name="tire" size={30} />
+            <Text style={[commonStyles.controlText, tireOn && commonStyles.activeText]}>胎壓</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
-            style={[styles.controlButton, autoDriveOn && styles.activeButton]}
+            style={[commonStyles.controlButton, autoDriveOn && commonStyles.activeButton]}
             onPress={() => setAutoDriveOn((v) => !v)}
           >
-            <MaterialCommunityIcons
-              color={autoDriveOn ? "#3498db" : "#fff"}
-              name="car-cruise-control"
-              size={30}
-            />
-            <Text
-              style={[styles.controlText, autoDriveOn && styles.activeText]}
-            >
-              自動駕駛
-            </Text>
+            <MaterialCommunityIcons color={autoDriveOn ? "#3498db" : "#fff"} name="car-cruise-control" size={30} />
+            <Text style={[commonStyles.controlText, autoDriveOn && commonStyles.activeText]}>自動駕駛</Text>
           </TouchableOpacity>
         </View>
 
