@@ -134,3 +134,4 @@ App.tsx            # 專案入口
 - 2025-05-19: ESLint 設定升級為 Flat Config，並針對專案結構簡化 ignore 與 plugin 設定。
 - 2025-05-19: 所有未使用變數與 import lint warning 已清除，專案維持乾淨。
 - 2025-05-19: AI 助理頁面新增完整語音互動功能：整合麥克風錄音 (`expo-audio`)、OpenAI Whisper 語音轉文字、Chat Completion 文字理解與回應、OpenAI TTS (`tts-1-hd`) 文字轉語音播放。區分 Web 與原生平台 TTS 音訊處理方式。
+- 2025-05-20: 調整首頁底部溫度控制區與空調開關設計，詳見最上方補充說明。
