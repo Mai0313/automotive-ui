@@ -53,16 +53,6 @@ const VehicleInfoScreen: React.FC = () => {
     <SafeAreaView style={commonStyles.container}>
       {/* Main Content */}
       <View style={styles.content}>
-        {/* 車輛俯視圖（新增，置於最上方） */}
-        <View style={styles.topCarVisualWrap}>
-          <Image
-            source={{
-              uri: "https://cdn.pixabay.com/photo/2013/07/12/13/58/car-148317_1280.png",
-            }}
-            style={styles.topCarImage}
-            resizeMode="contain"
-          />
-        </View>
         {/* Main Speed Display */}
         <View style={styles.speedContainer}>
           <Text style={styles.speedText}>{speed}</Text>
