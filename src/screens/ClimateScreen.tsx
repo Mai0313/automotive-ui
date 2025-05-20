@@ -19,10 +19,8 @@ import * as Haptics from "expo-haptics";
 import commonStyles from "../styles/commonStyles";
 
 const ClimateScreen: React.FC = () => {
-  const [temperature, setTemperature] = useState(22); // Initial temperature
   const [fanSpeed, setFanSpeed] = useState(3);
   const [isAuto, setIsAuto] = useState(true);
-  const [isAC, setIsAC] = useState(true);
   const [isFrontDefrost, setIsFrontDefrost] = useState(false);
   const [isRearDefrost, setIsRearDefrost] = useState(false);
   const [accel, setAccel] = useState({ x: 0, y: 0, z: 0 });
@@ -49,19 +47,9 @@ const ClimateScreen: React.FC = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
 
-  // Temperature controls
-  const increaseTemp = () => setTemperature((prev) => Math.min(prev + 0.5, 28));
-  const decreaseTemp = () => setTemperature((prev) => Math.max(prev - 0.5, 16));
-
   // Fan speed controls
   const increaseFan = () => setFanSpeed((prev) => Math.min(prev + 1, 10));
   const decreaseFan = () => setFanSpeed((prev) => Math.max(prev - 1, 0));
-
-  // Toggle functions
-  const toggleAuto = () => setIsAuto(!isAuto);
-  const toggleAC = () => setIsAC(!isAC);
-  const toggleFrontDefrost = () => setIsFrontDefrost(!isFrontDefrost);
-  const toggleRearDefrost = () => setIsRearDefrost(!isRearDefrost);
 
   return (
     <SafeAreaView style={commonStyles.container}>
@@ -110,7 +98,10 @@ const ClimateScreen: React.FC = () => {
         <View style={styles.climateControls}>
           {/* Auto */}
           <TouchableOpacity
-            style={[commonStyles.controlButton, autoOn && commonStyles.activeButton]}
+            style={[
+              commonStyles.controlButton,
+              autoOn && commonStyles.activeButton,
+            ]}
             onPress={() => {
               setAutoOn((v) => !v);
               setIsAuto((v) => !v);
@@ -121,13 +112,21 @@ const ClimateScreen: React.FC = () => {
               name="auto-fix"
               size={24}
             />
-            <Text style={[commonStyles.controlText, autoOn && commonStyles.activeText]}>
+            <Text
+              style={[
+                commonStyles.controlText,
+                autoOn && commonStyles.activeText,
+              ]}
+            >
               自動
             </Text>
           </TouchableOpacity>
           {/* Defrost */}
           <TouchableOpacity
-            style={[commonStyles.controlButton, frontDefrostOn && commonStyles.activeButton]}
+            style={[
+              commonStyles.controlButton,
+              frontDefrostOn && commonStyles.activeButton,
+            ]}
             onPress={() => {
               setFrontDefrostOn((v) => !v);
               setIsFrontDefrost((v) => !v);
@@ -138,12 +137,20 @@ const ClimateScreen: React.FC = () => {
               name="car-defrost-front"
               size={24}
             />
-            <Text style={[commonStyles.controlText, frontDefrostOn && commonStyles.activeText]}>
+            <Text
+              style={[
+                commonStyles.controlText,
+                frontDefrostOn && commonStyles.activeText,
+              ]}
+            >
               前除霜
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[commonStyles.controlButton, rearDefrostOn && commonStyles.activeButton]}
+            style={[
+              commonStyles.controlButton,
+              rearDefrostOn && commonStyles.activeButton,
+            ]}
             onPress={() => {
               setRearDefrostOn((v) => !v);
               setIsRearDefrost((v) => !v);
@@ -154,7 +161,12 @@ const ClimateScreen: React.FC = () => {
               name="car-defrost-rear"
               size={24}
             />
-            <Text style={[commonStyles.controlText, rearDefrostOn && commonStyles.activeText]}>
+            <Text
+              style={[
+                commonStyles.controlText,
+                rearDefrostOn && commonStyles.activeText,
+              ]}
+            >
               後除霜
             </Text>
           </TouchableOpacity>
@@ -166,7 +178,10 @@ const ClimateScreen: React.FC = () => {
 
           <View style={styles.airFlowButtons}>
             <TouchableOpacity
-              style={[styles.airFlowButton, airFace && commonStyles.activeButton]}
+              style={[
+                styles.airFlowButton,
+                airFace && commonStyles.activeButton,
+              ]}
               onPress={() => setAirFace((v) => !v)}
             >
               <MaterialCommunityIcons
@@ -174,23 +189,58 @@ const ClimateScreen: React.FC = () => {
                 name="emoticon-outline"
                 size={24}
               />
-              <Text style={[commonStyles.controlText, airFace && commonStyles.activeText]}>面部</Text>
+              <Text
+                style={[
+                  commonStyles.controlText,
+                  airFace && commonStyles.activeText,
+                ]}
+              >
+                面部
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.airFlowButton, airMiddle && commonStyles.activeButton]}
+              style={[
+                styles.airFlowButton,
+                airMiddle && commonStyles.activeButton,
+              ]}
               onPress={() => setAirMiddle((v) => !v)}
             >
-              <MaterialCommunityIcons color={airMiddle ? "#3498db" : "#fff"} name="car-seat" size={24} />
-              <Text style={[commonStyles.controlText, airMiddle && commonStyles.activeText]}>中間</Text>
+              <MaterialCommunityIcons
+                color={airMiddle ? "#3498db" : "#fff"}
+                name="car-seat"
+                size={24}
+              />
+              <Text
+                style={[
+                  commonStyles.controlText,
+                  airMiddle && commonStyles.activeText,
+                ]}
+              >
+                中間
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.airFlowButton, airFoot && commonStyles.activeButton]}
+              style={[
+                styles.airFlowButton,
+                airFoot && commonStyles.activeButton,
+              ]}
               onPress={() => setAirFoot((v) => !v)}
             >
-              <MaterialCommunityIcons color={airFoot ? "#3498db" : "#fff"} name="shoe-print" size={24} />
-              <Text style={[commonStyles.controlText, airFoot && commonStyles.activeText]}>腳部</Text>
+              <MaterialCommunityIcons
+                color={airFoot ? "#3498db" : "#fff"}
+                name="shoe-print"
+                size={24}
+              />
+              <Text
+                style={[
+                  commonStyles.controlText,
+                  airFoot && commonStyles.activeText,
+                ]}
+              >
+                腳部
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

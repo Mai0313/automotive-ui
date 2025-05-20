@@ -179,20 +179,40 @@ const HomeScreen: React.FC = () => {
             }
           }}
         >
-          <MaterialCommunityIcons color="#fff" name="air-conditioner" size={30} />
+          <MaterialCommunityIcons
+            color="#fff"
+            name="air-conditioner"
+            size={30}
+          />
         </TouchableOpacity>
         {/* 溫度調整區（顯示溫度本身為 AC 開關按鈕，關閉時顯示紅色圓圈+icon） */}
         <View style={styles.tempBarWrap}>
           <TouchableOpacity style={styles.bottomBarBtn} onPress={decreaseTemp}>
-            <MaterialCommunityIcons color="#fff" name="chevron-down" size={28} />
+            <MaterialCommunityIcons
+              color="#fff"
+              name="chevron-down"
+              size={28}
+            />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.tempTextWrap, !isAC && styles.tempOff]} onPress={toggleAC}>
+          <TouchableOpacity
+            style={[styles.tempTextWrap, !isAC && styles.tempOff]}
+            onPress={toggleAC}
+          >
             {isAC ? (
-              <Animated.Text style={styles.tempText}>{temperature}°C</Animated.Text>
+              <Animated.Text style={styles.tempText}>
+                {temperature}°C
+              </Animated.Text>
             ) : (
               <View style={styles.tempOffContent}>
-                <MaterialCommunityIcons name="power" color="#e74c3c" size={18} style={{ marginRight: 4 }} />
-                <Animated.Text style={styles.tempTextOff}>{temperature}°C</Animated.Text>
+                <MaterialCommunityIcons
+                  color="#e74c3c"
+                  name="power"
+                  size={18}
+                  style={{ marginRight: 4 }}
+                />
+                <Animated.Text style={styles.tempTextOff}>
+                  {temperature}°C
+                </Animated.Text>
               </View>
             )}
           </TouchableOpacity>
