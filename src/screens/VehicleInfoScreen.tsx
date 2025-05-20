@@ -27,6 +27,13 @@ const VehicleInfoScreen: React.FC = () => {
 
   const [pickedImage, setPickedImage] = useState<string | null>(null);
 
+  // 新增：每個 quick control 的開關狀態
+  const [lockOn, setLockOn] = useState(false);
+  const [lightOn, setLightOn] = useState(false);
+  const [batteryOn, setBatteryOn] = useState(false);
+  const [tireOn, setTireOn] = useState(false);
+  const [autoDriveOn, setAutoDriveOn] = useState(false);
+
   // 圖片選取功能（僅行動裝置）
   const pickImage = async () => {
     if (Platform.OS === "web") return;
@@ -46,6 +53,16 @@ const VehicleInfoScreen: React.FC = () => {
     <SafeAreaView style={commonStyles.container}>
       {/* Main Content */}
       <View style={styles.content}>
+        {/* 車輛俯視圖（新增，置於最上方） */}
+        <View style={styles.topCarVisualWrap}>
+          <Image
+            source={{
+              uri: "https://cdn.pixabay.com/photo/2013/07/12/13/58/car-148317_1280.png",
+            }}
+            style={styles.topCarImage}
+            resizeMode="contain"
+          />
+        </View>
         {/* Main Speed Display */}
         <View style={styles.speedContainer}>
           <Text style={styles.speedText}>{speed}</Text>
@@ -77,18 +94,13 @@ const VehicleInfoScreen: React.FC = () => {
 
         {/* Range & Battery Info */}
         <View style={styles.rangeContainer}>
-          <View style={styles.batteryInfo}>
+          <View style={styles.batteryInfoSmall}>
             <MaterialCommunityIcons
               color="#4CAF50"
               name={`battery-${batteryLevel}`}
-              size={30}
+              size={22}
             />
-            <Text style={styles.rangeText}>{range}</Text>
-          </View>
-          <View style={styles.batteryBar}>
-            <View
-              style={[styles.batteryLevel, { width: `${batteryLevel}%` }]}
-            />
+            <Text style={styles.rangeTextSmall}>{range}</Text>
           </View>
         </View>
 
@@ -113,49 +125,84 @@ const VehicleInfoScreen: React.FC = () => {
 
         {/* Quick Controls */}
         <View style={styles.quickControls}>
-          <TouchableOpacity style={styles.controlButton}>
-            <MaterialCommunityIcons color="#fff" name="car-door" size={30} />
-            <Text style={styles.controlText}>門鎖</Text>
+          <TouchableOpacity
+            style={[styles.controlButton, lockOn && styles.activeButton]}
+            onPress={() => setLockOn((v) => !v)}
+          >
+            <MaterialCommunityIcons
+              color={lockOn ? "#3498db" : "#fff"}
+              name="car-door"
+              size={30}
+            />
+            <Text
+              style={[styles.controlText, lockOn && styles.activeText]}
+            >
+              門鎖
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.controlButton}>
+          <TouchableOpacity
+            style={[styles.controlButton, lightOn && styles.activeButton]}
+            onPress={() => setLightOn((v) => !v)}
+          >
             <MaterialCommunityIcons
-              color="#fff"
+              color={lightOn ? "#3498db" : "#fff"}
               name="car-light-high"
               size={30}
             />
-            <Text style={styles.controlText}>車燈</Text>
+            <Text
+              style={[styles.controlText, lightOn && styles.activeText]}
+            >
+              車燈
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.controlButton}>
-            <MaterialCommunityIcons color="#fff" name="car-battery" size={30} />
-            <Text style={styles.controlText}>電量</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.controlButton}>
-            <MaterialCommunityIcons color="#fff" name="tire" size={30} />
-            <Text style={styles.controlText}>胎壓</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Driver Assistance */}
-        <View style={styles.assistancePanel}>
-          <TouchableOpacity style={styles.assistanceButton}>
+          <TouchableOpacity
+            style={[styles.controlButton, batteryOn && styles.activeButton]}
+            onPress={() => setBatteryOn((v) => !v)}
+          >
             <MaterialCommunityIcons
-              color="#3498db"
-              name="speedometer"
+              color={batteryOn ? "#3498db" : "#fff"}
+              name="car-battery"
               size={30}
             />
-            <Text style={styles.assistanceText}>巡航控制</Text>
+            <Text
+              style={[styles.controlText, batteryOn && styles.activeText]}
+            >
+              電量
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.assistanceButton}>
+          <TouchableOpacity
+            style={[styles.controlButton, tireOn && styles.activeButton]}
+            onPress={() => setTireOn((v) => !v)}
+          >
             <MaterialCommunityIcons
-              color="#3498db"
+              color={tireOn ? "#3498db" : "#fff"}
+              name="tire"
+              size={30}
+            />
+            <Text
+              style={[styles.controlText, tireOn && styles.activeText]}
+            >
+              胎壓
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.controlButton, autoDriveOn && styles.activeButton]}
+            onPress={() => setAutoDriveOn((v) => !v)}
+          >
+            <MaterialCommunityIcons
+              color={autoDriveOn ? "#3498db" : "#fff"}
               name="car-cruise-control"
               size={30}
             />
-            <Text style={styles.assistanceText}>自動駕駛</Text>
+            <Text
+              style={[styles.controlText, autoDriveOn && styles.activeText]}
+            >
+              自動駕駛
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -227,26 +274,22 @@ const styles = StyleSheet.create({
   rangeContainer: {
     marginBottom: 20,
   },
-  batteryInfo: {
+  batteryInfoSmall: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 4,
   },
-  rangeText: {
+  rangeTextSmall: {
     color: "#fff",
-    fontSize: 18,
-    marginLeft: 10,
+    fontSize: 15,
+    marginLeft: 8,
+    marginRight: 6,
   },
-  batteryBar: {
-    height: 6,
-    backgroundColor: "#333",
-    borderRadius: 3,
-    marginTop: 10,
-    overflow: "hidden",
-  },
-  batteryLevel: {
-    height: "100%",
-    backgroundColor: "#4CAF50",
-    borderRadius: 3,
+  batteryPercent: {
+    color: "#4CAF50",
+    fontSize: 13,
+    fontWeight: "bold",
+    marginLeft: 2,
   },
   vehicleVisual: {
     alignItems: "center",
@@ -305,10 +348,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 10,
   },
+  activeButton: {
+    backgroundColor: "rgba(52, 152, 219, 0.15)",
+  },
   controlText: {
     color: "#fff",
     marginTop: 5,
     fontSize: 14,
+  },
+  activeText: {
+    color: "#3498db",
+    fontWeight: "bold",
   },
   assistancePanel: {
     flexDirection: "row",
@@ -326,6 +376,17 @@ const styles = StyleSheet.create({
     color: "#3498db",
     marginTop: 5,
     fontSize: 16,
+  },
+  topCarVisualWrap: {
+    width: "100%",
+    alignItems: "center",
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  topCarImage: {
+    width: 180,
+    height: 90,
+    opacity: 0.95,
   },
 });
 
