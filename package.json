@@ -35,7 +35,7 @@
     "glob": "^11.0.2",
     "leaflet": "^1.9.4",
     "openai": "^4.100.0",
-    "react": "19.0.0",
+    "react": "19.1.0",
     "react-dom": "19.0.0",
     "react-leaflet": "^5.0.0",
     "react-native": "0.79.2",
