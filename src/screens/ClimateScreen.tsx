@@ -146,7 +146,10 @@ const ClimateScreen: React.FC = () => {
               style={styles.slider}
               thumbTintColor="#fff"
               value={fanSpeed}
-              onValueChange={setFanSpeed}
+              onValueChange={(val) => {
+                setFanSpeed(val);
+                wsRef.current?.send(JSON.stringify({ fan_speed: val }));
+              }}
             />
 
             <TouchableOpacity onPress={increaseFan}>
@@ -255,7 +258,13 @@ const ClimateScreen: React.FC = () => {
                 styles.airFlowButton,
                 airFace && commonStyles.activeButton,
               ]}
-              onPress={() => setAirFace((v) => !v)}
+              onPress={() => {
+                setAirFace((v) => {
+                  const newVal = !v;
+                  wsRef.current?.send(JSON.stringify({ airflow_head_on: newVal }));
+                  return newVal;
+                });
+              }}
             >
               <MaterialCommunityIcons
                 color={airFace ? "#3498db" : "#fff"}
@@ -277,7 +286,13 @@ const ClimateScreen: React.FC = () => {
                 styles.airFlowButton,
                 airMiddle && commonStyles.activeButton,
               ]}
-              onPress={() => setAirMiddle((v) => !v)}
+              onPress={() => {
+                setAirMiddle((v) => {
+                  const newVal = !v;
+                  wsRef.current?.send(JSON.stringify({ airflow_body_on: newVal }));
+                  return newVal;
+                });
+              }}
             >
               <MaterialCommunityIcons
                 color={airMiddle ? "#3498db" : "#fff"}
@@ -299,7 +314,13 @@ const ClimateScreen: React.FC = () => {
                 styles.airFlowButton,
                 airFoot && commonStyles.activeButton,
               ]}
-              onPress={() => setAirFoot((v) => !v)}
+              onPress={() => {
+                setAirFoot((v) => {
+                  const newVal = !v;
+                  wsRef.current?.send(JSON.stringify({ airflow_feet_on: newVal }));
+                  return newVal;
+                });
+              }}
             >
               <MaterialCommunityIcons
                 color={airFoot ? "#3498db" : "#fff"}
