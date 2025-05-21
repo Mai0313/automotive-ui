@@ -128,6 +128,17 @@ App.tsx            # 專案入口
 
 ---
 
+## 8. 【新增】資料庫即時同步（WebSocket/REST fallback）
+
+- 前端（HomeScreen、ClimateScreen）會自動透過 WebSocket 連線至 ws://localhost:4000（Android 模擬器為 ws://10.0.2.2:4000），連線後主動送出 { action: 'get_state' } 取得資料庫最新狀態。
+- 後端 server.js 監聽 PostgreSQL dev_user 資料表的 LISTEN/NOTIFY，資料異動時即時推播給所有前端。
+- 若 WebSocket 連線失敗，前端會自動 fallback 以 HTTP GET http://localhost:3000/state 取得狀態。
+- 所有溫度（temperature）欄位皆自動將 Postgres 回傳的 string 轉為 float 顯示，確保小數點正確。
+- 前端調整溫度/AC 狀態時，會即時送出 JSON 給 WS，後端自動更新資料庫並廣播。
+- 任何時候都能直接用 psql UPDATE dev_user SET temperature=xx.x; 測試即時同步。
+
+---
+
 ## 更新紀錄
 - 2025-05-16: 調整 HomeScreen overlay 懸浮位置（top:60, bottom:100），使浮層顯示介於頂部狀態欄與底部按鈕區之間；新增底部按鈕重複點擊可收回浮層功能。
 - 2025-05-19: MusicScreen web 版改為直接嵌入 Spotify 播放器 iframe，並以特斯拉車機風格半透明黑底浮層包覆，僅 web 顯示，行動裝置維持原假資料 UI。
@@ -137,3 +148,4 @@ App.tsx            # 專案入口
 - 2025-05-19: 所有未使用變數與 import lint warning 已清除，專案維持乾淨。
 - 2025-05-19: AI 助理頁面新增完整語音互動功能：整合麥克風錄音 (`expo-audio`)、OpenAI Whisper 語音轉文字、Chat Completion 文字理解與回應、OpenAI TTS (`tts-1-hd`) 文字轉語音播放。區分 Web 與原生平台 TTS 音訊處理方式。
 - 2025-05-20: 調整首頁底部溫度控制區與空調開關設計，詳見最上方補充說明。
+- 2025-05-21: 新增資料庫即時同步（WebSocket/REST fallback）功能，HomeScreen/ClimateScreen 支援自動取得與推送溫度、AC 狀態，並處理 Postgres FLOAT 型態字串轉換。

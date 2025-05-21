@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Platform } from "react-native"; // ensure Platform is imported
 import {
   View,
   StyleSheet,
@@ -7,7 +8,6 @@ import {
   Pressable,
   Dimensions,
   PanResponder,
-  Platform,
   ActivityIndicator,
 } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
@@ -34,13 +34,59 @@ const HomeScreen: React.FC = () => {
   const overlayWidth = fullScreenOverlay ? screenW : overlayWidthState;
 
   // 新增：溫度狀態與調整
-  const [temperature, setTemperature] = useState(22);
+  const [temperature, setTemperature] = useState<number>(22);
   const increaseTemp = () => setTemperature((prev) => Math.min(prev + 0.5, 28));
   const decreaseTemp = () => setTemperature((prev) => Math.max(prev - 0.5, 16));
 
   // 新增：AC 開關狀態
   const [isAC, setIsAC] = useState(true);
   const toggleAC = () => setIsAC((prev) => !prev);
+  // WebSocket ref
+  const wsRef = useRef<WebSocket | null>(null);
+
+  // Setup WS to sync temperature and AC
+  useEffect(() => {
+    const wsUrl = Platform.OS === 'android' ? 'ws://10.0.2.2:4000' : 'ws://localhost:4000';
+    console.log('[Home WS] connecting to', wsUrl);
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+    ws.onopen = () => {
+      console.log('[Home WS] connected');
+      ws.send(JSON.stringify({ action: 'get_state' }));
+    };
+    ws.onmessage = (event) => {
+      console.log('[Home WS] message', event.data);
+      try {
+        const data = JSON.parse(event.data);
+        // Parse temperature (may come as string from Postgres)
+        const rawTemp = data.temperature;
+        const tempVal = typeof rawTemp === 'string' ? parseFloat(rawTemp) : rawTemp;
+        if (!isNaN(tempVal)) setTemperature(tempVal);
+        if (typeof data.air_conditioning === 'boolean') setIsAC(data.air_conditioning);
+      } catch (err) {
+        console.error('[Home WS] parse error', err);
+      }
+    };
+    ws.onerror = (err) => {
+      console.error('[Home WS] error', err);
+      // Fetch fallback
+      fetch('http://localhost:3000/state')
+        .then(res => res.json())
+        .then(data => {
+          console.log('[Home HTTP] fetched state', data);
+          const rawTemp = data.temperature;
+          const temp = typeof rawTemp === 'string' ? parseFloat(rawTemp) : rawTemp;
+          if (!isNaN(temp)) setTemperature(temp);
+          if (typeof data.air_conditioning === 'boolean') setIsAC(data.air_conditioning);
+        })
+        .catch(fetchErr => console.error('[Home HTTP] error', fetchErr));
+    };
+    ws.onclose = () => console.log('[Home WS] closed');
+    return () => {
+      ws.close();
+      wsRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     Animated.timing(anim, {
@@ -49,6 +95,29 @@ const HomeScreen: React.FC = () => {
       useNativeDriver: Platform.OS !== "web", // web 平台設為 false，避免警告
     }).start();
   }, [activeOverlay, fullScreenOverlay]);
+  // Override user controls to send updates to server
+  const increaseTempSync = () => {
+    setTemperature((prev) => {
+      const newVal = Math.min(prev + 0.5, 28);
+      wsRef.current?.send(JSON.stringify({ temperature: newVal }));
+      return newVal;
+    });
+  };
+  const decreaseTempSync = () => {
+    setTemperature((prev) => {
+      const newVal = Math.max(prev - 0.5, 16);
+      wsRef.current?.send(JSON.stringify({ temperature: newVal }));
+      return newVal;
+    });
+  };
+  const toggleACSync = () => {
+    setIsAC((prev) => {
+      const newVal = !prev;
+      wsRef.current?.send(JSON.stringify({ air_conditioning: newVal }));
+      return newVal;
+    });
+  };
+
   // panel slides in/out horizontally from left
   const translateX = anim.interpolate({
     inputRange: [0, 1],
@@ -186,7 +255,7 @@ const HomeScreen: React.FC = () => {
         </TouchableOpacity>
         {/* 溫度調整區（顯示溫度本身為 AC 開關按鈕，關閉時顯示紅色圓圈+icon） */}
         <View style={styles.tempBarWrap}>
-          <TouchableOpacity style={styles.bottomBarBtn} onPress={decreaseTemp}>
+          <TouchableOpacity style={styles.bottomBarBtn} onPress={decreaseTempSync}>
             <MaterialCommunityIcons
               color="#fff"
               name="chevron-down"
@@ -195,7 +264,7 @@ const HomeScreen: React.FC = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.tempTextWrap, !isAC && styles.tempOff]}
-            onPress={toggleAC}
+            onPress={toggleACSync}
           >
             {isAC ? (
               <Animated.Text style={styles.tempText}>
@@ -215,7 +284,7 @@ const HomeScreen: React.FC = () => {
               </View>
             )}
           </TouchableOpacity>
-          <TouchableOpacity style={styles.bottomBarBtn} onPress={increaseTemp}>
+          <TouchableOpacity style={styles.bottomBarBtn} onPress={increaseTempSync}>
             <MaterialCommunityIcons color="#fff" name="chevron-up" size={28} />
           </TouchableOpacity>
         </View>

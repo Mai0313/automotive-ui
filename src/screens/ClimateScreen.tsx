@@ -2,7 +2,7 @@
 // import { Accelerometer, Gyroscope, Magnetometer, Barometer } from "expo-sensors";
 // 參考：https://docs.expo.dev/versions/latest/sdk/sensors/
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -19,11 +19,18 @@ import * as Haptics from "expo-haptics";
 import commonStyles from "../styles/commonStyles";
 
 const ClimateScreen: React.FC = () => {
-  const [fanSpeed, setFanSpeed] = useState(3);
-  const [isAuto, setIsAuto] = useState(true);
+  // Initial states default to match DB defaults until WS pushes actual values
+  const [acOn, setAcOn] = useState(false);
+  const wsRef = useRef<WebSocket | null>(null);
+  const [fanSpeed, setFanSpeed] = useState(0);
+  const [isAuto, setIsAuto] = useState(false);
   const [isFrontDefrost, setIsFrontDefrost] = useState(false);
   const [isRearDefrost, setIsRearDefrost] = useState(false);
   const [accel, setAccel] = useState({ x: 0, y: 0, z: 0 });
+
+  // Temperature state (initial from DB)
+  // Temperature setting in Celsius
+  const [temperature, setTemperature] = useState(22.0);
 
   // 新增：每個空調控制按鈕的開關狀態
   const [autoOn, setAutoOn] = useState(isAuto);
@@ -42,6 +49,44 @@ const ClimateScreen: React.FC = () => {
     return () => sub && sub.remove();
   }, []);
 
+  // Add WebSocket connection for real-time updates
+  useEffect(() => {
+    // Choose WS URL based on platform (Android emulator requires 10.0.2.2)
+    const wsUrl = Platform.OS === 'android' ? 'ws://10.0.2.2:4000' : 'ws://localhost:4000';
+    console.log('[WS] connecting to', wsUrl);
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+    ws.onopen = () => {
+      console.log('[WS] connected');
+      // Request initial state from server
+      wsRef.current?.send(JSON.stringify({ action: 'get_state' }));
+    };
+    ws.onerror = (err) => console.error('[WS] error', err);
+    ws.onclose = () => console.log('[WS] closed');
+    ws.onmessage = (event) => {
+      console.log('[WS] message', event.data);
+      try {
+        const data = JSON.parse(event.data);
+        setAcOn(data.air_conditioning);
+        setFanSpeed(data.fan_speed);
+        setAirFace(data.airflow_head_on);
+        setAirMiddle(data.airflow_body_on);
+        setAirFoot(data.airflow_feet_on);
+        setTemperature(data.temperature);
+        // Ensure temperature is numeric
+        const rawTemp = data.temperature;
+        const tempVal = typeof rawTemp === 'string' ? parseFloat(rawTemp) : rawTemp;
+        setTemperature(tempVal);
+      } catch (err) {
+        console.error('Failed to parse WS data', err);
+      }
+    };
+    return () => {
+      ws.close();
+      wsRef.current = null;
+    };
+  }, []);
+
   // 震動回饋
   const vibrate = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -51,10 +96,41 @@ const ClimateScreen: React.FC = () => {
   const increaseFan = () => setFanSpeed((prev) => Math.min(prev + 1, 10));
   const decreaseFan = () => setFanSpeed((prev) => Math.max(prev - 1, 0));
 
+  // AC toggle
+  const toggleAC = () => {
+    const newState = !acOn;
+    setAcOn(newState);
+    vibrate();
+    wsRef.current?.send(JSON.stringify({ air_conditioning: newState }));
+  };
+
   return (
     <SafeAreaView style={commonStyles.container}>
       {/* Main Climate Controls */}
       <View style={styles.controlsContainer}>
+        {/* AC On/Off Toggle */}
+        <TouchableOpacity
+          style={[
+            commonStyles.controlButton,
+            acOn && commonStyles.activeButton,
+          ]}
+          onPress={toggleAC}
+        >
+          <MaterialCommunityIcons
+            color={acOn ? "#3498db" : "#fff"}
+            name="snowflake"
+            size={24}
+          />
+          <Text
+            style={[
+              commonStyles.controlText,
+              acOn && commonStyles.activeText,
+            ]}
+          >
+            空調
+          </Text>
+        </TouchableOpacity>
+
         {/* Fan Speed Control */}
         <View style={styles.fanControl}>
           <Text style={styles.controlLabel}>風速控制</Text>

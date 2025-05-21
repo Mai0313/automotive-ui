@@ -8,7 +8,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "eslint --fix",
-    "db": "npx tsx scripts/init_db.tsx"
+    "db": "npx tsx scripts/init_db.tsx",
+    "ws-server": "node server.js"
   },
   "dependencies": {
     "@azure/openai": "^2.0.0",
