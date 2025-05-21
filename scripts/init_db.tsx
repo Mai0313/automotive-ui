@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
     air_conditioning BOOLEAN DEFAULT true NOT NULL COMMENT 'Air conditioning on/off status',
     
     -- 風扇和風向設置
-    fan_speed INTEGER DEFAULT 2 NOT NULL CHECK (fan_speed BETWEEN 0 AND 5) COMMENT 'Fan speed level (0-5)',
+    fan_speed INTEGER DEFAULT 2 NOT NULL CHECK (fan_speed BETWEEN 0 AND 10) COMMENT 'Fan speed level (0-10)',
     airflow_head_on BOOLEAN DEFAULT false NOT NULL COMMENT 'Airflow directed to head',
     airflow_body_on BOOLEAN DEFAULT false NOT NULL COMMENT 'Airflow directed to body',
     airflow_feet_on BOOLEAN DEFAULT true NOT NULL COMMENT 'Airflow directed to feet',
