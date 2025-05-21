@@ -87,11 +87,11 @@
 ## 5. 專案結構建議
 
 ```
+assets/            # 圖片、icons
 src/
   components/      # 共用元件
   screens/         # 各功能頁
   navigation/      # 導航設定
-  assets/          # 圖片、icons
   types/           # 型別定義
 App.tsx            # 專案入口
 ```

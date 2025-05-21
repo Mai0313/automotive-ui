@@ -74,7 +74,6 @@ const HomeScreen: React.FC = () => {
   // 地圖預設中心座標
   const { location: mapPreviewLocation, errorMsg } = useCurrentLocation();
 
-  console.log("mapPreviewLocation", mapPreviewLocation);
   if (errorMsg) {
     console.error("Error getting location:", errorMsg);
   }

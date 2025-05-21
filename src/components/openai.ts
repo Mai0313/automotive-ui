@@ -12,9 +12,6 @@ import * as FileSystem from "expo-file-system"; // Added import
 const createClient = () => {
   const apiType = process.env.EXPO_PUBLIC_OPENAI_API_TYPE;
 
-  console.log("config", process.env);
-  console.log("apiType", process.env.EXPO_PUBLIC_OPENAI_API_TYPE);
-
   if (apiType === "azure") {
     const apiKey = process.env.EXPO_PUBLIC_AZURE_OPENAI_API_KEY;
     const baseURL = process.env.EXPO_PUBLIC_AZURE_OPENAI_ENDPOINT + "/openai";
@@ -22,8 +19,6 @@ const createClient = () => {
       process.env.EXPO_PUBLIC_AZURE_OPENAI_DEPLOYMENT ||
       process.env.EXPO_PUBLIC_OPENAI_MODEL;
     const apiVersion = process.env.EXPO_PUBLIC_OPENAI_API_VERSION;
-
-    console.log("Using Azure OpenAI client");
 
     return new AzureOpenAI({
       apiKey,
@@ -35,8 +30,6 @@ const createClient = () => {
   } else {
     const apiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
     const baseURL = process.env.EXPO_PUBLIC_OPENAI_BASE_URL;
-
-    console.log("Using OpenAI client");
 
     return new OpenAI({
       apiKey,
@@ -58,11 +51,6 @@ export async function chatCompletion({
 }): Promise<void> {
   try {
     const client = createClient();
-
-    console.log(
-      "chatCompletion called with model:",
-      process.env.EXPO_PUBLIC_OPENAI_MODEL,
-    );
 
     const stream = await client.chat.completions.create(
       {
@@ -88,17 +76,11 @@ export async function transcribeAudio(audioUri: string): Promise<string> {
   const client = createClient();
 
   try {
-    console.log(`Transcribing audio from URI: ${audioUri}`);
-
     const response = await fetch(audioUri);
     const blob = await response.blob();
 
-    console.log(
-      "[Transcribe] Fetched blob. Size:",
-      blob.size,
-      "Type:",
-      blob.type,
-    );
+    console.log(`Transcribing audio from URI: ${audioUri}`);
+    console.log(`Size: ${blob.size}, Type: ${blob.type}`);
 
     // Determine filename and type based on platform and URI
     // Whisper supports: mp3, mp4, mpeg, mpga, m4a, wav, webm
@@ -186,42 +168,12 @@ export async function transcribeAudio(audioUri: string): Promise<string> {
 
     if (error instanceof Error) {
       errorMessage = error.message;
-      // If the error object has more specific properties from the OpenAI SDK,
-      // you might need to cast it to a more specific error type or check for those properties.
-      // For example, if it's an APIError from 'openai' library:
-      // if (error instanceof OpenAI.APIError) {
-      //   console.error("OpenAI API Error Status:", error.status);
-      //   console.error("OpenAI API Error Headers:", error.headers);
-      //   console.error("OpenAI API Error Code:", error.code);
-      // }
     } else if (typeof error === "string") {
       errorMessage = error;
     }
-    // The following console.error lines for error.response, error.request, error.message
-    // were for a generic Axios-like error structure.
-    // With the OpenAI SDK, errors are typically instances of Error or OpenAI.APIError.
-    // Consider adjusting based on the actual error objects you encounter from the SDK.
-
-    // Example of checking for OpenAI SDK specific error details if needed:
-    // if (error && typeof error === 'object' && 'response' in error) {
-    //   const apiError = error as { response?: { data?: any, status?: number, headers?: any }, request?: any, message?: string };
-    //   if (apiError.response) {
-    //     console.error("Error response data:", apiError.response.data);
-    //     console.error("Error response status:", apiError.response.status);
-    //     console.error("Error response headers:", apiError.response.headers);
-    //   } else if (apiError.request) {
-    //     console.error("Error request:", apiError.request);
-    //   } else if (apiError.message) {
-    //     console.error('Error message:', apiError.message);
-    //   }
-    // }
 
     throw new Error(`Failed to transcribe audio: ${errorMessage}`);
   }
-
-  // Ensure a string is always returned or an error is thrown.
-  // This path should ideally not be reached if errors are handled correctly above.
-  return "";
 }
 
 export async function textToSpeech(text: string): Promise<string | null> {
