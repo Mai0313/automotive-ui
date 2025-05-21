@@ -32,6 +32,7 @@
     "expo-sharing": "^13.1.5",
     "expo-speech": "^13.1.7",
     "expo-status-bar": "~2.2.3",
+    "glob": "^11.0.2",
     "leaflet": "^1.9.4",
     "openai": "^4.100.0",
     "react": "19.0.0",
@@ -47,6 +48,7 @@
     "react-native-svg": "^15.11.2",
     "react-native-web": "^0.20.0",
     "react-native-webview": "^13.13.5",
+    "rimraf": "^6.0.1",
     "styled-components": "^6.1.18"
   },
   "devDependencies": {
@@ -54,6 +56,7 @@
     "@eslint/compat": "^1.2.9",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.27.0",
+    "@types/node": "^22.15.21",
     "@types/react": "~19.0.10",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",

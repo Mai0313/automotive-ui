@@ -80,30 +80,62 @@ function parseConnectionString(url: string): {
   }
 }
 
-// 創建資料表的SQL
+// 創建資料表的SQL - 更完善的預設值和註解
 const createTestUserTableSQL = `
 CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
-    air_conditioning BOOLEAN DEFAULT false,
-    fan_speed INTEGER DEFAULT 0,
-    airflow_head_on BOOLEAN DEFAULT false,
-    airflow_body_on BOOLEAN DEFAULT false,
-    airflow_feet_on BOOLEAN DEFAULT false,
-    temperature FLOAT DEFAULT 22.0,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    -- 主控制狀態
+    air_conditioning BOOLEAN DEFAULT false NOT NULL COMMENT 'Air conditioning on/off status',
+    
+    -- 風扇和風向設置
+    fan_speed INTEGER DEFAULT 0 NOT NULL CHECK (fan_speed BETWEEN 0 AND 5) COMMENT 'Fan speed level (0-5)',
+    airflow_head_on BOOLEAN DEFAULT false NOT NULL COMMENT 'Airflow directed to head',
+    airflow_body_on BOOLEAN DEFAULT false NOT NULL COMMENT 'Airflow directed to body',
+    airflow_feet_on BOOLEAN DEFAULT true NOT NULL COMMENT 'Airflow directed to feet',
+    
+    -- 温度設置
+    temperature FLOAT DEFAULT 22.0 NOT NULL CHECK (temperature BETWEEN 16.0 AND 30.0) COMMENT 'Temperature setting in Celsius',
+    
+    -- 元數據
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Record creation timestamp',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Last update timestamp'
 );
+
+-- 創建一個自動更新 updated_at 時間戳的觸發器
+CREATE OR REPLACE FUNCTION update_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS update_${TABLE_NAME}_timestamp ON ${TABLE_NAME};
+
+CREATE TRIGGER update_${TABLE_NAME}_timestamp
+BEFORE UPDATE ON ${TABLE_NAME}
+FOR EACH ROW
+EXECUTE FUNCTION update_timestamp();
+
+-- 加入初始資料 (如果需要)
+INSERT INTO ${TABLE_NAME} (air_conditioning, fan_speed, airflow_head_on, airflow_body_on, airflow_feet_on, temperature)
+VALUES (false, 0, false, false, true, 22.0)
+ON CONFLICT DO NOTHING;
 `;
 
 // 刪除資料表的SQL
-const dropTableSQL = `DROP TABLE IF EXISTS ${TABLE_NAME};`;
+const dropTableSQL = `
+-- 刪除觸發器和函數
+DROP TRIGGER IF EXISTS update_${TABLE_NAME}_timestamp ON ${TABLE_NAME};
+-- 刪除表
+DROP TABLE IF EXISTS ${TABLE_NAME};
+`;
 
 // 確保資料庫存在
 async function ensureDatabaseExists(): Promise<void> {
   // 解析連接字串以獲取連接資訊
   const connInfo = parseConnectionString(POSTGRES_URL);
-
   // 連接到默認的postgres資料庫進行管理操作
   const adminConnectionString = `postgresql://${connInfo.user}:${connInfo.password}@${connInfo.host}:${connInfo.port}/postgres`;
-
   const adminClient = new Client({
     connectionString: adminConnectionString,
   });
@@ -112,7 +144,6 @@ async function ensureDatabaseExists(): Promise<void> {
     logger.operation("Connecting to PostgreSQL server");
     await adminClient.connect();
     logger.result("Connected successfully");
-
     // 檢查資料庫是否存在
     logger.operation(`Checking if database '${DB_NAME}' exists`);
     const dbCheckResult = await adminClient.query(
@@ -140,7 +171,6 @@ async function ensureDatabaseExists(): Promise<void> {
 async function recreateTestUserTable(): Promise<void> {
   // 解析連接字串以替換資料庫名稱
   const dbConnectionString = POSTGRES_URL.replace(/\/[^\/]+$/, `/${DB_NAME}`);
-
   const client = new Client({
     connectionString: dbConnectionString,
   });
@@ -156,7 +186,30 @@ async function recreateTestUserTable(): Promise<void> {
 
     // 然後創建表
     logger.operation(`Creating table '${TABLE_NAME}'`);
-    await client.query(createTestUserTableSQL);
+    try {
+      await client.query(createTestUserTableSQL);
+      logger.result(
+        "Table created with all constraints, triggers, and initial data",
+      );
+    } catch (err) {
+      // PostgreSQL較舊版本可能不支援COMMENT，如果這樣我們嘗試一個簡化版本
+      if (err.message.includes('syntax error at or near "COMMENT"')) {
+        logger.warn(
+          "Your PostgreSQL version doesn't support COMMENT in CREATE TABLE",
+        );
+
+        // 簡化版本的SQL（移除COMMENT）
+        const simplifiedSQL = createTestUserTableSQL.replace(
+          /\sCOMMENT\s+'[^']*'/g,
+          "",
+        );
+
+        await client.query(simplifiedSQL);
+        logger.result("Table created with simplified SQL (without comments)");
+      } else {
+        throw err;
+      }
+    }
 
     // 確認表已創建
     logger.operation("Verifying table creation");
@@ -171,6 +224,27 @@ async function recreateTestUserTable(): Promise<void> {
 
     if (tableCheckResult.rows[0].exists) {
       logger.result("Table verified and ready");
+
+      // 顯示表結構
+      logger.operation("Table structure:");
+      const tableStructure = await client.query(
+        `
+        SELECT column_name, data_type, column_default, is_nullable
+        FROM information_schema.columns
+        WHERE table_name = $1
+        ORDER BY ordinal_position;
+      `,
+        [TABLE_NAME],
+      );
+
+      // 漂亮地打印表結構
+      tableStructure.rows.forEach((col) => {
+        logger.result(
+          `${col.column_name}: ${col.data_type}${col.is_nullable === "NO" ? " NOT NULL" : ""}${
+            col.column_default ? ` DEFAULT ${col.column_default}` : ""
+          }`,
+        );
+      });
     } else {
       throw new Error(`Failed to create table '${TABLE_NAME}'`);
     }
