@@ -52,21 +52,25 @@ const ClimateScreen: React.FC = () => {
   // Add WebSocket connection for real-time updates
   useEffect(() => {
     // Choose WS URL based on platform (Android emulator requires 10.0.2.2)
-    const wsUrl = Platform.OS === 'android' ? 'ws://10.0.2.2:4000' : 'ws://localhost:4000';
-    console.log('[WS] connecting to', wsUrl);
+    const wsUrl =
+      Platform.OS === "android" ? "ws://10.0.2.2:4000" : "ws://localhost:4000";
+
+    console.log("[WS] connecting to", wsUrl);
     const ws = new WebSocket(wsUrl);
+
     wsRef.current = ws;
     ws.onopen = () => {
-      console.log('[WS] connected');
+      console.log("[WS] connected");
       // Request initial state from server
-      wsRef.current?.send(JSON.stringify({ action: 'get_state' }));
+      wsRef.current?.send(JSON.stringify({ action: "get_state" }));
     };
-    ws.onerror = (err) => console.error('[WS] error', err);
-    ws.onclose = () => console.log('[WS] closed');
+    ws.onerror = (err) => console.error("[WS] error", err);
+    ws.onclose = () => console.log("[WS] closed");
     ws.onmessage = (event) => {
-      console.log('[WS] message', event.data);
+      console.log("[WS] message", event.data);
       try {
         const data = JSON.parse(event.data);
+
         setAcOn(data.air_conditioning);
         setFanSpeed(data.fan_speed);
         setAirFace(data.airflow_head_on);
@@ -75,9 +79,10 @@ const ClimateScreen: React.FC = () => {
         setTemperature(data.temperature);
         setTemperature(data.temperature);
       } catch (err) {
-        console.error('Failed to parse WS data', err);
+        console.error("Failed to parse WS data", err);
       }
     };
+
     return () => {
       ws.close();
       wsRef.current = null;
@@ -96,6 +101,7 @@ const ClimateScreen: React.FC = () => {
   // AC toggle
   const toggleAC = () => {
     const newState = !acOn;
+
     setAcOn(newState);
     vibrate();
     wsRef.current?.send(JSON.stringify({ air_conditioning: newState }));
@@ -119,10 +125,7 @@ const ClimateScreen: React.FC = () => {
             size={24}
           />
           <Text
-            style={[
-              commonStyles.controlText,
-              acOn && commonStyles.activeText,
-            ]}
+            style={[commonStyles.controlText, acOn && commonStyles.activeText]}
           >
             空調
           </Text>
@@ -261,7 +264,11 @@ const ClimateScreen: React.FC = () => {
               onPress={() => {
                 setAirFace((v) => {
                   const newVal = !v;
-                  wsRef.current?.send(JSON.stringify({ airflow_head_on: newVal }));
+
+                  wsRef.current?.send(
+                    JSON.stringify({ airflow_head_on: newVal }),
+                  );
+
                   return newVal;
                 });
               }}
@@ -289,7 +296,11 @@ const ClimateScreen: React.FC = () => {
               onPress={() => {
                 setAirMiddle((v) => {
                   const newVal = !v;
-                  wsRef.current?.send(JSON.stringify({ airflow_body_on: newVal }));
+
+                  wsRef.current?.send(
+                    JSON.stringify({ airflow_body_on: newVal }),
+                  );
+
                   return newVal;
                 });
               }}
@@ -317,7 +328,11 @@ const ClimateScreen: React.FC = () => {
               onPress={() => {
                 setAirFoot((v) => {
                   const newVal = !v;
-                  wsRef.current?.send(JSON.stringify({ airflow_feet_on: newVal }));
+
+                  wsRef.current?.send(
+                    JSON.stringify({ airflow_feet_on: newVal }),
+                  );
+
                   return newVal;
                 });
               }}
