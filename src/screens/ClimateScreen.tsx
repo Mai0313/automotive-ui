@@ -73,10 +73,7 @@ const ClimateScreen: React.FC = () => {
         setAirMiddle(data.airflow_body_on);
         setAirFoot(data.airflow_feet_on);
         setTemperature(data.temperature);
-        // Ensure temperature is numeric
-        const rawTemp = data.temperature;
-        const tempVal = typeof rawTemp === 'string' ? parseFloat(rawTemp) : rawTemp;
-        setTemperature(tempVal);
+        setTemperature(data.temperature);
       } catch (err) {
         console.error('Failed to parse WS data', err);
       }

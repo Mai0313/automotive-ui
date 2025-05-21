@@ -18,7 +18,7 @@
      - 首頁背景為全螢幕互動式地圖，未來將採用 Google Navigation React 套件實現（現階段可用假資料與地圖佈局預覽）。
      - 地圖四週保有黑色框線，強化車機風格。
      - 取消原底部分頁導航，主功能入口由底部黑色控制欄置入（簡約 icon 依序排列）。
-     - 點擊「音樂」、「車輛資訊」、「空調」等入口，不是頁面跳轉，而是以懸浮浮層面板（overlay）的方式顯示於地圖正上方，並帶有流暢動畫。
+     - 點擊「音樂」、「車輡資訊」、「空調」等入口，不是頁面跳轉，而是以懸浮浮層面板（overlay）的方式顯示於地圖正上方，並帶有流暢動畫。
      - 懸浮面板僅顯示一個，點擊其他控制 icon 時平滑切換，點擊地圖空白處或浮層右上角關閉鈕可收合面板。
      - 首頁預設浮現的面板為「車輛狀態卡片」，參照 Tesla 車機設計（如下補充）。
      - 地圖與各類浮層卡片皆需預留橫屏/直屏響應布局設計。
@@ -130,10 +130,24 @@ App.tsx            # 專案入口
 
 ## 8. 【新增】資料庫即時同步（WebSocket/REST fallback）
 
+- dev_user table 欄位設計如下：
+
+  | 欄位名稱             | 型態     | 預設值   | 說明                       |
+  |----------------------|----------|----------|----------------------------|
+  | air_conditioning     | BOOLEAN  | true     | 空調開關                   |
+  | fan_speed           | INTEGER  | 2        | 風速等級 (0-5)             |
+  | airflow_head_on     | BOOLEAN  | false    | 出風至頭部                 |
+  | airflow_body_on     | BOOLEAN  | false    | 出風至身體                 |
+  | airflow_feet_on     | BOOLEAN  | true     | 出風至腳部                 |
+  | temperature         | FLOAT    | 22.0     | 溫度設定 (16.0~30.0°C)     |
+  | created_at          | TIMESTAMP| now()    | 建立時間                   |
+  | updated_at          | TIMESTAMP| now()    | 最後更新時間               |
+
 - 前端（HomeScreen、ClimateScreen）會自動透過 WebSocket 連線至 ws://localhost:4000（Android 模擬器為 ws://10.0.2.2:4000），連線後主動送出 { action: 'get_state' } 取得資料庫最新狀態。
 - 後端 server.js 監聽 PostgreSQL dev_user 資料表的 LISTEN/NOTIFY，資料異動時即時推播給所有前端。
 - 若 WebSocket 連線失敗，前端會自動 fallback 以 HTTP GET http://localhost:3000/state 取得狀態。
-- 所有溫度（temperature）欄位皆自動將 Postgres 回傳的 string 轉為 float 顯示，確保小數點正確。
+- **所有空調相關狀態（溫度、AC開關、風速、出風方向等）皆會根據資料庫 dev_user table 的即時資料自動同步顯示，並非僅溫度。**
+- 所有溫度（temperature）欄位皆假設為 float 型態，前端已移除 parseFloat 步驟，請確保資料庫 schema 設定正確（FLOAT/REAL/DOUBLE PRECISION）。
 - 前端調整溫度/AC 狀態時，會即時送出 JSON 給 WS，後端自動更新資料庫並廣播。
 - 任何時候都能直接用 psql UPDATE dev_user SET temperature=xx.x; 測試即時同步。
 

@@ -84,10 +84,10 @@ function parseConnectionString(url: string): {
 const createTestUserTableSQL = `
 CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
     -- 主控制狀態
-    air_conditioning BOOLEAN DEFAULT false NOT NULL COMMENT 'Air conditioning on/off status',
+    air_conditioning BOOLEAN DEFAULT true NOT NULL COMMENT 'Air conditioning on/off status',
     
     -- 風扇和風向設置
-    fan_speed INTEGER DEFAULT 0 NOT NULL CHECK (fan_speed BETWEEN 0 AND 5) COMMENT 'Fan speed level (0-5)',
+    fan_speed INTEGER DEFAULT 2 NOT NULL CHECK (fan_speed BETWEEN 0 AND 5) COMMENT 'Fan speed level (0-5)',
     airflow_head_on BOOLEAN DEFAULT false NOT NULL COMMENT 'Airflow directed to head',
     airflow_body_on BOOLEAN DEFAULT false NOT NULL COMMENT 'Airflow directed to body',
     airflow_feet_on BOOLEAN DEFAULT true NOT NULL COMMENT 'Airflow directed to feet',
@@ -133,7 +133,7 @@ EXECUTE FUNCTION notify_dev_user_update();
 
 -- 加入初始資料 (如果需要)
 INSERT INTO ${TABLE_NAME} (air_conditioning, fan_speed, airflow_head_on, airflow_body_on, airflow_feet_on, temperature)
-VALUES (false, 0, false, false, true, 22.0)
+VALUES (true, 2, false, false, true, 22.0::float)
 ON CONFLICT DO NOTHING;
 `;
 

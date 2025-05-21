@@ -58,10 +58,7 @@ const HomeScreen: React.FC = () => {
       console.log('[Home WS] message', event.data);
       try {
         const data = JSON.parse(event.data);
-        // Parse temperature (may come as string from Postgres)
-        const rawTemp = data.temperature;
-        const tempVal = typeof rawTemp === 'string' ? parseFloat(rawTemp) : rawTemp;
-        if (!isNaN(tempVal)) setTemperature(tempVal);
+        if (typeof data.temperature === 'number') setTemperature(data.temperature);
         if (typeof data.air_conditioning === 'boolean') setIsAC(data.air_conditioning);
       } catch (err) {
         console.error('[Home WS] parse error', err);
@@ -74,9 +71,7 @@ const HomeScreen: React.FC = () => {
         .then(res => res.json())
         .then(data => {
           console.log('[Home HTTP] fetched state', data);
-          const rawTemp = data.temperature;
-          const temp = typeof rawTemp === 'string' ? parseFloat(rawTemp) : rawTemp;
-          if (!isNaN(temp)) setTemperature(temp);
+          if (typeof data.temperature === 'number') setTemperature(data.temperature);
           if (typeof data.air_conditioning === 'boolean') setIsAC(data.air_conditioning);
         })
         .catch(fetchErr => console.error('[Home HTTP] error', fetchErr));
