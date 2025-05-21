@@ -1,5 +1,45 @@
 import { Client } from "pg";
 
+// ANSI 顏色代碼
+const colors = {
+  reset: "\x1b[0m",
+  bright: "\x1b[1m",
+  dim: "\x1b[2m",
+  red: "\x1b[31m",
+  green: "\x1b[32m",
+  yellow: "\x1b[33m",
+  blue: "\x1b[34m",
+  magenta: "\x1b[35m",
+  cyan: "\x1b[36m",
+  white: "\x1b[37m",
+  gray: "\x1b[90m",
+};
+
+// 日誌輸出函數
+const logger = {
+  info: (message: string) =>
+    console.log(`${colors.bright}${colors.blue}ℹ ${colors.reset}${message}`),
+  success: (message: string) =>
+    console.log(`${colors.bright}${colors.green}✓ ${colors.reset}${message}`),
+  warn: (message: string) =>
+    console.log(`${colors.bright}${colors.yellow}⚠ ${colors.reset}${message}`),
+  error: (message: string, error?: any) => {
+    console.error(`${colors.bright}${colors.red}✗ ${colors.reset}${message}`);
+    if (error)
+      console.error(`  ${colors.dim}${error.toString()}${colors.reset}`);
+  },
+  step: (step: number, total: number, message: string) => {
+    console.log(
+      `${colors.bright}${colors.cyan}[${step}/${total}] ${colors.reset}${message}`,
+    );
+  },
+  divider: () => console.log(`${colors.dim}${"─".repeat(50)}${colors.reset}`),
+  operation: (message: string) =>
+    console.log(`  ${colors.magenta}› ${colors.reset}${message}`),
+  result: (message: string) =>
+    console.log(`    ${colors.gray}→ ${colors.reset}${message}`),
+};
+
 // 資料庫配置
 const POSTGRES_URL =
   process.env.POSTGRES_URL ||
@@ -29,7 +69,7 @@ function parseConnectionString(url: string): {
       port: matches[4],
     };
   } catch (error) {
-    console.error("Error parsing connection string:", error);
+    logger.error("Error parsing connection string:", error);
 
     return {
       host: "localhost",
@@ -69,32 +109,30 @@ async function ensureDatabaseExists(): Promise<void> {
   });
 
   try {
+    logger.operation("Connecting to PostgreSQL server");
     await adminClient.connect();
-    console.log("Connected to PostgreSQL server for database management");
+    logger.result("Connected successfully");
 
     // 檢查資料庫是否存在
+    logger.operation(`Checking if database '${DB_NAME}' exists`);
     const dbCheckResult = await adminClient.query(
-      `
-            SELECT 1 FROM pg_database WHERE datname = $1
-        `,
+      `SELECT 1 FROM pg_database WHERE datname = $1`,
       [DB_NAME],
     );
 
     // 如果資料庫不存在，創建它
     if (dbCheckResult.rows.length === 0) {
-      console.log(`Database '${DB_NAME}' does not exist. Creating...`);
-      // 必須使用單引號而非參數化查詢來創建資料庫
+      logger.operation(`Creating database '${DB_NAME}'`);
       await adminClient.query(`CREATE DATABASE "${DB_NAME}"`);
-      console.log(`Database '${DB_NAME}' created successfully`);
+      logger.result(`Database created successfully`);
     } else {
-      console.log(`Database '${DB_NAME}' already exists`);
+      logger.result(`Database already exists`);
     }
   } catch (err) {
-    console.error("Error ensuring database exists:", err);
+    logger.error("Database creation failed", err);
     throw err;
   } finally {
     await adminClient.end();
-    console.log("Admin connection closed");
   }
 }
 
@@ -108,62 +146,66 @@ async function recreateTestUserTable(): Promise<void> {
   });
 
   try {
+    logger.operation(`Connecting to database '${DB_NAME}'`);
     await client.connect();
-    console.log(`Connected to database '${DB_NAME}'`);
+    logger.result("Connected successfully");
 
     // 首先刪除表（如果存在）
-    console.log(`Dropping table '${TABLE_NAME}' if exists...`);
+    logger.operation(`Dropping existing table '${TABLE_NAME}'`);
     await client.query(dropTableSQL);
-    console.log(`Table dropped (if existed)`);
 
     // 然後創建表
-    console.log(`Creating table '${TABLE_NAME}'...`);
+    logger.operation(`Creating table '${TABLE_NAME}'`);
     await client.query(createTestUserTableSQL);
-    console.log(`Table '${TABLE_NAME}' created successfully`);
 
     // 確認表已創建
+    logger.operation("Verifying table creation");
     const tableCheckResult = await client.query(
-      `
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = 'public' 
-                AND table_name = $1
-            );
-        `,
+      `SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = $1
+      );`,
       [TABLE_NAME],
     );
 
     if (tableCheckResult.rows[0].exists) {
-      console.log(`Verified: Table '${TABLE_NAME}' exists`);
+      logger.result("Table verified and ready");
     } else {
       throw new Error(`Failed to create table '${TABLE_NAME}'`);
     }
   } catch (err) {
-    console.error(`Error recreating table:`, err);
+    logger.error("Table recreation failed", err);
     throw err;
   } finally {
     await client.end();
-    console.log("Database connection closed");
   }
 }
 
 // 主函數：初始化資料庫
 async function initDatabase(): Promise<void> {
-  console.log("Starting database initialization...");
   console.log(
-    `Using connection URL: ${POSTGRES_URL.replace(/:[^:@]+@/, ":****@")}`,
+    `\n${colors.bright}${colors.cyan}=== PostgreSQL Database Initialization ===${colors.reset}\n`,
   );
+  logger.info(`Connection: ${POSTGRES_URL.replace(/:[^:@]+@/, ":****@")}`);
+  logger.info(`Target database: ${DB_NAME}`);
+  logger.info(`Target table: ${TABLE_NAME}`);
+  logger.divider();
 
   try {
     // 步驟1: 確保資料庫存在
+    logger.step(1, 2, "Ensuring database exists");
     await ensureDatabaseExists();
 
     // 步驟2: 刪除並重新創建資料表
+    logger.step(2, 2, "Setting up tables");
     await recreateTestUserTable();
 
-    console.log("✅ Database initialization completed successfully!");
+    logger.divider();
+    logger.success("Database initialization completed successfully!");
   } catch (err) {
-    console.error("❌ Database initialization failed:", err);
+    logger.divider();
+    logger.error("Database initialization failed", err);
     process.exit(1);
   }
 }
@@ -172,10 +214,10 @@ async function initDatabase(): Promise<void> {
 if (import.meta.url === import.meta.resolve(process.argv[1])) {
   initDatabase()
     .then(() => {
-      console.log("Script execution completed");
+      process.exit(0);
     })
     .catch((err) => {
-      console.error("Unhandled error during script execution:", err);
+      logger.error("Unhandled error during execution", err);
       process.exit(1);
     });
 }
