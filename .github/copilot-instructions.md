@@ -3,10 +3,11 @@
 # 車機 UI Demo 專案需求（React Native + TypeScript）
 
 每一次你進行功能修改/增減 請記得對應編輯這份文件 好讓其他人可以更快熟悉此專案
+開發流程: 確認需求 -> 編寫/修改程式碼 -> 確認是運行報錯 -> 修改此文件並紀錄每一次的修改
 
 ## 1. 專案目標
 
-從零開始製作一個全新的車機 UI Demo，使用 TypeScript 搭配 React Native，方便未來跨平台（iOS/Android/Web UI）發展。本 Demo 著重於界面與互動展示，不需實作實際功能。
+從零開始製作一個全新的車機 UI Demo，使用 TypeScript 搭配 React Native，方便未來跨平台（iOS/Android/Web UI）發展。
 
 ---
 
@@ -21,6 +22,7 @@
      - 懸浮面板僅顯示一個，點擊其他控制 icon 時平滑切換，點擊地圖空白處或浮層右上角關閉鈕可收合面板。
      - 首頁預設浮現的面板為「車輛狀態卡片」，參照 Tesla 車機設計（如下補充）。
      - 地圖與各類浮層卡片皆需預留橫屏/直屏響應布局設計。
+
 2. **導航頁**
    - 地圖展示、路線規劃（假資料）
 
@@ -122,7 +124,7 @@ App.tsx            # 專案入口
 - 地圖未來將用 Google navigation react 套件，並保持彈性以支持元件疊加與橫直屏響應。
 - 色系僅黑/白/灰及極簡點綴，字體、布局及交互皆比照 Tesla 車機設計稿。
 
-> ![Sample Tesla UI](https://user-images.githubusercontent.com/10957127/196008635-313bad82-5168-4bde-ae3c-7166db7ea158.png)
+> ![Sample Tesla UI](https://techcrunch.com/wp-content/uploads/2017/08/tesla-model-3-in-car-ux.jpg)
 
 ---
 
