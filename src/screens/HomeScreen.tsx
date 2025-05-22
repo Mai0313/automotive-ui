@@ -240,7 +240,7 @@ const HomeScreen: React.FC = () => {
             }
           }}
         >
-          <MaterialCommunityIcons color="#fff" name="car" size={30} />
+          <MaterialCommunityIcons color="#fff" name="car" size={28} />
         </TouchableOpacity>
         {/* AC icon */}
         <TouchableOpacity
@@ -257,7 +257,7 @@ const HomeScreen: React.FC = () => {
           <MaterialCommunityIcons
             color="#fff"
             name="air-conditioner"
-            size={30}
+            size={28}
           />
         </TouchableOpacity>
         {/* 溫度調整區（顯示溫度本身為 AC 開關按鈕，關閉時顯示紅色圓圈+icon） */}
@@ -285,12 +285,9 @@ const HomeScreen: React.FC = () => {
                 <MaterialCommunityIcons
                   color="#e74c3c"
                   name="power"
-                  size={18}
+                  size={28}
                   style={{ marginRight: 4 }}
                 />
-                <Animated.Text style={styles.tempTextOff}>
-                  {temperature}°C
-                </Animated.Text>
               </View>
             )}
           </TouchableOpacity>
@@ -313,7 +310,7 @@ const HomeScreen: React.FC = () => {
             }
           }}
         >
-          <MaterialIcons color="#fff" name="music-note" size={30} />
+          <MaterialIcons color="#fff" name="music-note" size={28} />
         </TouchableOpacity>
         {/* AI icon */}
         <TouchableOpacity
@@ -327,7 +324,7 @@ const HomeScreen: React.FC = () => {
             }
           }}
         >
-          <MaterialIcons color="#fff" name="mic" size={30} />
+          <MaterialIcons color="#fff" name="mic" size={28} />
         </TouchableOpacity>
       </View>
     </View>
@@ -373,7 +370,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     backgroundColor: "#121212",
     padding: 10,
-    borderRadius: 30,
+    borderRadius: 28,
   },
   dragHandle: {
     position: "absolute",
