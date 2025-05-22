@@ -298,7 +298,11 @@ const HomeScreen: React.FC = () => {
               style={styles.bottomBarBtn}
               onPress={increaseTempSync}
             >
-              <MaterialCommunityIcons color="#fff" name="chevron-up" size={28} />
+              <MaterialCommunityIcons
+                color="#fff"
+                name="chevron-up"
+                size={28}
+              />
             </TouchableOpacity>
           )}
         </View>

@@ -13,7 +13,6 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider"; // Ensure this is installed or use a different slider
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Accelerometer } from "expo-sensors";
 import * as Haptics from "expo-haptics";
 
 import commonStyles from "../styles/commonStyles";
@@ -26,11 +25,6 @@ const ClimateScreen: React.FC = () => {
   const [isAuto, setIsAuto] = useState(false);
   const [isFrontDefrost, setIsFrontDefrost] = useState(false);
   const [isRearDefrost, setIsRearDefrost] = useState(false);
-  const [accel, setAccel] = useState({ x: 0, y: 0, z: 0 });
-
-  // Temperature state (initial from DB)
-  // Temperature setting in Celsius
-  const [temperature, setTemperature] = useState(22.0);
 
   // 新增：每個空調控制按鈕的開關狀態
   const [autoOn, setAutoOn] = useState(isAuto);
@@ -41,13 +35,6 @@ const ClimateScreen: React.FC = () => {
   const [airFace, setAirFace] = useState(true);
   const [airMiddle, setAirMiddle] = useState(false);
   const [airFoot, setAirFoot] = useState(false);
-
-  useEffect(() => {
-    if (Platform.OS === "web") return;
-    const sub = Accelerometer.addListener(setAccel);
-
-    return () => sub && sub.remove();
-  }, []);
 
   // Add WebSocket connection for real-time updates
   useEffect(() => {
@@ -76,7 +63,6 @@ const ClimateScreen: React.FC = () => {
         setAirFace(data.airflow_head_on);
         setAirMiddle(data.airflow_body_on);
         setAirFoot(data.airflow_feet_on);
-        setTemperature(data.temperature);
         // 新增同步除霜狀態
         setFrontDefrostOn(data.front_defrost_on);
         setRearDefrostOn(data.rear_defrost_on);
@@ -211,10 +197,12 @@ const ClimateScreen: React.FC = () => {
             onPress={() => {
               setFrontDefrostOn((v) => {
                 const newVal = !v;
+
                 wsRef.current?.send(
-                  JSON.stringify({ front_defrost_on: newVal })
+                  JSON.stringify({ front_defrost_on: newVal }),
                 );
                 setIsFrontDefrost(newVal);
+
                 return newVal;
               });
             }}
@@ -241,10 +229,12 @@ const ClimateScreen: React.FC = () => {
             onPress={() => {
               setRearDefrostOn((v) => {
                 const newVal = !v;
+
                 wsRef.current?.send(
-                  JSON.stringify({ rear_defrost_on: newVal })
+                  JSON.stringify({ rear_defrost_on: newVal }),
                 );
                 setIsRearDefrost(newVal);
+
                 return newVal;
               });
             }}
