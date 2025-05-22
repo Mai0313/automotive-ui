@@ -92,6 +92,10 @@ CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
     airflow_body_on BOOLEAN DEFAULT false NOT NULL COMMENT 'Airflow directed to body',
     airflow_feet_on BOOLEAN DEFAULT true NOT NULL COMMENT 'Airflow directed to feet',
     
+    -- 新增除霜功能
+    front_defrost_on BOOLEAN DEFAULT false NOT NULL COMMENT 'Front windshield defrost',
+    rear_defrost_on BOOLEAN DEFAULT false NOT NULL COMMENT 'Rear windshield defrost',
+    
     -- 温度設置
     temperature FLOAT DEFAULT 22.0 NOT NULL CHECK (temperature BETWEEN 16.0 AND 30.0) COMMENT 'Temperature setting in Celsius',
     
@@ -132,8 +136,8 @@ FOR EACH ROW
 EXECUTE FUNCTION notify_dev_user_update();
 
 -- 加入初始資料 (如果需要)
-INSERT INTO ${TABLE_NAME} (air_conditioning, fan_speed, airflow_head_on, airflow_body_on, airflow_feet_on, temperature)
-VALUES (true, 2, false, false, true, 22.0::float)
+INSERT INTO ${TABLE_NAME} (air_conditioning, fan_speed, airflow_head_on, airflow_body_on, airflow_feet_on, front_defrost_on, rear_defrost_on, temperature)
+VALUES (true, 2, false, false, true, false, false, 22.0::float)
 ON CONFLICT DO NOTHING;
 `;
 

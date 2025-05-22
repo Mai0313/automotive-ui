@@ -93,6 +93,8 @@ async function start() {
         'airflow_head_on',
         'airflow_body_on',
         'airflow_feet_on',
+        'front_defrost_on', // 新增
+        'rear_defrost_on',  // 新增
         'temperature',
       ];
       for (const key of Object.keys(data)) {

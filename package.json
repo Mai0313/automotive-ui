@@ -6,7 +6,7 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web",
+    "web": "npx tsx scripts/init_db.tsx && expo start --web",
     "lint": "eslint --fix",
     "db": "npx tsx scripts/init_db.tsx",
     "ws": "node server.js"

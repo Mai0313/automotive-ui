@@ -77,7 +77,9 @@ const ClimateScreen: React.FC = () => {
         setAirMiddle(data.airflow_body_on);
         setAirFoot(data.airflow_feet_on);
         setTemperature(data.temperature);
-        setTemperature(data.temperature);
+        // 新增同步除霜狀態
+        setFrontDefrostOn(data.front_defrost_on);
+        setRearDefrostOn(data.rear_defrost_on);
       } catch (err) {
         console.error("Failed to parse WS data", err);
       }
@@ -207,8 +209,14 @@ const ClimateScreen: React.FC = () => {
               frontDefrostOn && commonStyles.activeButton,
             ]}
             onPress={() => {
-              setFrontDefrostOn((v) => !v);
-              setIsFrontDefrost((v) => !v);
+              setFrontDefrostOn((v) => {
+                const newVal = !v;
+                wsRef.current?.send(
+                  JSON.stringify({ front_defrost_on: newVal })
+                );
+                setIsFrontDefrost(newVal);
+                return newVal;
+              });
             }}
           >
             <MaterialCommunityIcons
@@ -231,8 +239,14 @@ const ClimateScreen: React.FC = () => {
               rearDefrostOn && commonStyles.activeButton,
             ]}
             onPress={() => {
-              setRearDefrostOn((v) => !v);
-              setIsRearDefrost((v) => !v);
+              setRearDefrostOn((v) => {
+                const newVal = !v;
+                wsRef.current?.send(
+                  JSON.stringify({ rear_defrost_on: newVal })
+                );
+                setIsRearDefrost(newVal);
+                return newVal;
+              });
             }}
           >
             <MaterialCommunityIcons
