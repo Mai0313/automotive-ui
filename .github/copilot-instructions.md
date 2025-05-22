@@ -153,6 +153,22 @@ App.tsx            # 專案入口
 
 ---
 
+### dev_user table 觸發器（Trigger）說明
+
+- **notify_dev_user_update_trigger**
+  - 角色：即時推播資料異動。
+  - 用途：當 dev_user 資料表有 INSERT 或 UPDATE 時，會呼叫 notify_dev_user_update() function，進而用 `pg_notify` 把最新 row 的內容（JSON 格式）推送到 PostgreSQL 的通知頻道（dev_user_update）。
+  - 作用：讓 WebSocket server 能即時收到資料異動，並推播給所有前端，實現前後端即時同步。
+
+- **update_dev_user_timestamp**
+  - 角色：自動更新時間戳。
+  - 用途：當 dev_user 資料表有 UPDATE 時，會自動把 updated_at 欄位設為當下時間（CURRENT_TIMESTAMP）。
+  - 作用：確保每次資料異動都會自動記錄最後更新時間，方便追蹤資料變動。
+
+- 兩者配合，讓資料異動既有時間戳記，也能即時同步到前端。
+
+---
+
 ## 更新紀錄
 - 2025-05-16: 調整 HomeScreen overlay 懸浮位置（top:60, bottom:100），使浮層顯示介於頂部狀態欄與底部按鈕區之間；新增底部按鈕重複點擊可收回浮層功能。
 - 2025-05-19: MusicScreen web 版改為直接嵌入 Spotify 播放器 iframe，並以特斯拉車機風格半透明黑底浮層包覆，僅 web 顯示，行動裝置維持原假資料 UI。
