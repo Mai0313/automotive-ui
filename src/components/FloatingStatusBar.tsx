@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     top: 5,
     left: 20,
     right: 20,
-    backgroundColor: "rgba(18,18,18,0.8)",
+    backgroundColor: "rgba(18,18,18,1)",
     borderRadius: 10,
     flexDirection: "row",
     justifyContent: "flex-end",
