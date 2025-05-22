@@ -262,16 +262,18 @@ const HomeScreen: React.FC = () => {
         </TouchableOpacity>
         {/* 溫度調整區（顯示溫度本身為 AC 開關按鈕，關閉時顯示紅色圓圈+icon） */}
         <View style={styles.tempBarWrap}>
-          <TouchableOpacity
-            style={styles.bottomBarBtn}
-            onPress={decreaseTempSync}
-          >
-            <MaterialCommunityIcons
-              color="#fff"
-              name="chevron-down"
-              size={28}
-            />
-          </TouchableOpacity>
+          {isAC && (
+            <TouchableOpacity
+              style={styles.bottomBarBtn}
+              onPress={decreaseTempSync}
+            >
+              <MaterialCommunityIcons
+                color="#fff"
+                name="chevron-down"
+                size={28}
+              />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={[styles.tempTextWrap, !isAC && styles.tempOff]}
             onPress={toggleACSync}
@@ -291,12 +293,14 @@ const HomeScreen: React.FC = () => {
               </View>
             )}
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.bottomBarBtn}
-            onPress={increaseTempSync}
-          >
-            <MaterialCommunityIcons color="#fff" name="chevron-up" size={28} />
-          </TouchableOpacity>
+          {isAC && (
+            <TouchableOpacity
+              style={styles.bottomBarBtn}
+              onPress={increaseTempSync}
+            >
+              <MaterialCommunityIcons color="#fff" name="chevron-up" size={28} />
+            </TouchableOpacity>
+          )}
         </View>
         {/* 音樂 icon */}
         <TouchableOpacity
@@ -382,7 +386,7 @@ const styles = StyleSheet.create({
   },
   // bottomBar 內新增溫度調整區樣式
   bottomBarBtn: {
-    backgroundColor: "#222",
+    backgroundColor: "#000000",
     borderRadius: 20,
     padding: 10,
     marginHorizontal: 16, // 原本 6，調大間隔
@@ -410,7 +414,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 16,
-    backgroundColor: "#333",
+    backgroundColor: "#000000",
     minHeight: 36,
   },
   tempOff: {
