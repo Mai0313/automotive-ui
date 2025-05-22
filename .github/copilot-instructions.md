@@ -128,8 +128,9 @@ App.tsx            # 專案入口
 
 ---
 
-## 8. 【新增】資料庫即時同步（WebSocket/REST fallback）
+## 8. 【新增】空調設定
 
+- 汽車空調設定將透過資料庫即時同步（WebSocket/REST fallback）
 - dev_user table 欄位設計如下：
 
   | 欄位名稱             | 型態     | 預設值   | 說明                       |
