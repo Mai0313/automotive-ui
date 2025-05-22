@@ -145,7 +145,7 @@ App.tsx            # 專案入口
 
 - 前端（HomeScreen、ClimateScreen）會自動透過 WebSocket 連線至 ws://localhost:4000（Android 模擬器為 ws://10.0.2.2:4000），連線後主動送出 { action: 'get_state' } 取得資料庫最新狀態。
 - 後端 server.js 監聽 PostgreSQL dev_user 資料表的 LISTEN/NOTIFY，資料異動時即時推播給所有前端。
-- 若 WebSocket 連線失敗，前端會自動 fallback 以 HTTP GET http://localhost:3000/state 取得狀態。
+- 若 WebSocket 連線失敗，前端會自動 fallback 以 HTTP GET http://localhost:4001/state 取得狀態。
 - **所有空調相關狀態（溫度、AC開關、風速、出風方向等）皆會根據資料庫 dev_user table 的即時資料自動同步顯示，並非僅溫度。**
 - 所有溫度（temperature）欄位皆假設為 float 型態，前端已移除 parseFloat 步驟，請確保資料庫 schema 設定正確（FLOAT/REAL/DOUBLE PRECISION）。
 - 前端調整溫度/AC 狀態時，會即時送出 JSON 給 WS，後端自動更新資料庫並廣播。

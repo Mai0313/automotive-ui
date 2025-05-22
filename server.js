@@ -31,7 +31,7 @@ async function start() {
     }
   });
   const httpServer = http.createServer(app);
-  httpServer.listen(3000, () => console.log('HTTP server running on http://localhost:3000'));
+  httpServer.listen(4001, () => console.log('HTTP server running on http://localhost:4001'));
 
   // Listen to dev_user updates
   await client.query('LISTEN dev_user_update');

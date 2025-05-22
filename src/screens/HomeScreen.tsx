@@ -70,7 +70,7 @@ const HomeScreen: React.FC = () => {
     ws.onerror = (err) => {
       console.error("[Home WS] error", err);
       // Fetch fallback
-      fetch("http://localhost:3000/state")
+      fetch("http://localhost:4001/state")
         .then((res) => res.json())
         .then((data) => {
           console.log("[Home HTTP] fetched state", data);
