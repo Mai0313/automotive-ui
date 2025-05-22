@@ -36,6 +36,9 @@ async function start() {
   // Listen to ac_settings updates
   await client.query('LISTEN ac_settings_update');
   console.log('Listening to ac_settings_update channel.');
+  // Listen to vehicle_info updates
+  await client.query('LISTEN vehicle_info_update');
+  console.log('Listening to vehicle_info_update channel.');
 
   // Setup WebSocket server
   const wss = new WebSocketServer({ port: 4000 });
@@ -49,14 +52,19 @@ async function start() {
       if (res.rows[0]) {
         ws.send(JSON.stringify(res.rows[0]));
       }
+      // Send current vehicle info state
+      const resV = await client.query('SELECT * FROM vehicle_info LIMIT 1');
+      if (resV.rows[0]) {
+        ws.send(JSON.stringify(resV.rows[0]));
+      }
     } catch (err) {
       console.error('Error fetching initial data', err);
     }
 
     // On DB notification, send to client
     const handler = (msg) => {
-      console.log('[DB_NOTIFY]', msg.payload);
-      if (msg.channel === 'ac_settings_update') {
+      console.log('[DB_NOTIFY]', msg.channel, msg.payload);
+      if (msg.channel === 'ac_settings_update' || msg.channel === 'vehicle_info_update') {
         ws.send(msg.payload);
       }
     };
@@ -80,6 +88,11 @@ async function start() {
           const res = await client.query('SELECT * FROM ac_settings LIMIT 1');
           if (res.rows[0]) {
             ws.send(JSON.stringify(res.rows[0]));
+          }
+          // Also send vehicle state
+          const resV = await client.query('SELECT * FROM vehicle_info LIMIT 1');
+          if (resV.rows[0]) {
+            ws.send(JSON.stringify(resV.rows[0]));
           }
         } catch (err) {
           console.error('Error fetching state on demand', err);
@@ -106,6 +119,33 @@ async function start() {
             );
           } catch (err) {
             console.error(`Error updating ${key}`, err);
+          }
+        }
+      }
+      // Update allowed vehicle info warning fields
+      const allowedVehicleFields = [
+        'engine_warning',
+        'oil_pressure_warning',
+        'battery_warning',
+        'coolant_temp_warning',
+        'brake_warning',
+        'abs_warning',
+        'tpms_warning',
+        'airbag_warning',
+        'low_fuel_warning',
+        'door_ajar_warning',
+        'seat_belt_warning',
+        'exterior_light_failure_warning',
+      ];
+      for (const key of Object.keys(data)) {
+        if (allowedVehicleFields.includes(key)) {
+          try {
+            await client.query(
+              `UPDATE vehicle_info SET ${key} = $1`,
+              [data[key]]
+            );
+          } catch (err) {
+            console.error(`Error updating vehicle field ${key}`, err);
           }
         }
       }

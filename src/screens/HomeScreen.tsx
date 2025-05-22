@@ -34,10 +34,26 @@ const HomeScreen: React.FC = () => {
   const overlayWidth = fullScreenOverlay ? screenW : overlayWidthState;
 
   // 新增：溫度狀態與調整
-  const [temperature, setTemperature] = useState<number>(22);
+  const [temperature, setTemperature] = useState<number>(26);
 
   // 新增：AC 開關狀態
   const [isAC, setIsAC] = useState(true);
+  // 车辆警示灯状态
+  const [vehicleWarnings, setVehicleWarnings] = useState<Record<string, boolean>>({
+    engine_warning: false,
+    oil_pressure_warning: false,
+    battery_warning: false,
+    coolant_temp_warning: false,
+    brake_warning: false,
+    abs_warning: false,
+    tpms_warning: false,
+    airbag_warning: false,
+    low_fuel_warning: false,
+    door_ajar_warning: false,
+    seat_belt_warning: false,
+    exterior_light_failure_warning: false,
+  });
+
   // WebSocket ref
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -63,6 +79,13 @@ const HomeScreen: React.FC = () => {
           setTemperature(data.temperature);
         if (typeof data.air_conditioning === "boolean")
           setIsAC(data.air_conditioning);
+        // 處理車輛警示燈狀態
+        const warningKeys = Object.keys(vehicleWarnings);
+        warningKeys.forEach((key) => {
+          if (key in data && typeof data[key] === "boolean") {
+            setVehicleWarnings((prev) => ({ ...prev, [key]: data[key] }));
+          }
+        });
       } catch (err) {
         console.error("[Home WS] parse error", err);
       }
@@ -218,7 +241,7 @@ const HomeScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
           {/* Render corresponding screen inside overlay */}
-          {activeOverlay === "vehicle" && <VehicleInfoScreen />}
+          {activeOverlay === "vehicle" && <VehicleInfoScreen vehicleWarnings={vehicleWarnings} />}
           {activeOverlay === "music" && <MusicScreen />}
           {activeOverlay === "climate" && <ClimateScreen />}
           {activeOverlay === "ai" && <AIAssistantScreen />}
@@ -240,7 +263,12 @@ const HomeScreen: React.FC = () => {
             }
           }}
         >
-          <MaterialCommunityIcons color="#fff" name="car" size={28} />
+          <View style={styles.iconWithBadge}>
+            <MaterialCommunityIcons color="#fff" name="car" size={28} />
+            {Object.values(vehicleWarnings).some((v) => v) && (
+              <View style={styles.badge} />
+            )}
+          </View>
         </TouchableOpacity>
         {/* AC icon */}
         <TouchableOpacity
@@ -440,6 +468,18 @@ const styles = StyleSheet.create({
     color: "#e74c3c",
     fontSize: 22,
     fontWeight: "bold",
+  },
+  iconWithBadge: {
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#e74c3c',
   },
 });
 

@@ -12,13 +12,33 @@ import {
   TouchableOpacity,
   Platform,
 } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons as Icon } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 
 import commonStyles from "../styles/commonStyles";
 
-const VehicleInfoScreen: React.FC = () => {
+// mapping from warning keys to icon names
+const warningIconMap: Record<string, string> = {
+  engine_warning: 'engine',
+  oil_pressure_warning: 'oil-temperature',
+  battery_warning: 'car-battery',
+  coolant_temp_warning: 'thermometer',
+  brake_warning: 'car-brake-alert',
+  abs_warning: 'car-brake-abs',
+  tpms_warning: 'car-tire-alert',
+  airbag_warning: 'airbag',
+  low_fuel_warning: 'fuel',
+  door_ajar_warning: 'door-open',
+  seat_belt_warning: 'seatbelt',
+  exterior_light_failure_warning: 'lightbulb-outline',
+};
+
+interface Props {
+  vehicleWarnings: Record<string, boolean>;
+}
+
+const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
   // Mock vehicle data
   const speed = 0;
   const range = "315 mi";
@@ -31,6 +51,9 @@ const VehicleInfoScreen: React.FC = () => {
   const [lockOn, setLockOn] = useState(false);
   const [lightOn, setLightOn] = useState(false);
   const [autoDriveOn, setAutoDriveOn] = useState(false);
+
+  // Filter active warnings
+  const activeWarnings = Object.entries(vehicleWarnings).filter(([, v]) => v);
 
   // 圖片選取功能（僅行動裝置）
   const pickImage = async () => {
@@ -49,6 +72,20 @@ const VehicleInfoScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={commonStyles.container}>
+      {/* 警示燈顯示 */}
+      {activeWarnings.length > 0 && (
+        <View style={styles.warningBar}>
+          {activeWarnings.map(([key]) => (
+            <Icon
+              key={key}
+              name={(warningIconMap[key] || 'alert-circle-outline') as React.ComponentProps<typeof Icon>['name']}
+              size={30}
+              color="#e74c3c"
+              style={styles.warningIcon}
+            />
+          ))}
+        </View>
+      )}
       {/* Main Content */}
       <View style={styles.content}>
         {/* Main Speed Display */}
@@ -83,7 +120,7 @@ const VehicleInfoScreen: React.FC = () => {
         {/* Range & Battery Info */}
         <View style={styles.rangeContainer}>
           <View style={styles.batteryInfoSmall}>
-            <MaterialCommunityIcons
+            <Icon
               color="#4CAF50"
               name={`battery-${batteryLevel}`}
               size={22}
@@ -112,7 +149,7 @@ const VehicleInfoScreen: React.FC = () => {
             ]}
             onPress={() => setLockOn((v) => !v)}
           >
-            <MaterialCommunityIcons
+            <Icon
               color={lockOn ? "#3498db" : "#fff"}
               name="car-door"
               size={30}
@@ -133,7 +170,7 @@ const VehicleInfoScreen: React.FC = () => {
             ]}
             onPress={() => setLightOn((v) => !v)}
           >
-            <MaterialCommunityIcons
+            <Icon
               color={lightOn ? "#3498db" : "#fff"}
               name="car-light-high"
               size={30}
@@ -154,7 +191,7 @@ const VehicleInfoScreen: React.FC = () => {
             ]}
             onPress={() => setAutoDriveOn((v) => !v)}
           >
-            <MaterialCommunityIcons
+            <Icon
               color={autoDriveOn ? "#3498db" : "#fff"}
               name="car-cruise-control"
               size={30}
@@ -312,6 +349,18 @@ const styles = StyleSheet.create({
     width: 180,
     height: 90,
     opacity: 0.95,
+  },
+  warningBar: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    backgroundColor: "#111",
+    padding: 10,
+    borderRadius: 5,
+    margin: 10,
+  },
+  warningIcon: {
+    marginHorizontal: 5,
   },
 });
 

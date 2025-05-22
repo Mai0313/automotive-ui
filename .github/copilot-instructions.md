@@ -173,6 +173,18 @@ App.tsx            # 專案入口
 
 ---
 
+## 9. 【資料庫觸發器/通知通用化】
+
+- 2025-05-22: 所有 PostgreSQL function 與 trigger 已整合進 `scripts/init_db.tsx`，統一命名：
+  - `update_timestamp_generic`：自動更新所有表的 `updated_at` 欄位。
+  - `notify_table_update`：所有表的 INSERT/UPDATE 皆自動推播 `pg_notify(<table>_update, row_to_json(NEW))`。
+- 各資料表只需：
+  - `CREATE TRIGGER update_<table>_timestamp BEFORE UPDATE ON <table> FOR EACH ROW EXECUTE FUNCTION update_timestamp_generic();`
+  - `CREATE TRIGGER notify_<table>_update_trigger AFTER INSERT OR UPDATE ON <table> FOR EACH ROW EXECUTE FUNCTION notify_table_update();`
+- `init_db.tsx` 會自動建立 function 並為 ac_settings、vehicle_info 等表加上通用 trigger，無需手動執行額外 SQL。
+
+---
+
 ## 更新紀錄
 - 2025-05-16: 調整 HomeScreen overlay 懸浮位置（top:60, bottom:100），使浮層顯示介於頂部狀態欄與底部按鈕區之間；新增底部按鈕重複點擊可收回浮層功能。
 - 2025-05-19: MusicScreen web 版改為直接嵌入 Spotify 播放器 iframe，並以特斯拉車機風格半透明黑底浮層包覆，僅 web 顯示，行動裝置維持原假資料 UI。
@@ -184,3 +196,4 @@ App.tsx            # 專案入口
 - 2025-05-20: 調整首頁底部溫度控制區與空調開關設計，詳見最上方補充說明。
 - 2025-05-21: 新增資料庫即時同步（WebSocket/REST fallback）功能，HomeScreen/ClimateScreen 支援自動取得與推送溫度、AC 狀態，並處理 Postgres FLOAT 型態字串轉換。
 - 2025-05-22: HomeScreen 溫度調整 chevron-down/chevron-up 按鈕僅於 AC 開啟 (isAC=true) 時顯示，AC 關閉時不顯示溫度調整按鈕，僅顯示關閉狀態。
+- 2025-05-22: 所有 PostgreSQL function 與 trigger 已整合進 `scripts/init_db.tsx`，統一命名，並更新相關說明文件。

@@ -46,6 +46,89 @@ const POSTGRES_URL =
   "postgresql://postgres:postgres@localhost:5432/postgres";
 const DB_NAME = "automotive";
 const TABLE_NAME = "ac_settings";
+// 新增車輛資訊表名稱
+const VEHICLE_TABLE_NAME = "vehicle_info";
+
+// 創建資料表的SQL（不含 function/trigger，通用觸發器分離）
+const createClimateTableSQL = `
+CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
+    air_conditioning BOOLEAN DEFAULT true NOT NULL,
+    fan_speed INTEGER DEFAULT 2 NOT NULL CHECK (fan_speed BETWEEN 0 AND 10),
+    airflow_head_on BOOLEAN DEFAULT false NOT NULL,
+    airflow_body_on BOOLEAN DEFAULT false NOT NULL,
+    airflow_feet_on BOOLEAN DEFAULT true NOT NULL,
+    front_defrost_on BOOLEAN DEFAULT false NOT NULL,
+    rear_defrost_on BOOLEAN DEFAULT false NOT NULL,
+    temperature FLOAT DEFAULT 22.0 NOT NULL CHECK (temperature BETWEEN 16.0 AND 30.0),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- 加入初始資料 (如果需要)
+INSERT INTO ${TABLE_NAME} (air_conditioning, fan_speed, airflow_head_on, airflow_body_on, airflow_feet_on, front_defrost_on, rear_defrost_on, temperature)
+VALUES (true, 2, false, false, true, false, false, 22.0::float)
+ON CONFLICT DO NOTHING;
+`;
+
+// 創建車輛資訊表的SQL（不含 function/trigger，通用觸發器分離）
+const createVehicleInfoTableSQL = `
+CREATE TABLE IF NOT EXISTS ${VEHICLE_TABLE_NAME} (
+  engine_warning BOOLEAN DEFAULT false NOT NULL,
+  oil_pressure_warning BOOLEAN DEFAULT false NOT NULL,
+  battery_warning BOOLEAN DEFAULT false NOT NULL,
+  coolant_temp_warning BOOLEAN DEFAULT false NOT NULL,
+  brake_warning BOOLEAN DEFAULT false NOT NULL,
+  abs_warning BOOLEAN DEFAULT false NOT NULL,
+  tpms_warning BOOLEAN DEFAULT false NOT NULL,
+  airbag_warning BOOLEAN DEFAULT false NOT NULL,
+  low_fuel_warning BOOLEAN DEFAULT false NOT NULL,
+  door_ajar_warning BOOLEAN DEFAULT false NOT NULL,
+  seat_belt_warning BOOLEAN DEFAULT false NOT NULL,
+  exterior_light_failure_warning BOOLEAN DEFAULT false NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- 初始資料插入
+INSERT INTO ${VEHICLE_TABLE_NAME} DEFAULT VALUES
+ON CONFLICT DO NOTHING;
+`;
+
+// 刪除資料表的SQL
+const dropTableSQL = `
+-- 刪除觸發器和函數
+DROP TRIGGER IF EXISTS update_${TABLE_NAME}_timestamp ON ${TABLE_NAME};
+DROP TRIGGER IF EXISTS notify_ac_settings_update_trigger ON ${TABLE_NAME};
+-- 刪除表
+DROP TABLE IF EXISTS ${TABLE_NAME};
+`;
+// 刪除車輛資訊表的SQL
+const dropVehicleTableSQL = `
+DROP TRIGGER IF EXISTS update_${VEHICLE_TABLE_NAME}_timestamp ON ${VEHICLE_TABLE_NAME};
+DROP TRIGGER IF EXISTS notify_${VEHICLE_TABLE_NAME}_update_trigger ON ${VEHICLE_TABLE_NAME};
+DROP TABLE IF EXISTS ${VEHICLE_TABLE_NAME};
+`;
+
+// 通用 updated_at/notify function
+const genericPgNotifySQL = `
+CREATE OR REPLACE FUNCTION update_timestamp_generic()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION notify_table_update()
+RETURNS TRIGGER AS $$
+DECLARE
+  channel TEXT := TG_TABLE_NAME || '_update';
+BEGIN
+  PERFORM pg_notify(channel, row_to_json(NEW)::text);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+`;
 
 // 從連接字串中提取主機、端口、使用者名稱和密碼
 function parseConnectionString(url: string): {
@@ -79,76 +162,6 @@ function parseConnectionString(url: string): {
     };
   }
 }
-
-// 創建資料表的SQL - 更完善的預設值和註解
-const createTestUserTableSQL = `
-CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
-    -- 主控制狀態
-    air_conditioning BOOLEAN DEFAULT true NOT NULL COMMENT 'Air conditioning on/off status',
-    
-    -- 風扇和風向設置
-    fan_speed INTEGER DEFAULT 2 NOT NULL CHECK (fan_speed BETWEEN 0 AND 10) COMMENT 'Fan speed level (0-10)',
-    airflow_head_on BOOLEAN DEFAULT false NOT NULL COMMENT 'Airflow directed to head',
-    airflow_body_on BOOLEAN DEFAULT false NOT NULL COMMENT 'Airflow directed to body',
-    airflow_feet_on BOOLEAN DEFAULT true NOT NULL COMMENT 'Airflow directed to feet',
-    
-    -- 新增除霜功能
-    front_defrost_on BOOLEAN DEFAULT false NOT NULL COMMENT 'Front windshield defrost',
-    rear_defrost_on BOOLEAN DEFAULT false NOT NULL COMMENT 'Rear windshield defrost',
-    
-    -- 温度設置
-    temperature FLOAT DEFAULT 22.0 NOT NULL CHECK (temperature BETWEEN 16.0 AND 30.0) COMMENT 'Temperature setting in Celsius',
-    
-    -- 元數據
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Record creation timestamp',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Last update timestamp'
-);
-
--- 創建一個自動更新 updated_at 時間戳的觸發器
-CREATE OR REPLACE FUNCTION update_timestamp()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS update_${TABLE_NAME}_timestamp ON ${TABLE_NAME};
-
-CREATE TRIGGER update_${TABLE_NAME}_timestamp
-BEFORE UPDATE ON ${TABLE_NAME}
-FOR EACH ROW
-EXECUTE FUNCTION update_timestamp();
-
--- create notification function and trigger for real-time updates
-CREATE OR REPLACE FUNCTION notify_ac_settings_update()
-RETURNS TRIGGER AS $$
-BEGIN
-  PERFORM pg_notify('ac_settings_update', row_to_json(NEW)::text);
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS notify_ac_settings_update_trigger ON ${TABLE_NAME};
-CREATE TRIGGER notify_ac_settings_update_trigger
-AFTER INSERT OR UPDATE ON ${TABLE_NAME}
-FOR EACH ROW
-EXECUTE FUNCTION notify_ac_settings_update();
-
--- 加入初始資料 (如果需要)
-INSERT INTO ${TABLE_NAME} (air_conditioning, fan_speed, airflow_head_on, airflow_body_on, airflow_feet_on, front_defrost_on, rear_defrost_on, temperature)
-VALUES (true, 2, false, false, true, false, false, 22.0::float)
-ON CONFLICT DO NOTHING;
-`;
-
-// 刪除資料表的SQL
-const dropTableSQL = `
--- 刪除觸發器和函數
-DROP TRIGGER IF EXISTS update_${TABLE_NAME}_timestamp ON ${TABLE_NAME};
-DROP TRIGGER IF EXISTS notify_ac_settings_update_trigger ON ${TABLE_NAME};
--- 刪除表
-DROP TABLE IF EXISTS ${TABLE_NAME};
-`;
 
 // 確保資料庫存在
 async function ensureDatabaseExists(): Promise<void> {
@@ -188,7 +201,7 @@ async function ensureDatabaseExists(): Promise<void> {
 }
 
 // 重新創建資料表
-async function recreateTestUserTable(): Promise<void> {
+async function recreateTable(): Promise<void> {
   // 解析連接字串以替換資料庫名稱
   const dbConnectionString = POSTGRES_URL.replace(/\/[^\/]+$/, `/${DB_NAME}`);
   const client = new Client({
@@ -200,26 +213,34 @@ async function recreateTestUserTable(): Promise<void> {
     await client.connect();
     logger.result("Connected successfully");
 
+    // 建立通用 function（若尚未存在）
+    logger.operation("Creating generic pg_notify/update_timestamp functions");
+    await client.query(genericPgNotifySQL);
+    logger.result("Generic trigger functions ensured");
+
     // 首先刪除表（如果存在）
     logger.operation(`Dropping existing table '${TABLE_NAME}'`);
     await client.query(dropTableSQL);
+    // 刪除車輛資訊表（如果存在）
+    logger.operation(`Dropping existing table '${VEHICLE_TABLE_NAME}'`);
+    await client.query(dropVehicleTableSQL);
 
     // 然後創建表
     logger.operation(`Creating table '${TABLE_NAME}'`);
     try {
-      await client.query(createTestUserTableSQL);
+      await client.query(createClimateTableSQL);
       logger.result(
         "Table created with all constraints, triggers, and initial data",
       );
     } catch (err) {
       // PostgreSQL較舊版本可能不支援COMMENT，如果這樣我們嘗試一個簡化版本
-      if (err.message.includes('syntax error at or near "COMMENT"')) {
+      if (/syntax error at or near.*comment/i.test(err.message)) {
         logger.warn(
           "Your PostgreSQL version doesn't support COMMENT in CREATE TABLE",
         );
 
         // 簡化版本的SQL（移除COMMENT）
-        const simplifiedSQL = createTestUserTableSQL.replace(
+        const simplifiedSQL = createClimateTableSQL.replace(
           /\sCOMMENT\s+'[^']*'/g,
           "",
         );
@@ -230,10 +251,64 @@ async function recreateTestUserTable(): Promise<void> {
         throw err;
       }
     }
+    // 創建車輛資訊表
+    logger.operation(`Creating table '${VEHICLE_TABLE_NAME}'`);
+    try {
+      await client.query(createVehicleInfoTableSQL);
+      logger.result(
+        "Vehicle info table created with constraints, triggers, and initial data",
+      );
+    } catch (err) {
+      // PostgreSQL 較舊版本可能不支持 COMMENT
+      if (/syntax error at or near.*comment/i.test(err.message)) {
+        logger.warn(
+          "Your PostgreSQL version doesn't support COMMENT in CREATE TABLE for vehicle_info",
+        );
+        const simplifiedVehicleSQL = createVehicleInfoTableSQL.replace(
+          /\sCOMMENT\s+'[^']*'/g,
+          "",
+        );
+        await client.query(simplifiedVehicleSQL);
+        logger.result(
+          "Vehicle info table created with simplified SQL (without comments)",
+        );
+      } else {
+        throw err;
+      }
+    }
+
+    // 加入通用 trigger 到 ac_settings
+    logger.operation("Creating triggers for ac_settings");
+    await client.query(`
+      CREATE TRIGGER update_ac_settings_timestamp
+        BEFORE UPDATE ON ac_settings
+        FOR EACH ROW
+        EXECUTE FUNCTION update_timestamp_generic();
+      CREATE TRIGGER notify_ac_settings_update_trigger
+        AFTER INSERT OR UPDATE ON ac_settings
+        FOR EACH ROW
+        EXECUTE FUNCTION notify_table_update();
+    `);
+    logger.result("Triggers for ac_settings created");
+
+    // 加入通用 trigger 到 vehicle_info
+    logger.operation("Creating triggers for vehicle_info");
+    await client.query(`
+      CREATE TRIGGER update_vehicle_info_timestamp
+        BEFORE UPDATE ON vehicle_info
+        FOR EACH ROW
+        EXECUTE FUNCTION update_timestamp_generic();
+      CREATE TRIGGER notify_vehicle_info_update_trigger
+        AFTER INSERT OR UPDATE ON vehicle_info
+        FOR EACH ROW
+        EXECUTE FUNCTION notify_table_update();
+    `);
+    logger.result("Triggers for vehicle_info created");
 
     // 確認表已創建
     logger.operation("Verifying table creation");
-    const tableCheckResult = await client.query(
+    // ac_settings
+    const acTableCheck = await client.query(
       `SELECT EXISTS (
           SELECT FROM information_schema.tables 
           WHERE table_schema = 'public' 
@@ -241,32 +316,50 @@ async function recreateTestUserTable(): Promise<void> {
       );`,
       [TABLE_NAME],
     );
-
-    if (tableCheckResult.rows[0].exists) {
-      logger.result("Table verified and ready");
-
-      // 顯示表結構
-      logger.operation("Table structure:");
-      const tableStructure = await client.query(
-        `
-        SELECT column_name, data_type, column_default, is_nullable
-        FROM information_schema.columns
-        WHERE table_name = $1
-        ORDER BY ordinal_position;
-      `,
+    if (acTableCheck.rows[0].exists) {
+      logger.result("ac_settings table verified and ready");
+      logger.operation("Table structure for ac_settings:");
+      const acTableStructure = await client.query(
+        `SELECT column_name, data_type, column_default, is_nullable
+         FROM information_schema.columns
+         WHERE table_name = $1
+         ORDER BY ordinal_position;`,
         [TABLE_NAME],
       );
-
-      // 漂亮地打印表結構
-      tableStructure.rows.forEach((col) => {
+      acTableStructure.rows.forEach((col) => {
         logger.result(
-          `${col.column_name}: ${col.data_type}${col.is_nullable === "NO" ? " NOT NULL" : ""}${
-            col.column_default ? ` DEFAULT ${col.column_default}` : ""
-          }`,
+          `${col.column_name}: ${col.data_type}${col.is_nullable === "NO" ? " NOT NULL" : ""}${col.column_default ? ` DEFAULT ${col.column_default}` : ""}`,
         );
       });
     } else {
       throw new Error(`Failed to create table '${TABLE_NAME}'`);
+    }
+    // vehicle_info
+    const vehicleTableCheck = await client.query(
+      `SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = $1
+      );`,
+      [VEHICLE_TABLE_NAME],
+    );
+    if (vehicleTableCheck.rows[0].exists) {
+      logger.result("vehicle_info table verified and ready");
+      logger.operation("Table structure for vehicle_info:");
+      const vehicleTableStructure = await client.query(
+        `SELECT column_name, data_type, column_default, is_nullable
+         FROM information_schema.columns
+         WHERE table_name = $1
+         ORDER BY ordinal_position;`,
+        [VEHICLE_TABLE_NAME],
+      );
+      vehicleTableStructure.rows.forEach((col) => {
+        logger.result(
+          `${col.column_name}: ${col.data_type}${col.is_nullable === "NO" ? " NOT NULL" : ""}${col.column_default ? ` DEFAULT ${col.column_default}` : ""}`,
+        );
+      });
+    } else {
+      throw new Error(`Failed to create table '${VEHICLE_TABLE_NAME}'`);
     }
   } catch (err) {
     logger.error("Table recreation failed", err);
@@ -293,7 +386,7 @@ async function initDatabase(): Promise<void> {
 
     // 步驟2: 刪除並重新創建資料表
     logger.step(2, 2, "Setting up tables");
-    await recreateTestUserTable();
+    await recreateTable();
 
     logger.divider();
     logger.success("Database initialization completed successfully!");
@@ -317,4 +410,4 @@ if (import.meta.url === import.meta.resolve(process.argv[1])) {
 }
 
 // 導出供其他模塊使用
-export { initDatabase, recreateTestUserTable };
+export { initDatabase, recreateTable };
