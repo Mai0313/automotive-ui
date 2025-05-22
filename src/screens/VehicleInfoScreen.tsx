@@ -30,8 +30,6 @@ const VehicleInfoScreen: React.FC = () => {
   // 新增：每個 quick control 的開關狀態
   const [lockOn, setLockOn] = useState(false);
   const [lightOn, setLightOn] = useState(false);
-  const [batteryOn, setBatteryOn] = useState(false);
-  const [tireOn, setTireOn] = useState(false);
   const [autoDriveOn, setAutoDriveOn] = useState(false);
 
   // 圖片選取功能（僅行動裝置）
