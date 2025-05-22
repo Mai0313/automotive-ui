@@ -152,48 +152,6 @@ const VehicleInfoScreen: React.FC = () => {
           <TouchableOpacity
             style={[
               commonStyles.controlButton,
-              batteryOn && commonStyles.activeButton,
-            ]}
-            onPress={() => setBatteryOn((v) => !v)}
-          >
-            <MaterialCommunityIcons
-              color={batteryOn ? "#3498db" : "#fff"}
-              name="car-battery"
-              size={30}
-            />
-            <Text
-              style={[
-                commonStyles.controlText,
-                batteryOn && commonStyles.activeText,
-              ]}
-            >
-              電量
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              commonStyles.controlButton,
-              tireOn && commonStyles.activeButton,
-            ]}
-            onPress={() => setTireOn((v) => !v)}
-          >
-            <MaterialCommunityIcons
-              color={tireOn ? "#3498db" : "#fff"}
-              name="tire"
-              size={30}
-            />
-            <Text
-              style={[
-                commonStyles.controlText,
-                tireOn && commonStyles.activeText,
-              ]}
-            >
-              胎壓
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              commonStyles.controlButton,
               autoDriveOn && commonStyles.activeButton,
             ]}
             onPress={() => setAutoDriveOn((v) => !v)}
