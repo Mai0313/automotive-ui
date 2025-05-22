@@ -371,31 +371,6 @@ const ClimateScreen: React.FC = () => {
         {/* Power Button */}
         {/* 已整合至底部溫度顯示區，這裡移除關閉空調按鈕 */}
       </View>
-
-      {/* 加速度感測器數據展示與震動回饋按鈕 */}
-      {Platform.OS !== "web" ? (
-        <View style={{ margin: 20, alignItems: "center" }}>
-          <Text style={{ color: "#fff" }}>加速度感測 (expo-sensors):</Text>
-          <Text
-            style={{ color: "#fff" }}
-          >{`x: ${accel.x.toFixed(2)} y: ${accel.y.toFixed(2)} z: ${accel.z.toFixed(2)}`}</Text>
-          <TouchableOpacity
-            style={{
-              marginTop: 10,
-              backgroundColor: "#e67e22",
-              padding: 10,
-              borderRadius: 8,
-            }}
-            onPress={vibrate}
-          >
-            <Text style={{ color: "#fff" }}>震動回饋 (expo-haptics)</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={{ margin: 20, alignItems: "center" }}>
-          <Text style={{ color: "#fff" }}>加速度感測（僅支援行動裝置）</Text>
-        </View>
-      )}
     </SafeAreaView>
   );
 };
