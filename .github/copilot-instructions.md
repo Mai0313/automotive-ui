@@ -131,7 +131,7 @@ App.tsx            # 專案入口
 ## 8. 【新增】空調設定
 
 - 汽車空調設定將透過資料庫即時同步（WebSocket/REST fallback）
-- dev_user table 欄位設計如下：
+- ac_settings table 欄位設計如下：
 
   | 欄位名稱             | 型態     | 預設值   | 說明                       |
   |----------------------|----------|----------|----------------------------|
@@ -145,25 +145,25 @@ App.tsx            # 專案入口
   | updated_at          | TIMESTAMP| now()    | 最後更新時間               |
 
 - 前端（HomeScreen、ClimateScreen）會自動透過 WebSocket 連線至 ws://localhost:4000（Android 模擬器為 ws://10.0.2.2:4000），連線後主動送出 { action: 'get_state' } 取得資料庫最新狀態。
-- 後端 server.js 監聽 PostgreSQL dev_user 資料表的 LISTEN/NOTIFY，資料異動時即時推播給所有前端。
+- 後端 server.js 監聽 PostgreSQL ac_settings 資料表的 LISTEN/NOTIFY，資料異動時即時推播給所有前端。
 - 若 WebSocket 連線失敗，前端會自動 fallback 以 HTTP GET http://localhost:4001/state 取得狀態。
-- **所有空調相關狀態（溫度、AC開關、風速、出風方向等）皆會根據資料庫 dev_user table 的即時資料自動同步顯示，並非僅溫度。**
+- **所有空調相關狀態（溫度、AC開關、風速、出風方向等）皆會根據資料庫 ac_settings table 的即時資料自動同步顯示，並非僅溫度。**
 - 所有溫度（temperature）欄位皆假設為 float 型態，前端已移除 parseFloat 步驟，請確保資料庫 schema 設定正確（FLOAT/REAL/DOUBLE PRECISION）。
 - 前端調整溫度/AC 狀態時，會即時送出 JSON 給 WS，後端自動更新資料庫並廣播。
-- 任何時候都能直接用 psql UPDATE dev_user SET temperature=xx.x; 測試即時同步。
+- 任何時候都能直接用 psql UPDATE ac_settings SET temperature=xx.x; 測試即時同步。
 
 ---
 
-### dev_user table 觸發器（Trigger）說明
+### ac_settings table 觸發器（Trigger）說明
 
-- **notify_dev_user_update_trigger**
+- **notify_ac_settings_update_trigger**
   - 角色：即時推播資料異動。
-  - 用途：當 dev_user 資料表有 INSERT 或 UPDATE 時，會呼叫 notify_dev_user_update() function，進而用 `pg_notify` 把最新 row 的內容（JSON 格式）推送到 PostgreSQL 的通知頻道（dev_user_update）。
+  - 用途：當 ac_settings 資料表有 INSERT 或 UPDATE 時，會呼叫 notify_ac_settings_update() function，進而用 `pg_notify` 把最新 row 的內容（JSON 格式）推送到 PostgreSQL 的通知頻道（ac_settings_update）。
   - 作用：讓 WebSocket server 能即時收到資料異動，並推播給所有前端，實現前後端即時同步。
 
-- **update_dev_user_timestamp**
+- **update_ac_settings_timestamp**
   - 角色：自動更新時間戳。
-  - 用途：當 dev_user 資料表有 UPDATE 時，會自動把 updated_at 欄位設為當下時間（CURRENT_TIMESTAMP）。
+  - 用途：當 ac_settings 資料表有 UPDATE 時，會自動把 updated_at 欄位設為當下時間（CURRENT_TIMESTAMP）。
   - 作用：確保每次資料異動都會自動記錄最後更新時間，方便追蹤資料變動。
 
 - 兩者配合，讓資料異動既有時間戳記，也能即時同步到前端。

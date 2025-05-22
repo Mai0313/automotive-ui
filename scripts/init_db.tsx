@@ -45,7 +45,7 @@ const POSTGRES_URL =
   process.env.POSTGRES_URL ||
   "postgresql://postgres:postgres@localhost:5432/postgres";
 const DB_NAME = "automotive";
-const TABLE_NAME = "dev_user";
+const TABLE_NAME = "ac_settings";
 
 // 從連接字串中提取主機、端口、使用者名稱和密碼
 function parseConnectionString(url: string): {
@@ -121,19 +121,19 @@ FOR EACH ROW
 EXECUTE FUNCTION update_timestamp();
 
 -- create notification function and trigger for real-time updates
-CREATE OR REPLACE FUNCTION notify_dev_user_update()
+CREATE OR REPLACE FUNCTION notify_ac_settings_update()
 RETURNS TRIGGER AS $$
 BEGIN
-  PERFORM pg_notify('dev_user_update', row_to_json(NEW)::text);
+  PERFORM pg_notify('ac_settings_update', row_to_json(NEW)::text);
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS notify_dev_user_update_trigger ON ${TABLE_NAME};
-CREATE TRIGGER notify_dev_user_update_trigger
+DROP TRIGGER IF EXISTS notify_ac_settings_update_trigger ON ${TABLE_NAME};
+CREATE TRIGGER notify_ac_settings_update_trigger
 AFTER INSERT OR UPDATE ON ${TABLE_NAME}
 FOR EACH ROW
-EXECUTE FUNCTION notify_dev_user_update();
+EXECUTE FUNCTION notify_ac_settings_update();
 
 -- 加入初始資料 (如果需要)
 INSERT INTO ${TABLE_NAME} (air_conditioning, fan_speed, airflow_head_on, airflow_body_on, airflow_feet_on, front_defrost_on, rear_defrost_on, temperature)
@@ -145,7 +145,7 @@ ON CONFLICT DO NOTHING;
 const dropTableSQL = `
 -- 刪除觸發器和函數
 DROP TRIGGER IF EXISTS update_${TABLE_NAME}_timestamp ON ${TABLE_NAME};
-DROP TRIGGER IF EXISTS notify_dev_user_update_trigger ON ${TABLE_NAME};
+DROP TRIGGER IF EXISTS notify_ac_settings_update_trigger ON ${TABLE_NAME};
 -- 刪除表
 DROP TABLE IF EXISTS ${TABLE_NAME};
 `;

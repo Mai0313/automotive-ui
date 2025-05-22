@@ -19,7 +19,7 @@ async function start() {
   });
   app.get('/state', async (req, res) => {
     try {
-      const result = await client.query('SELECT * FROM dev_user LIMIT 1');
+      const result = await client.query('SELECT * FROM ac_settings LIMIT 1');
       if (result.rows[0]) {
         res.json(result.rows[0]);
       } else {
@@ -33,9 +33,9 @@ async function start() {
   const httpServer = http.createServer(app);
   httpServer.listen(4001, () => console.log('HTTP server running on http://localhost:4001'));
 
-  // Listen to dev_user updates
-  await client.query('LISTEN dev_user_update');
-  console.log('Listening to dev_user_update channel.');
+  // Listen to ac_settings updates
+  await client.query('LISTEN ac_settings_update');
+  console.log('Listening to ac_settings_update channel.');
 
   // Setup WebSocket server
   const wss = new WebSocketServer({ port: 4000 });
@@ -45,7 +45,7 @@ async function start() {
     console.log('Client connected');
     // Send current state
     try {
-      const res = await client.query('SELECT * FROM dev_user LIMIT 1');
+      const res = await client.query('SELECT * FROM ac_settings LIMIT 1');
       if (res.rows[0]) {
         ws.send(JSON.stringify(res.rows[0]));
       }
@@ -56,7 +56,7 @@ async function start() {
     // On DB notification, send to client
     const handler = (msg) => {
       console.log('[DB_NOTIFY]', msg.payload);
-      if (msg.channel === 'dev_user_update') {
+      if (msg.channel === 'ac_settings_update') {
         ws.send(msg.payload);
       }
     };
@@ -77,7 +77,7 @@ async function start() {
       // If client requests initial state
       if (data.action === 'get_state') {
         try {
-          const res = await client.query('SELECT * FROM dev_user LIMIT 1');
+          const res = await client.query('SELECT * FROM ac_settings LIMIT 1');
           if (res.rows[0]) {
             ws.send(JSON.stringify(res.rows[0]));
           }
@@ -101,7 +101,7 @@ async function start() {
         if (allowedFields.includes(key)) {
           try {
             await client.query(
-              `UPDATE dev_user SET ${key} = $1`,
+              `UPDATE ac_settings SET ${key} = $1`,
               [data[key]]
             );
           } catch (err) {
