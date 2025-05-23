@@ -52,8 +52,8 @@ const MusicScreen: React.FC = () => {
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   // Mock music data
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0.3); // Current song progress (0-1)
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0.3);
 
   // Mock song info
   const songTitle = "Demo Music";

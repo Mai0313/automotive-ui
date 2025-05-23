@@ -138,6 +138,7 @@ App.tsx            # 專案入口
 
   | 欄位名稱             | 型態     | 預設值   | 說明                       |
   |----------------------|----------|----------|----------------------------|
+  | auto_on          | BOOLEAN  | false    | 自動開啟                   |
   | air_conditioning     | BOOLEAN  | true     | 空調開關                   |
   | fan_speed           | INTEGER  | 2        | 風速等級 (0-10)            |
   | airflow_head_on     | BOOLEAN  | false    | 出風至頭部                 |

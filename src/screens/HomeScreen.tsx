@@ -25,19 +25,19 @@ const HomeScreen: React.FC = () => {
   const [activeOverlay, setActiveOverlay] = useState<
     "vehicle" | "music" | "climate" | "ai" | null
   >(null);
-  const [fullScreenOverlay, setFullScreenOverlay] = useState(false);
+  const [fullScreenOverlay, setFullScreenOverlay] = useState<boolean>(false);
   const anim = useRef(new Animated.Value(0)).current;
   const screenW = Dimensions.get("window").width;
   const baseOverlayWidth = screenW * 0.45;
   // overlay width state for resizing
-  const [overlayWidthState, setOverlayWidthState] = useState(baseOverlayWidth);
+  const [overlayWidthState, setOverlayWidthState] = useState<number>(baseOverlayWidth);
   const overlayWidth = fullScreenOverlay ? screenW : overlayWidthState;
 
   // 新增：溫度狀態與調整
   const [temperature, setTemperature] = useState<number>(26);
 
   // 新增：AC 開關狀態
-  const [isAC, setIsAC] = useState(true);
+  const [isAC, setIsAC] = useState<boolean>(true);
   // 车辆警示灯状态
   const [vehicleWarnings, setVehicleWarnings] = useState<Record<string, boolean>>({
     engine_warning: false,

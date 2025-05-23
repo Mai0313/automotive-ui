@@ -46,11 +46,11 @@ const AIAssistantScreen: React.FC = () => {
       timestamp: "10:18 AM",
     },
   ]);
-  const [inputText, setInputText] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const [inputText, setInputText] = useState<string>("");
+  const [isTyping, setIsTyping] = useState<boolean>(false);
   const [abortController, setAbortController] =
     useState<AbortController | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
+  const [isRecording, setIsRecording] = useState<boolean>(false);
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [currentSound, setCurrentSound] = useState<AudioPlayer | null>(null); // For playing TTS audio
 

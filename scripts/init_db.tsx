@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
     airflow_head_on BOOLEAN DEFAULT false NOT NULL,
     airflow_body_on BOOLEAN DEFAULT false NOT NULL,
     airflow_feet_on BOOLEAN DEFAULT true NOT NULL,
+    auto_on BOOLEAN DEFAULT false NOT NULL,
     front_defrost_on BOOLEAN DEFAULT false NOT NULL,
     rear_defrost_on BOOLEAN DEFAULT false NOT NULL,
     temperature FLOAT DEFAULT 22.0 NOT NULL CHECK (temperature BETWEEN 16.0 AND 30.0),

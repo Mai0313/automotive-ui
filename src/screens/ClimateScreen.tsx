@@ -19,22 +19,21 @@ import commonStyles from "../styles/commonStyles";
 
 const ClimateScreen: React.FC = () => {
   // Initial states default to match DB defaults until WS pushes actual values
-  const [acOn, setAcOn] = useState(false);
-  const wsRef = useRef<WebSocket | null>(null);
-  const [fanSpeed, setFanSpeed] = useState(0);
-  const [isAuto, setIsAuto] = useState(false);
-  const [isFrontDefrost, setIsFrontDefrost] = useState(false);
-  const [isRearDefrost, setIsRearDefrost] = useState(false);
+  const [acOn, setAcOn] = useState<boolean>(false);
+  const [fanSpeed, setFanSpeed] = useState<number>(0);
 
   // 新增：每個空調控制按鈕的開關狀態
-  const [autoOn, setAutoOn] = useState(isAuto);
-  const [frontDefrostOn, setFrontDefrostOn] = useState(isFrontDefrost);
-  const [rearDefrostOn, setRearDefrostOn] = useState(isRearDefrost);
+  const [autoOn, setAutoOn] = useState<boolean>(false);
+  const [frontDefrostOn, setFrontDefrostOn] = useState<boolean>(false);
+  const [rearDefrostOn, setRearDefrostOn] = useState<boolean>(false);
 
   // 新增：出風方向三個按鈕的開關狀態
-  const [airFace, setAirFace] = useState(true);
-  const [airMiddle, setAirMiddle] = useState(false);
-  const [airFoot, setAirFoot] = useState(false);
+  const [airFace, setAirFace] = useState<boolean>(true);
+  const [airMiddle, setAirMiddle] = useState<boolean>(false);
+  const [airFoot, setAirFoot] = useState<boolean>(false);
+
+  // WebSocket ref
+  const wsRef = useRef<WebSocket | null>(null);
 
   // Add WebSocket connection for real-time updates
   useEffect(() => {
@@ -49,20 +48,28 @@ const ClimateScreen: React.FC = () => {
     ws.onopen = () => {
       console.log("[WS] connected");
       // Request initial state from server
-      wsRef.current?.send(JSON.stringify({ action: "get_state" }));
+      ws.send(JSON.stringify({ action: "get_state" }));
+      // wsRef.current?.send(JSON.stringify({ action: "get_state" }));
     };
     ws.onmessage = (event) => {
       console.log("[WS] message", event.data);
       try {
         const data = JSON.parse(event.data);
 
-        setAcOn(data.air_conditioning);
-        setFanSpeed(data.fan_speed);
-        setAirFace(data.airflow_head_on);
-        setAirMiddle(data.airflow_body_on);
-        setAirFoot(data.airflow_feet_on);
-        setFrontDefrostOn(data.front_defrost_on);
-        setRearDefrostOn(data.rear_defrost_on);
+        if (typeof data.air_conditioning === "boolean")
+          setAcOn(data.air_conditioning);
+        if (typeof data.auto_on === "boolean") setAutoOn(data.auto_on);
+        if (typeof data.fan_speed === "number") setFanSpeed(data.fan_speed);
+        if (typeof data.airflow_head_on === "boolean")
+          setAirFace(data.airflow_head_on);
+        if (typeof data.airflow_body_on === "boolean")
+          setAirMiddle(data.airflow_body_on);
+        if (typeof data.airflow_feet_on === "boolean")
+          setAirFoot(data.airflow_feet_on);
+        if (typeof data.front_defrost_on === "boolean")
+          setFrontDefrostOn(data.front_defrost_on);
+        if (typeof data.rear_defrost_on === "boolean")
+          setRearDefrostOn(data.rear_defrost_on);
       } catch (err) {
         console.error("Failed to parse WS data", err);
       }
@@ -75,6 +82,7 @@ const ClimateScreen: React.FC = () => {
         .then((data) => {
           console.log("[HTTP] fetched state", data);
           setAcOn(data.air_conditioning);
+          setAutoOn(data.auto_on);
           setFanSpeed(data.fan_speed);
           setAirFace(data.airflow_head_on);
           setAirMiddle(data.airflow_body_on);
@@ -185,8 +193,15 @@ const ClimateScreen: React.FC = () => {
               autoOn && commonStyles.activeButton,
             ]}
             onPress={() => {
-              setAutoOn((v) => !v);
-              setIsAuto((v) => !v);
+              setAutoOn((v) => {
+                const newVal = !v;
+
+                wsRef.current?.send(
+                  JSON.stringify({ auto_on: newVal }),
+                );
+
+                return newVal;
+              });
             }}
           >
             <MaterialCommunityIcons
@@ -216,7 +231,6 @@ const ClimateScreen: React.FC = () => {
                 wsRef.current?.send(
                   JSON.stringify({ front_defrost_on: newVal }),
                 );
-                setIsFrontDefrost(newVal);
 
                 return newVal;
               });
@@ -248,7 +262,6 @@ const ClimateScreen: React.FC = () => {
                 wsRef.current?.send(
                   JSON.stringify({ rear_defrost_on: newVal }),
                 );
-                setIsRearDefrost(newVal);
 
                 return newVal;
               });

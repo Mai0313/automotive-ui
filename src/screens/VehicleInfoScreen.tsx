@@ -48,9 +48,9 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
   const [pickedImage, setPickedImage] = useState<string | null>(null);
 
   // 新增：每個 quick control 的開關狀態
-  const [lockOn, setLockOn] = useState(false);
-  const [lightOn, setLightOn] = useState(false);
-  const [autoDriveOn, setAutoDriveOn] = useState(false);
+  const [lockOn, setLockOn] = useState<boolean>(false);
+  const [lightOn, setLightOn] = useState<boolean>(false);
+  const [autoDriveOn, setAutoDriveOn] = useState<boolean>(false);
 
   // Filter active warnings
   const activeWarnings = Object.entries(vehicleWarnings).filter(([, v]) => v);
