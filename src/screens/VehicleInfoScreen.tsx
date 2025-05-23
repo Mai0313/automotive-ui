@@ -130,17 +130,6 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
           </View>
         </View>
 
-        {/* Vehicle Visualization */}
-        {/* 移除 safetyFeatures 感測器線條區塊，只保留車輛圖片 */}
-        <View style={styles.vehicleVisual}>
-          <Image
-            source={{
-              uri: "https://via.placeholder.com/800x400/111/fff?text=Car+Visual",
-            }}
-            style={styles.carImage}
-          />
-        </View>
-
         {/* Quick Controls */}
         <View style={styles.quickControls}>
           <TouchableOpacity
