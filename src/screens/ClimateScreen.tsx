@@ -51,8 +51,6 @@ const ClimateScreen: React.FC = () => {
       // Request initial state from server
       wsRef.current?.send(JSON.stringify({ action: "get_state" }));
     };
-    ws.onerror = (err) => console.error("[WS] error", err);
-    ws.onclose = () => console.log("[WS] closed");
     ws.onmessage = (event) => {
       console.log("[WS] message", event.data);
       try {
@@ -63,13 +61,30 @@ const ClimateScreen: React.FC = () => {
         setAirFace(data.airflow_head_on);
         setAirMiddle(data.airflow_body_on);
         setAirFoot(data.airflow_feet_on);
-        // 新增同步除霜狀態
         setFrontDefrostOn(data.front_defrost_on);
         setRearDefrostOn(data.rear_defrost_on);
       } catch (err) {
         console.error("Failed to parse WS data", err);
       }
     };
+    ws.onerror = (err) => {
+      console.error("[WS] error", err);
+      // Fetch fallback
+      fetch("http://localhost:4001/state")
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("[HTTP] fetched state", data);
+          setAcOn(data.air_conditioning);
+          setFanSpeed(data.fan_speed);
+          setAirFace(data.airflow_head_on);
+          setAirMiddle(data.airflow_body_on);
+          setAirFoot(data.airflow_feet_on);
+          setFrontDefrostOn(data.front_defrost_on);
+          setRearDefrostOn(data.rear_defrost_on);
+        })
+        .catch((fetchErr) => console.error("[HTTP] error", fetchErr));
+    };
+    ws.onclose = () => console.log("[WS] closed");
 
     return () => {
       ws.close();
