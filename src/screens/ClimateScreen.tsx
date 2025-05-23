@@ -196,9 +196,7 @@ const ClimateScreen: React.FC = () => {
               setAutoOn((v) => {
                 const newVal = !v;
 
-                wsRef.current?.send(
-                  JSON.stringify({ auto_on: newVal }),
-                );
+                wsRef.current?.send(JSON.stringify({ auto_on: newVal }));
 
                 return newVal;
               });

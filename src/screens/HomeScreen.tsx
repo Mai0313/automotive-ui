@@ -30,7 +30,8 @@ const HomeScreen: React.FC = () => {
   const screenW = Dimensions.get("window").width;
   const baseOverlayWidth = screenW * 0.45;
   // overlay width state for resizing
-  const [overlayWidthState, setOverlayWidthState] = useState<number>(baseOverlayWidth);
+  const [overlayWidthState, setOverlayWidthState] =
+    useState<number>(baseOverlayWidth);
   const overlayWidth = fullScreenOverlay ? screenW : overlayWidthState;
 
   // 新增：溫度狀態與調整
@@ -39,7 +40,9 @@ const HomeScreen: React.FC = () => {
   // 新增：AC 開關狀態
   const [isAC, setIsAC] = useState<boolean>(true);
   // 车辆警示灯状态
-  const [vehicleWarnings, setVehicleWarnings] = useState<Record<string, boolean>>({
+  const [vehicleWarnings, setVehicleWarnings] = useState<
+    Record<string, boolean>
+  >({
     engine_warning: false,
     oil_pressure_warning: false,
     battery_warning: false,
@@ -81,6 +84,7 @@ const HomeScreen: React.FC = () => {
           setIsAC(data.air_conditioning);
         // 處理車輛警示燈狀態
         const warningKeys = Object.keys(vehicleWarnings);
+
         warningKeys.forEach((key) => {
           if (key in data && typeof data[key] === "boolean") {
             setVehicleWarnings((prev) => ({ ...prev, [key]: data[key] }));
@@ -241,7 +245,9 @@ const HomeScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
           {/* Render corresponding screen inside overlay */}
-          {activeOverlay === "vehicle" && <VehicleInfoScreen vehicleWarnings={vehicleWarnings} />}
+          {activeOverlay === "vehicle" && (
+            <VehicleInfoScreen vehicleWarnings={vehicleWarnings} />
+          )}
           {activeOverlay === "music" && <MusicScreen />}
           {activeOverlay === "climate" && <ClimateScreen />}
           {activeOverlay === "ai" && <AIAssistantScreen />}
@@ -470,16 +476,16 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   iconWithBadge: {
-    position: 'relative',
+    position: "relative",
   },
   badge: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     right: 0,
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#e74c3c',
+    backgroundColor: "#e74c3c",
   },
 });
 

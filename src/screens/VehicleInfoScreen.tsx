@@ -20,18 +20,18 @@ import commonStyles from "../styles/commonStyles";
 
 // mapping from warning keys to icon names
 const warningIconMap: Record<string, string> = {
-  engine_warning: 'engine',
-  oil_pressure_warning: 'oil-temperature',
-  battery_warning: 'car-battery',
-  coolant_temp_warning: 'thermometer',
-  brake_warning: 'car-brake-alert',
-  abs_warning: 'car-brake-abs',
-  tpms_warning: 'car-tire-alert',
-  airbag_warning: 'airbag',
-  low_fuel_warning: 'fuel',
-  door_ajar_warning: 'door-open',
-  seat_belt_warning: 'seatbelt',
-  exterior_light_failure_warning: 'lightbulb-outline',
+  engine_warning: "engine",
+  oil_pressure_warning: "oil-temperature",
+  battery_warning: "car-battery",
+  coolant_temp_warning: "thermometer",
+  brake_warning: "car-brake-alert",
+  abs_warning: "car-brake-abs",
+  tpms_warning: "car-tire-alert",
+  airbag_warning: "airbag",
+  low_fuel_warning: "fuel",
+  door_ajar_warning: "door-open",
+  seat_belt_warning: "seatbelt",
+  exterior_light_failure_warning: "lightbulb-outline",
 };
 
 interface Props {
@@ -78,9 +78,14 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
           {activeWarnings.map(([key]) => (
             <Icon
               key={key}
-              name={(warningIconMap[key] || 'alert-circle-outline') as React.ComponentProps<typeof Icon>['name']}
-              size={30}
               color="#e74c3c"
+              name={
+                (warningIconMap[key] ||
+                  "alert-circle-outline") as React.ComponentProps<
+                  typeof Icon
+                >["name"]
+              }
+              size={30}
               style={styles.warningIcon}
             />
           ))}
@@ -120,11 +125,7 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
         {/* Range & Battery Info */}
         <View style={styles.rangeContainer}>
           <View style={styles.batteryInfoSmall}>
-            <Icon
-              color="#4CAF50"
-              name={`battery-${batteryLevel}`}
-              size={22}
-            />
+            <Icon color="#4CAF50" name={`battery-${batteryLevel}`} size={22} />
             <Text style={styles.rangeTextSmall}>{range}</Text>
           </View>
         </View>

@@ -269,6 +269,7 @@ async function recreateTable(): Promise<void> {
           /\sCOMMENT\s+'[^']*'/g,
           "",
         );
+
         await client.query(simplifiedVehicleSQL);
         logger.result(
           "Vehicle info table created with simplified SQL (without comments)",
@@ -317,6 +318,7 @@ async function recreateTable(): Promise<void> {
       );`,
       [TABLE_NAME],
     );
+
     if (acTableCheck.rows[0].exists) {
       logger.result("ac_settings table verified and ready");
       logger.operation("Table structure for ac_settings:");
@@ -327,6 +329,7 @@ async function recreateTable(): Promise<void> {
          ORDER BY ordinal_position;`,
         [TABLE_NAME],
       );
+
       acTableStructure.rows.forEach((col) => {
         logger.result(
           `${col.column_name}: ${col.data_type}${col.is_nullable === "NO" ? " NOT NULL" : ""}${col.column_default ? ` DEFAULT ${col.column_default}` : ""}`,
@@ -344,6 +347,7 @@ async function recreateTable(): Promise<void> {
       );`,
       [VEHICLE_TABLE_NAME],
     );
+
     if (vehicleTableCheck.rows[0].exists) {
       logger.result("vehicle_info table verified and ready");
       logger.operation("Table structure for vehicle_info:");
@@ -354,6 +358,7 @@ async function recreateTable(): Promise<void> {
          ORDER BY ordinal_position;`,
         [VEHICLE_TABLE_NAME],
       );
+
       vehicleTableStructure.rows.forEach((col) => {
         logger.result(
           `${col.column_name}: ${col.data_type}${col.is_nullable === "NO" ? " NOT NULL" : ""}${col.column_default ? ` DEFAULT ${col.column_default}` : ""}`,
