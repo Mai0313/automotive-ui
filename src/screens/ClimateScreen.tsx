@@ -1,7 +1,3 @@
-// TODO: 若需感測器數據請用 expo-sensors
-// import { Accelerometer, Gyroscope, Magnetometer, Barometer } from "expo-sensors";
-// 參考：https://docs.expo.dev/versions/latest/sdk/sensors/
-
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
