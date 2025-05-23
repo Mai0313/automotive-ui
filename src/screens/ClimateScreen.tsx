@@ -43,9 +43,7 @@ const ClimateScreen: React.FC = () => {
     wsRef.current = ws;
     ws.onopen = () => {
       console.log("[WS] connected");
-      // Request initial state from server
-      ws.send(JSON.stringify({ action: "get_state" }));
-      // wsRef.current?.send(JSON.stringify({ action: "get_state" }));
+      wsRef.current?.send(JSON.stringify({ action: "get_state" }));
     };
     ws.onmessage = (event) => {
       console.log("[WS] message", event.data);
