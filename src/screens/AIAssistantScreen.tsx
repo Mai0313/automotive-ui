@@ -23,11 +23,7 @@ import {
   type AudioStatus, // Import AudioStatus type
 } from "expo-audio";
 
-import {
-  chatCompletion,
-  transcribeAudio,
-  textToSpeech,
-} from "../components/openai"; // Added textToSpeech
+import { chatCompletion, transcribeAudio, textToSpeech } from "../hooks/openai"; // Added textToSpeech
 import commonStyles from "../styles/commonStyles";
 
 interface Message {
