@@ -141,6 +141,8 @@ App.tsx            # 專案入口
   | auto_on          | BOOLEAN   | false  | 自動開啟               |
   | air_conditioning | BOOLEAN   | true   | 空調開關               |
   | fan_speed        | INTEGER   | 2      | 風速等級 (0-10)        |
+  | front_defrost_on | BOOLEAN   | false  | 前擋風玻璃除霜         |
+  | rear_defrost_on  | BOOLEAN   | false  | 後擋風玻璃除霜         |
   | airflow_head_on  | BOOLEAN   | false  | 出風至頭部             |
   | airflow_body_on  | BOOLEAN   | false  | 出風至身體             |
   | airflow_feet_on  | BOOLEAN   | true   | 出風至腳部             |
