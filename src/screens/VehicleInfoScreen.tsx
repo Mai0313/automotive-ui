@@ -72,25 +72,6 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
 
   return (
     <SafeAreaView style={commonStyles.container}>
-      {/* 警示燈顯示 */}
-      {activeWarnings.length > 0 && (
-        <View style={styles.warningBar}>
-          {activeWarnings.map(([key]) => (
-            <Icon
-              key={key}
-              color="#e74c3c"
-              name={
-                (warningIconMap[key] ||
-                  "alert-circle-outline") as React.ComponentProps<
-                  typeof Icon
-                >["name"]
-              }
-              size={30}
-              style={styles.warningIcon}
-            />
-          ))}
-        </View>
-      )}
       {/* Main Content */}
       <View style={styles.content}>
         {/* Main Speed Display */}
@@ -226,6 +207,25 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
           />
         )}
       </View>
+      {/* 警示燈顯示 */}
+      {activeWarnings.length > 0 && (
+        <View style={styles.warningBar}>
+          {activeWarnings.map(([key]) => (
+            <Icon
+              key={key}
+              color="#e74c3c"
+              name={
+                (warningIconMap[key] ||
+                  "alert-circle-outline") as React.ComponentProps<
+                  typeof Icon
+                >["name"]
+              }
+              size={30}
+              style={styles.warningIcon}
+            />
+          ))}
+        </View>
+      )}
     </SafeAreaView>
   );
 };

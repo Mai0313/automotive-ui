@@ -13,10 +13,11 @@ import {
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 
 import MapView from "../components/MapView"; // Import MapView
-import { warningIconMap } from "./VehicleInfoScreen";
+import DemoButtons from "../components/DemoButtons";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useHomeClimateSettings from "../hooks/useHomeClimateSettings";
 
+import { warningIconMap } from "./VehicleInfoScreen";
 import VehicleInfoScreen from "./VehicleInfoScreen";
 import MusicScreen from "./MusicScreen";
 import ClimateScreen from "./ClimateScreen";
@@ -179,19 +180,26 @@ const HomeScreen: React.FC = () => {
     }
   };
   // Active warning keys for notification icon
-  const activeWarningKeys = Object.keys(vehicleWarnings).filter(key => vehicleWarnings[key]);
+  const activeWarningKeys = Object.keys(vehicleWarnings).filter(
+    (key) => vehicleWarnings[key],
+  );
 
   return (
     <View style={{ flex: 1 }}>
+      {/* Demo-only buttons to trigger vehicle warnings */}
+      <DemoButtons ws={wsRef.current} />
       {/* Notification icon for first active warning */}
       {activeWarningKeys.length > 0 && (
         <View style={styles.notificationIcon}>
           <MaterialCommunityIcons
+            color="#e74c3c"
             name={
-              (warningIconMap[activeWarningKeys[0]] || "alert-circle-outline") as React.ComponentProps<typeof MaterialCommunityIcons>["name"]
+              (warningIconMap[activeWarningKeys[0]] ||
+                "alert-circle-outline") as React.ComponentProps<
+                typeof MaterialCommunityIcons
+              >["name"]
             }
             size={28}
-            color="#e74c3c"
           />
         </View>
       )}
