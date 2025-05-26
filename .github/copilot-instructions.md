@@ -198,3 +198,6 @@ App.tsx            # 專案入口
 - 2025-05-21: 新增資料庫即時同步（WebSocket/REST fallback）功能，HomeScreen/ClimateScreen 支援自動取得與推送溫度、AC 狀態，並處理 Postgres FLOAT 型態字串轉換。
 - 2025-05-22: HomeScreen 溫度調整 chevron-down/chevron-up 按鈕僅於 AC 開啟 (isAC=true) 時顯示，AC 關閉時不顯示溫度調整按鈕，僅顯示關閉狀態。
 - 2025-05-22: 所有 PostgreSQL function 與 trigger 已整合進 `scripts/init_db.tsx`，統一命名，並更新相關說明文件。
+- 2025-05-26: 將 ClimateScreen.tsx 與 HomeScreen.tsx 中的 WebSocket 通訊與狀態管理邏輯抽取至自訂 Hook (`useClimateSettings`、`useHomeClimateSettings`)，並移除畫面元件內多餘重複程式碼。
+- 2025-05-26: 新增 `src/components/ControlButton.tsx` 統一 ClimateScreen 控制按鈕樣式，並在 ClimateScreen 中替換原有冗長的 `TouchableOpacity + Icon + Text` 寫法。
+- 2025-05-26: 在 HomeScreen 底部控制欄中加入 `handleOverlayPress` 函式，精簡各按鈕的開/關浮層邏輯判斷，使程式碼更易維護。

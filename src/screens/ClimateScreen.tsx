@@ -1,140 +1,46 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-} from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Slider from "@react-native-community/slider"; // Ensure this is installed or use a different slider
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as Haptics from "expo-haptics";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
+import useClimateSettings from "../hooks/useClimateSettings";
 import commonStyles from "../styles/commonStyles";
+import ControlButton from "../components/ControlButton";
 
 const ClimateScreen: React.FC = () => {
-  // Initial states default to match DB defaults until WS pushes actual values
-  const [acOn, setAcOn] = useState<boolean>(false);
-  const [fanSpeed, setFanSpeed] = useState<number>(0);
-
-  // 新增：每個空調控制按鈕的開關狀態
-  const [autoOn, setAutoOn] = useState<boolean>(false);
-  const [frontDefrostOn, setFrontDefrostOn] = useState<boolean>(false);
-  const [rearDefrostOn, setRearDefrostOn] = useState<boolean>(false);
-
-  // 新增：出風方向三個按鈕的開關狀態
-  const [airFace, setAirFace] = useState<boolean>(true);
-  const [airMiddle, setAirMiddle] = useState<boolean>(false);
-  const [airFoot, setAirFoot] = useState<boolean>(false);
-
-  // WebSocket ref
-  const wsRef = useRef<WebSocket | null>(null);
-
-  // Add WebSocket connection for real-time updates
-  useEffect(() => {
-    // Choose WS URL based on platform (Android emulator requires 10.0.2.2)
-    const wsUrl =
-      Platform.OS === "android" ? "ws://10.0.2.2:4000" : "ws://localhost:4000";
-
-    console.log("[WS] connecting to", wsUrl);
-    const ws = new WebSocket(wsUrl);
-
-    wsRef.current = ws;
-    ws.onopen = () => {
-      console.log("[WS] connected");
-      wsRef.current?.send(JSON.stringify({ action: "get_state" }));
-    };
-    ws.onmessage = (event) => {
-      console.log("[WS] message", event.data);
-      try {
-        const data = JSON.parse(event.data);
-
-        if (typeof data.air_conditioning === "boolean")
-          setAcOn(data.air_conditioning);
-        if (typeof data.auto_on === "boolean") setAutoOn(data.auto_on);
-        if (typeof data.fan_speed === "number") setFanSpeed(data.fan_speed);
-        if (typeof data.airflow_head_on === "boolean")
-          setAirFace(data.airflow_head_on);
-        if (typeof data.airflow_body_on === "boolean")
-          setAirMiddle(data.airflow_body_on);
-        if (typeof data.airflow_feet_on === "boolean")
-          setAirFoot(data.airflow_feet_on);
-        if (typeof data.front_defrost_on === "boolean")
-          setFrontDefrostOn(data.front_defrost_on);
-        if (typeof data.rear_defrost_on === "boolean")
-          setRearDefrostOn(data.rear_defrost_on);
-      } catch (err) {
-        console.error("Failed to parse WS data", err);
-      }
-    };
-    ws.onerror = (err) => {
-      console.error("[WS] error", err);
-      // Fetch fallback
-      fetch("http://localhost:4001/state")
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("[HTTP] fetched state", data);
-          setAcOn(data.air_conditioning);
-          setAutoOn(data.auto_on);
-          setFanSpeed(data.fan_speed);
-          setAirFace(data.airflow_head_on);
-          setAirMiddle(data.airflow_body_on);
-          setAirFoot(data.airflow_feet_on);
-          setFrontDefrostOn(data.front_defrost_on);
-          setRearDefrostOn(data.rear_defrost_on);
-        })
-        .catch((fetchErr) => console.error("[HTTP] error", fetchErr));
-    };
-    ws.onclose = () => console.log("[WS] closed");
-
-    return () => {
-      ws.close();
-      wsRef.current = null;
-    };
-  }, []);
-
-  // 震動回饋
-  const vibrate = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  };
-
-  // Fan speed controls
-  const increaseFan = () => setFanSpeed((prev) => Math.min(prev + 1, 10));
-  const decreaseFan = () => setFanSpeed((prev) => Math.max(prev - 1, 0));
-
-  // AC toggle
-  const toggleAC = () => {
-    const newState = !acOn;
-
-    setAcOn(newState);
-    vibrate();
-    wsRef.current?.send(JSON.stringify({ air_conditioning: newState }));
-  };
+  const {
+    acOn,
+    toggleAc,
+    fanSpeed,
+    increaseFan,
+    decreaseFan,
+    setFanSpeed,
+    autoOn,
+    toggleAuto,
+    frontDefrostOn,
+    toggleFrontDefrost,
+    rearDefrostOn,
+    toggleRearDefrost,
+    airFace,
+    toggleAirFace,
+    airMiddle,
+    toggleAirMiddle,
+    airFoot,
+    toggleAirFoot,
+  } = useClimateSettings();
 
   return (
     <SafeAreaView style={commonStyles.container}>
       {/* Main Climate Controls */}
       <View style={styles.controlsContainer}>
         {/* AC On/Off Toggle */}
-        <TouchableOpacity
-          style={[
-            commonStyles.controlButton,
-            acOn && commonStyles.activeButton,
-          ]}
-          onPress={toggleAC}
-        >
-          <MaterialCommunityIcons
-            color={acOn ? "#3498db" : "#fff"}
-            name="snowflake"
-            size={24}
-          />
-          <Text
-            style={[commonStyles.controlText, acOn && commonStyles.activeText]}
-          >
-            空調
-          </Text>
-        </TouchableOpacity>
+        <ControlButton
+          active={acOn}
+          iconName="snowflake"
+          label="空調"
+          onPress={toggleAc}
+        />
 
         {/* Fan Speed Control */}
         <View style={styles.fanControl}>
@@ -154,10 +60,7 @@ const ClimateScreen: React.FC = () => {
               style={styles.slider}
               thumbTintColor="#fff"
               value={fanSpeed}
-              onValueChange={(val) => {
-                setFanSpeed(val);
-                wsRef.current?.send(JSON.stringify({ fan_speed: val }));
-              }}
+              onValueChange={setFanSpeed}
             />
 
             <TouchableOpacity onPress={increaseFan}>
@@ -180,99 +83,24 @@ const ClimateScreen: React.FC = () => {
 
         {/* Climate Controls */}
         <View style={styles.climateControls}>
-          {/* Auto */}
-          <TouchableOpacity
-            style={[
-              commonStyles.controlButton,
-              autoOn && commonStyles.activeButton,
-            ]}
-            onPress={() => {
-              setAutoOn((v) => {
-                const newVal = !v;
-
-                wsRef.current?.send(JSON.stringify({ auto_on: newVal }));
-
-                return newVal;
-              });
-            }}
-          >
-            <MaterialCommunityIcons
-              color={autoOn ? "#3498db" : "#fff"}
-              name="auto-fix"
-              size={24}
-            />
-            <Text
-              style={[
-                commonStyles.controlText,
-                autoOn && commonStyles.activeText,
-              ]}
-            >
-              自動
-            </Text>
-          </TouchableOpacity>
-          {/* Defrost */}
-          <TouchableOpacity
-            style={[
-              commonStyles.controlButton,
-              frontDefrostOn && commonStyles.activeButton,
-            ]}
-            onPress={() => {
-              setFrontDefrostOn((v) => {
-                const newVal = !v;
-
-                wsRef.current?.send(
-                  JSON.stringify({ front_defrost_on: newVal }),
-                );
-
-                return newVal;
-              });
-            }}
-          >
-            <MaterialCommunityIcons
-              color={frontDefrostOn ? "#3498db" : "#fff"}
-              name="car-defrost-front"
-              size={24}
-            />
-            <Text
-              style={[
-                commonStyles.controlText,
-                frontDefrostOn && commonStyles.activeText,
-              ]}
-            >
-              前除霜
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              commonStyles.controlButton,
-              rearDefrostOn && commonStyles.activeButton,
-            ]}
-            onPress={() => {
-              setRearDefrostOn((v) => {
-                const newVal = !v;
-
-                wsRef.current?.send(
-                  JSON.stringify({ rear_defrost_on: newVal }),
-                );
-
-                return newVal;
-              });
-            }}
-          >
-            <MaterialCommunityIcons
-              color={rearDefrostOn ? "#3498db" : "#fff"}
-              name="car-defrost-rear"
-              size={24}
-            />
-            <Text
-              style={[
-                commonStyles.controlText,
-                rearDefrostOn && commonStyles.activeText,
-              ]}
-            >
-              後除霜
-            </Text>
-          </TouchableOpacity>
+          <ControlButton
+            active={autoOn}
+            iconName="auto-fix"
+            label="自動"
+            onPress={toggleAuto}
+          />
+          <ControlButton
+            active={frontDefrostOn}
+            iconName="car-defrost-front"
+            label="前除霜"
+            onPress={toggleFrontDefrost}
+          />
+          <ControlButton
+            active={rearDefrostOn}
+            iconName="car-defrost-rear"
+            label="後除霜"
+            onPress={toggleRearDefrost}
+          />
         </View>
 
         {/* Air Flow Direction */}
@@ -280,101 +108,32 @@ const ClimateScreen: React.FC = () => {
           <Text style={styles.controlLabel}>出風方向</Text>
 
           <View style={styles.airFlowButtons}>
-            <TouchableOpacity
-              style={[
-                styles.airFlowButton,
-                airFace && commonStyles.activeButton,
-              ]}
-              onPress={() => {
-                setAirFace((v) => {
-                  const newVal = !v;
+            <ControlButton
+              active={airFace}
+              iconName="emoticon-outline"
+              label="面部"
+              style={styles.airFlowButton}
+              textStyle={commonStyles.controlText}
+              onPress={toggleAirFace}
+            />
 
-                  wsRef.current?.send(
-                    JSON.stringify({ airflow_head_on: newVal }),
-                  );
+            <ControlButton
+              active={airMiddle}
+              iconName="car-seat"
+              label="中間"
+              style={styles.airFlowButton}
+              textStyle={commonStyles.controlText}
+              onPress={toggleAirMiddle}
+            />
 
-                  return newVal;
-                });
-              }}
-            >
-              <MaterialCommunityIcons
-                color={airFace ? "#3498db" : "#fff"}
-                name="emoticon-outline"
-                size={24}
-              />
-              <Text
-                style={[
-                  commonStyles.controlText,
-                  airFace && commonStyles.activeText,
-                ]}
-              >
-                面部
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.airFlowButton,
-                airMiddle && commonStyles.activeButton,
-              ]}
-              onPress={() => {
-                setAirMiddle((v) => {
-                  const newVal = !v;
-
-                  wsRef.current?.send(
-                    JSON.stringify({ airflow_body_on: newVal }),
-                  );
-
-                  return newVal;
-                });
-              }}
-            >
-              <MaterialCommunityIcons
-                color={airMiddle ? "#3498db" : "#fff"}
-                name="car-seat"
-                size={24}
-              />
-              <Text
-                style={[
-                  commonStyles.controlText,
-                  airMiddle && commonStyles.activeText,
-                ]}
-              >
-                中間
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.airFlowButton,
-                airFoot && commonStyles.activeButton,
-              ]}
-              onPress={() => {
-                setAirFoot((v) => {
-                  const newVal = !v;
-
-                  wsRef.current?.send(
-                    JSON.stringify({ airflow_feet_on: newVal }),
-                  );
-
-                  return newVal;
-                });
-              }}
-            >
-              <MaterialCommunityIcons
-                color={airFoot ? "#3498db" : "#fff"}
-                name="shoe-print"
-                size={24}
-              />
-              <Text
-                style={[
-                  commonStyles.controlText,
-                  airFoot && commonStyles.activeText,
-                ]}
-              >
-                腳部
-              </Text>
-            </TouchableOpacity>
+            <ControlButton
+              active={airFoot}
+              iconName="shoe-print"
+              label="腳部"
+              style={styles.airFlowButton}
+              textStyle={commonStyles.controlText}
+              onPress={toggleAirFoot}
+            />
           </View>
         </View>
 

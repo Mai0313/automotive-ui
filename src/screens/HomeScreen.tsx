@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import { Platform } from "react-native"; // ensure Platform is imported
 import {
   View,
@@ -14,6 +14,7 @@ import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 
 import MapView from "../components/MapView"; // Import MapView
 import useCurrentLocation from "../hooks/useCurrentLocation";
+import useHomeClimateSettings from "../hooks/useHomeClimateSettings";
 
 import VehicleInfoScreen from "./VehicleInfoScreen";
 import MusicScreen from "./MusicScreen";
@@ -22,25 +23,25 @@ import AIAssistantScreen from "./AIAssistantScreen";
 // import NavigationScreen from "./NavigationScreen";
 
 const HomeScreen: React.FC = () => {
-  const [activeOverlay, setActiveOverlay] = useState<
+  const [activeOverlay, setActiveOverlay] = React.useState<
     "vehicle" | "music" | "climate" | "ai" | null
   >(null);
-  const [fullScreenOverlay, setFullScreenOverlay] = useState<boolean>(false);
+  const [fullScreenOverlay, setFullScreenOverlay] =
+    React.useState<boolean>(false);
   const anim = useRef(new Animated.Value(0)).current;
   const screenW = Dimensions.get("window").width;
   const baseOverlayWidth = screenW * 0.45;
   // overlay width state for resizing
   const [overlayWidthState, setOverlayWidthState] =
-    useState<number>(baseOverlayWidth);
+    React.useState<number>(baseOverlayWidth);
   const overlayWidth = fullScreenOverlay ? screenW : overlayWidthState;
 
-  // 新增：溫度狀態與調整
-  const [temperature, setTemperature] = useState<number>(26);
+  // 使用自定義 hook 同步溫度與空調狀態
+  const { temperature, isAC, increaseTemp, decreaseTemp, toggleAC } =
+    useHomeClimateSettings();
 
-  // 新增：AC 開關狀態
-  const [isAC, setIsAC] = useState<boolean>(true);
   // 车辆警示灯状态
-  const [vehicleWarnings, setVehicleWarnings] = useState<
+  const [vehicleWarnings, setVehicleWarnings] = React.useState<
     Record<string, boolean>
   >({
     engine_warning: false,
@@ -74,15 +75,9 @@ const HomeScreen: React.FC = () => {
       ws.send(JSON.stringify({ action: "get_state" }));
     };
     ws.onmessage = (event) => {
-      console.log("[Home WS] message", event.data);
+      // 處理車輛警示燈狀態
       try {
         const data = JSON.parse(event.data);
-
-        if (typeof data.temperature === "number")
-          setTemperature(data.temperature);
-        if (typeof data.air_conditioning === "boolean")
-          setIsAC(data.air_conditioning);
-        // 處理車輛警示燈狀態
         const warningKeys = Object.keys(vehicleWarnings);
 
         warningKeys.forEach((key) => {
@@ -100,11 +95,14 @@ const HomeScreen: React.FC = () => {
       fetch("http://localhost:4001/state")
         .then((res) => res.json())
         .then((data) => {
-          console.log("[Home HTTP] fetched state", data);
-          if (typeof data.temperature === "number")
-            setTemperature(data.temperature);
-          if (typeof data.air_conditioning === "boolean")
-            setIsAC(data.air_conditioning);
+          // 處理車輛警示燈狀態 fallback
+          const warningKeys = Object.keys(vehicleWarnings);
+
+          warningKeys.forEach((key) => {
+            if (key in data && typeof data[key] === "boolean") {
+              setVehicleWarnings((prev) => ({ ...prev, [key]: data[key] }));
+            }
+          });
         })
         .catch((fetchErr) => console.error("[Home HTTP] error", fetchErr));
     };
@@ -123,34 +121,7 @@ const HomeScreen: React.FC = () => {
       useNativeDriver: Platform.OS !== "web", // web 平台設為 false，避免警告
     }).start();
   }, [activeOverlay, fullScreenOverlay]);
-  // Override user controls to send updates to server
-  const increaseTempSync = () => {
-    setTemperature((prev) => {
-      const newVal = Math.min(prev + 0.5, 28);
-
-      wsRef.current?.send(JSON.stringify({ temperature: newVal }));
-
-      return newVal;
-    });
-  };
-  const decreaseTempSync = () => {
-    setTemperature((prev) => {
-      const newVal = Math.max(prev - 0.5, 16);
-
-      wsRef.current?.send(JSON.stringify({ temperature: newVal }));
-
-      return newVal;
-    });
-  };
-  const toggleACSync = () => {
-    setIsAC((prev) => {
-      const newVal = !prev;
-
-      wsRef.current?.send(JSON.stringify({ air_conditioning: newVal }));
-
-      return newVal;
-    });
-  };
+  // 不再需要手動 WS，已在 hook 中處理
 
   // panel slides in/out horizontally from left
   const translateX = anim.interpolate({
@@ -196,6 +167,16 @@ const HomeScreen: React.FC = () => {
       </View>
     );
   }
+
+  // Helper to toggle overlay selection
+  const handleOverlayPress = (type: "vehicle" | "music" | "climate" | "ai") => {
+    if (activeOverlay === type) {
+      setActiveOverlay(null);
+    } else {
+      setActiveOverlay(type);
+      setFullScreenOverlay(false);
+    }
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -260,14 +241,7 @@ const HomeScreen: React.FC = () => {
         {/* 車輛 icon */}
         <TouchableOpacity
           style={styles.bottomBarBtn}
-          onPress={() => {
-            if (activeOverlay === "vehicle") {
-              setActiveOverlay(null);
-            } else {
-              setActiveOverlay("vehicle");
-              setFullScreenOverlay(false);
-            }
-          }}
+          onPress={() => handleOverlayPress("vehicle")}
         >
           <View style={styles.iconWithBadge}>
             <MaterialCommunityIcons color="#fff" name="car" size={28} />
@@ -279,14 +253,7 @@ const HomeScreen: React.FC = () => {
         {/* AC icon */}
         <TouchableOpacity
           style={styles.bottomBarBtn}
-          onPress={() => {
-            if (activeOverlay === "climate") {
-              setActiveOverlay(null);
-            } else {
-              setActiveOverlay("climate");
-              setFullScreenOverlay(false);
-            }
-          }}
+          onPress={() => handleOverlayPress("climate")}
         >
           <MaterialCommunityIcons
             color="#fff"
@@ -299,18 +266,18 @@ const HomeScreen: React.FC = () => {
           {isAC && (
             <TouchableOpacity
               style={styles.bottomBarBtn}
-              onPress={decreaseTempSync}
+              onPress={increaseTemp}
             >
               <MaterialCommunityIcons
                 color="#fff"
-                name="chevron-down"
+                name="chevron-up"
                 size={28}
               />
             </TouchableOpacity>
           )}
           <TouchableOpacity
             style={[styles.tempTextWrap, !isAC && styles.tempOff]}
-            onPress={toggleACSync}
+            onPress={toggleAC}
           >
             {isAC ? (
               <Animated.Text style={styles.tempText}>
@@ -330,11 +297,11 @@ const HomeScreen: React.FC = () => {
           {isAC && (
             <TouchableOpacity
               style={styles.bottomBarBtn}
-              onPress={increaseTempSync}
+              onPress={decreaseTemp}
             >
               <MaterialCommunityIcons
                 color="#fff"
-                name="chevron-up"
+                name="chevron-down"
                 size={28}
               />
             </TouchableOpacity>
@@ -343,28 +310,14 @@ const HomeScreen: React.FC = () => {
         {/* 音樂 icon */}
         <TouchableOpacity
           style={styles.bottomBarBtn}
-          onPress={() => {
-            if (activeOverlay === "music") {
-              setActiveOverlay(null);
-            } else {
-              setActiveOverlay("music");
-              setFullScreenOverlay(false);
-            }
-          }}
+          onPress={() => handleOverlayPress("music")}
         >
           <MaterialIcons color="#fff" name="music-note" size={28} />
         </TouchableOpacity>
         {/* AI icon */}
         <TouchableOpacity
           style={styles.bottomBarBtn}
-          onPress={() => {
-            if (activeOverlay === "ai") {
-              setActiveOverlay(null);
-            } else {
-              setActiveOverlay("ai");
-              setFullScreenOverlay(false);
-            }
-          }}
+          onPress={() => handleOverlayPress("ai")}
         >
           <MaterialIcons color="#fff" name="mic" size={28} />
         </TouchableOpacity>
