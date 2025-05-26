@@ -13,6 +13,7 @@ import {
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 
 import MapView from "../components/MapView"; // Import MapView
+import { warningIconMap } from "./VehicleInfoScreen";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useHomeClimateSettings from "../hooks/useHomeClimateSettings";
 
@@ -177,9 +178,23 @@ const HomeScreen: React.FC = () => {
       setFullScreenOverlay(false);
     }
   };
+  // Active warning keys for notification icon
+  const activeWarningKeys = Object.keys(vehicleWarnings).filter(key => vehicleWarnings[key]);
 
   return (
     <View style={{ flex: 1 }}>
+      {/* Notification icon for first active warning */}
+      {activeWarningKeys.length > 0 && (
+        <View style={styles.notificationIcon}>
+          <MaterialCommunityIcons
+            name={
+              (warningIconMap[activeWarningKeys[0]] || "alert-circle-outline") as React.ComponentProps<typeof MaterialCommunityIcons>["name"]
+            }
+            size={28}
+            color="#e74c3c"
+          />
+        </View>
+      )}
       {/* Map 絕對鋪滿全畫面 */}
       <Animated.View style={[styles.mapContainer]}>
         <Pressable style={{ flex: 1 }} onPress={() => setActiveOverlay(null)}>
@@ -336,6 +351,12 @@ const styles = StyleSheet.create({
     width: undefined,
     height: undefined,
     backgroundColor: "transparent",
+  },
+  notificationIcon: {
+    position: "absolute",
+    top: Platform.OS === "web" ? 40 : 10,
+    right: 20,
+    zIndex: 150,
   },
   overlayCard: {
     position: "absolute",

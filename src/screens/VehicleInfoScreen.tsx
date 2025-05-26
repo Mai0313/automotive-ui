@@ -19,7 +19,7 @@ import * as ImagePicker from "expo-image-picker";
 import commonStyles from "../styles/commonStyles";
 
 // mapping from warning keys to icon names
-const warningIconMap: Record<string, string> = {
+export const warningIconMap: Record<string, string> = {
   engine_warning: "engine",
   oil_pressure_warning: "oil-temperature",
   battery_warning: "car-battery",
