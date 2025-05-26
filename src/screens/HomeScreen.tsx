@@ -11,21 +11,20 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { Audio } from "expo-av";
 
 import MapView from "../components/MapView"; // Import MapView
 import DemoButtons from "../components/DemoButtons";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useHomeClimateSettings from "../hooks/useHomeClimateSettings";
+import { chatCompletion, textToSpeech } from "../hooks/openai";
 
 import { warningIconMap } from "./VehicleInfoScreen";
-import { chatCompletion, textToSpeech } from "../hooks/openai";
-import { Audio } from "expo-av";
 import VehicleInfoScreen from "./VehicleInfoScreen";
 import MusicScreen from "./MusicScreen";
 import ClimateScreen from "./ClimateScreen";
 import AIAssistantScreen from "./AIAssistantScreen";
 // import NavigationScreen from "./NavigationScreen";
-
 
 const HomeScreen: React.FC = () => {
   const [activeOverlay, setActiveOverlay] = React.useState<
@@ -64,7 +63,9 @@ const HomeScreen: React.FC = () => {
   });
 
   // 已播報過的異常
-  const [spokenWarnings, setSpokenWarnings] = useState<Record<string, boolean>>({});
+  const [spokenWarnings, setSpokenWarnings] = useState<Record<string, boolean>>(
+    {},
+  );
 
   // 正在播報語音
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -80,7 +81,7 @@ const HomeScreen: React.FC = () => {
 
     // 找出尚未播報且目前為 true 的異常
     const newWarnings = Object.keys(vehicleWarnings).filter(
-      (key) => vehicleWarnings[key] && !spokenWarnings[key]
+      (key) => vehicleWarnings[key] && !spokenWarnings[key],
     );
 
     if (newWarnings.length === 0) return;
@@ -93,7 +94,8 @@ const HomeScreen: React.FC = () => {
     (async () => {
       try {
         // 組 prompt
-        const systemPrompt = "你是車輛助理，請針對車輛異常提出具體建議，語氣親切且務實。";
+        const systemPrompt =
+          "你是車輛助理，請針對車輛異常提出具體建議，語氣親切且務實。";
         // 將異常 key 轉為中文描述
         const warningNameMap: Record<string, string> = {
           tpms_warning: "胎壓異常",
@@ -112,14 +114,17 @@ const HomeScreen: React.FC = () => {
         const userPrompt = warningNameMap[warningKey] || warningKey;
 
         let llmResponse = "";
+
         await chatCompletion({
           messages: [
             { role: "system", content: systemPrompt },
-            { role: "user", content: `
+            {
+              role: "user",
+              content: `
               車輛出現異常：「${userPrompt}」
               請與使用者交互確認使用者是否需要幫忙並提出簡短建議。
               例如 發現 XX 異常 請問是否需要幫您查詢最近的XXX解決問題
-              `
+              `,
             },
           ],
           onDelta: (delta: string) => {
@@ -129,11 +134,13 @@ const HomeScreen: React.FC = () => {
 
         if (llmResponse.trim()) {
           const audioUri = await textToSpeech(llmResponse);
+
           if (audioUri) {
             const { sound } = await Audio.Sound.createAsync(
               { uri: audioUri },
-              { shouldPlay: true }
+              { shouldPlay: true },
             );
+
             // 播放結束後釋放資源
             sound.setOnPlaybackStatusUpdate((status) => {
               if (status.isLoaded && status.didJustFinish) {
@@ -153,7 +160,6 @@ const HomeScreen: React.FC = () => {
         setIsSpeaking(false);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vehicleWarnings]);
 
   useEffect(() => {
