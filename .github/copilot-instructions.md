@@ -138,30 +138,61 @@ App.tsx            # 專案入口
 
 ## 8. 【新增】空調設定
 
-- 汽車空調設定將透過資料庫即時同步（WebSocket/REST fallback）
-- ac_settings table 欄位設計如下：
+- 汽車空調設定將透過資料庫即時同步（WebSocket/REST fallback），所有狀態皆以 ac_settings table 為主，前端會根據資料庫內容自動顯示與控制。
 
-  | 欄位名稱         | 型態      | 預設值 | 說明                   |
-  |------------------|-----------|--------|----------------------|
-  | auto_on          | BOOLEAN   | false  | 自動開啟               |
-  | air_conditioning | BOOLEAN   | true   | 空調開關               |
-  | fan_speed        | INTEGER   | 2      | 風速等級 (0-10)        |
-  | front_defrost_on | BOOLEAN   | false  | 前擋風玻璃除霜         |
-  | rear_defrost_on  | BOOLEAN   | false  | 後擋風玻璃除霜         |
-  | airflow_head_on  | BOOLEAN   | false  | 出風至頭部             |
-  | airflow_body_on  | BOOLEAN   | false  | 出風至身體             |
-  | airflow_feet_on  | BOOLEAN   | true   | 出風至腳部             |
-  | temperature      | FLOAT     | 22.0   | 溫度設定 (16.0~30.0°C) |
-  | created_at       | TIMESTAMP | now()  | 建立時間               |
-  | updated_at       | TIMESTAMP | now()  | 最後更新時間           |
+- ac_settings table 欄位設計如下（對應 ClimateScreen.tsx 之 UI 控制）：
 
-- 前端（HomeScreen、ClimateScreen）會自動透過 WebSocket 連線至 ws://localhost:4000（Android 模擬器為 ws://10.0.2.2:4000），連線後主動送出 { action: 'get_state' } 取得資料庫最新狀態。
-- 後端 server.js 監聽 PostgreSQL ac_settings 資料表的 LISTEN/NOTIFY，資料異動時即時推播給所有前端。
-- 若 WebSocket 連線失敗，前端會自動 fallback 以 HTTP GET <http://localhost:4001/state> 取得狀態。
-- **所有空調相關狀態（溫度、AC開關、風速、出風方向等）皆會根據資料庫 ac_settings table 的即時資料自動同步顯示，並非僅溫度。**
-- 所有溫度（temperature）欄位皆假設為 float 型態，前端已移除 parseFloat 步驟，請確保資料庫 schema 設定正確（FLOAT/REAL/DOUBLE PRECISION）。
-- 前端調整溫度/AC 狀態時，會即時送出 JSON 給 WS，後端自動更新資料庫並廣播。
-- 任何時候都能直接用 psql UPDATE ac_settings SET temperature=xx.x; 測試即時同步。
+  | 欄位名稱         | 型態      | 預設值 | 說明                   | UI 對應名稱/按鈕         |
+  |------------------|-----------|--------|------------------------|--------------------------|
+  | auto_on          | BOOLEAN   | false  | 自動開啟               | 自動（autoOn）           |
+  | air_conditioning | BOOLEAN   | true   | 空調開關               | 空調（acOn）             |
+  | fan_speed        | INTEGER   | 2      | 風速等級 (0-10)        | 風速控制（fanSpeed）      |
+  | front_defrost_on | BOOLEAN   | false  | 前擋風玻璃除霜         | 前除霜（frontDefrostOn）  |
+  | rear_defrost_on  | BOOLEAN   | false  | 後擋風玻璃除霜         | 後除霜（rearDefrostOn）   |
+  | airflow_head_on  | BOOLEAN   | false  | 出風至頭部             | 面部（airFace）           |
+  | airflow_body_on  | BOOLEAN   | false  | 出風至身體             | 中間（airMiddle）         |
+  | airflow_feet_on  | BOOLEAN   | true   | 出風至腳部             | 腳部（airFoot）           |
+  | temperature      | FLOAT     | 22.0   | 溫度設定 (16.0~30.0°C) | 溫度顯示/調整（其他區塊） |
+  | created_at       | TIMESTAMP | now()  | 建立時間               |                          |
+  | updated_at       | TIMESTAMP | now()  | 最後更新時間           |                          |
+
+- 說明：
+  - fan_speed 範圍為 0~10，對應 UI 風速滑桿與指示點。
+  - airflow_head_on、airflow_body_on、airflow_feet_on 對應 UI 的「面部」、「中間」、「腳部」三個出風方向按鈕，分別為 airFace、airMiddle、airFoot。
+  - 溫度（temperature）欄位雖在 ac_settings table，實際顯示與調整可能於 HomeScreen 或底部溫度顯示區，ClimateScreen 目前未直接顯示溫度調整。
+  - 所有狀態皆會根據 ac_settings table 的即時資料自動同步顯示與控制，並非僅溫度。
+  - 前端（HomeScreen、ClimateScreen）會自動透過 WebSocket 連線至 ws://localhost:4000（Android 模擬器為 ws://10.0.2.2:4000），連線後主動送出 { action: 'get_state' } 取得資料庫最新狀態。
+  - 後端 server.js 監聽 PostgreSQL ac_settings 資料表的 LISTEN/NOTIFY，資料異動時即時推播給所有前端。
+  - 若 WebSocket 連線失敗，前端會自動 fallback 以 HTTP GET <http://localhost:4001/state> 取得狀態。
+  - 所有溫度（temperature）欄位皆假設為 float 型態，前端已移除 parseFloat 步驟，請確保資料庫 schema 設定正確（FLOAT/REAL/DOUBLE PRECISION）。
+  - 前端調整溫度/AC 狀態時，會即時送出 JSON 給 WS，後端自動更新資料庫並廣播。
+  - 任何時候都能直接用 psql UPDATE ac_settings SET temperature=xx.x; 測試即時同步。
+
+---
+
+## 【新增】車輛警示燈號（vehicle_warnings table）
+
+- 車輛警示燈號皆以 BOOLEAN 型態儲存於 vehicle_warnings table，預設值為 false，代表無異常。前端會根據這些欄位顯示對應警示 icon，並以紅色高亮。
+- 欄位說明如下：
+
+  | 欄位名稱                      | 型態    | 預設值 | Icon 名稱（MaterialCommunityIcons） | 說明（中文）           | 說明（英文）                |
+  |-------------------------------|---------|--------|--------------------------------------|------------------------|-----------------------------|
+  | engine_warning                | BOOLEAN | false  | engine                               | 引擎異常               | Engine malfunction          |
+  | oil_pressure_warning          | BOOLEAN | false  | oil-temperature                      | 機油壓力異常           | Oil pressure abnormal       |
+  | battery_warning               | BOOLEAN | false  | car-battery                          | 電瓶異常               | Battery issue               |
+  | coolant_temp_warning          | BOOLEAN | false  | thermometer                          | 冷卻液溫度過高         | Coolant temperature high    |
+  | brake_warning                 | BOOLEAN | false  | car-brake-alert                      | 煞車系統異常           | Brake system warning        |
+  | abs_warning                   | BOOLEAN | false  | car-brake-abs                        | ABS 防鎖死系統異常     | ABS system warning          |
+  | tpms_warning                  | BOOLEAN | false  | car-tire-alert                       | 胎壓異常               | Tire pressure abnormal      |
+  | airbag_warning                | BOOLEAN | false  | airbag                               | 安全氣囊異常           | Airbag warning              |
+  | low_fuel_warning              | BOOLEAN | false  | fuel                                 | 油量過低               | Low fuel                    |
+  | door_ajar_warning             | BOOLEAN | false  | door-open                            | 車門未關妥             | Door ajar                   |
+  | seat_belt_warning             | BOOLEAN | false  | seatbelt                             | 安全帶未繫上           | Seat belt unfastened        |
+  | exterior_light_failure_warning| BOOLEAN | false  | lightbulb-outline                    | 外部燈光故障           | Exterior light failure      |
+
+- 當任一欄位為 true，前端會於車輛資訊頁（VehicleInfoScreen）下方顯示對應 icon，並以紅色高亮提示駕駛注意。
+- 欄位名稱與 icon 對應請參考 src/screens/VehicleInfoScreen.tsx 的 warningIconMap。
+- 欄位可依實際車型擴充，若資料庫有新增欄位，請同步更新本表格與前端 warningIconMap。
 
 ---
 

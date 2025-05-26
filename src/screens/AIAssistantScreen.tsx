@@ -393,15 +393,22 @@ const AIAssistantScreen: React.FC = () => {
   return (
     <SafeAreaView style={commonStyles.container}>
       {/* 右上角切換模式按鈕 */}
-      <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: "center", padding: 10 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          padding: 10,
+        }}
+      >
         <TouchableOpacity
-          onPress={() => setIsTextMode((prev) => !prev)}
           style={styles.switchModeButton}
+          onPress={() => setIsTextMode((prev) => !prev)}
         >
           <MaterialIcons
+            color="#3498db"
             name={isTextMode ? "mic" : "keyboard"}
             size={28}
-            color="#3498db"
           />
           <Text style={{ color: "#3498db", marginLeft: 6, fontSize: 15 }}>
             {isTextMode ? "語音模式" : "打字模式"}
@@ -448,7 +455,8 @@ const AIAssistantScreen: React.FC = () => {
                   disabled={!inputText.trim() || isTyping}
                   style={[
                     styles.iconButton,
-                    (!inputText.trim() || isTyping) && styles.iconButtonDisabled,
+                    (!inputText.trim() || isTyping) &&
+                      styles.iconButtonDisabled,
                   ]}
                   onPress={() => sendMessage()}
                 >
@@ -473,24 +481,28 @@ const AIAssistantScreen: React.FC = () => {
           // 語音模式
           <View style={styles.voiceModeContainer}>
             <TouchableOpacity
+              disabled={isTyping}
               style={[
                 styles.voiceButton,
                 isRecording && styles.voiceButtonActive,
               ]}
-              onPress={isRecording ? stopRecordingAndTranscribe : startRecording}
-              disabled={isTyping}
+              onPress={
+                isRecording ? stopRecordingAndTranscribe : startRecording
+              }
             >
               <MaterialIcons
+                color={isRecording ? "#fff" : "#3498db"}
                 name={isRecording ? "stop" : "mic"}
                 size={48}
-                color={isRecording ? "#fff" : "#3498db"}
               />
-              <Text style={{
-                color: isRecording ? "#fff" : "#3498db",
-                fontSize: 18,
-                marginTop: 8,
-                fontWeight: "bold"
-              }}>
+              <Text
+                style={{
+                  color: isRecording ? "#fff" : "#3498db",
+                  fontSize: 18,
+                  marginTop: 8,
+                  fontWeight: "bold",
+                }}
+              >
                 {isRecording ? "停止錄音" : "開始語音對話"}
               </Text>
             </TouchableOpacity>
