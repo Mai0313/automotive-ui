@@ -136,21 +136,21 @@ App.tsx            # 專案入口
 - 汽車空調設定將透過資料庫即時同步（WebSocket/REST fallback）
 - ac_settings table 欄位設計如下：
 
-  | 欄位名稱             | 型態     | 預設值   | 說明                       |
-  |----------------------|----------|----------|----------------------------|
-  | auto_on          | BOOLEAN  | false    | 自動開啟                   |
-  | air_conditioning     | BOOLEAN  | true     | 空調開關                   |
-  | fan_speed           | INTEGER  | 2        | 風速等級 (0-10)            |
-  | airflow_head_on     | BOOLEAN  | false    | 出風至頭部                 |
-  | airflow_body_on     | BOOLEAN  | false    | 出風至身體                 |
-  | airflow_feet_on     | BOOLEAN  | true     | 出風至腳部                 |
-  | temperature         | FLOAT    | 22.0     | 溫度設定 (16.0~30.0°C)     |
-  | created_at          | TIMESTAMP| now()    | 建立時間                   |
-  | updated_at          | TIMESTAMP| now()    | 最後更新時間               |
+  | 欄位名稱         | 型態      | 預設值 | 說明                   |
+  |------------------|-----------|--------|----------------------|
+  | auto_on          | BOOLEAN   | false  | 自動開啟               |
+  | air_conditioning | BOOLEAN   | true   | 空調開關               |
+  | fan_speed        | INTEGER   | 2      | 風速等級 (0-10)        |
+  | airflow_head_on  | BOOLEAN   | false  | 出風至頭部             |
+  | airflow_body_on  | BOOLEAN   | false  | 出風至身體             |
+  | airflow_feet_on  | BOOLEAN   | true   | 出風至腳部             |
+  | temperature      | FLOAT     | 22.0   | 溫度設定 (16.0~30.0°C) |
+  | created_at       | TIMESTAMP | now()  | 建立時間               |
+  | updated_at       | TIMESTAMP | now()  | 最後更新時間           |
 
 - 前端（HomeScreen、ClimateScreen）會自動透過 WebSocket 連線至 ws://localhost:4000（Android 模擬器為 ws://10.0.2.2:4000），連線後主動送出 { action: 'get_state' } 取得資料庫最新狀態。
 - 後端 server.js 監聽 PostgreSQL ac_settings 資料表的 LISTEN/NOTIFY，資料異動時即時推播給所有前端。
-- 若 WebSocket 連線失敗，前端會自動 fallback 以 HTTP GET http://localhost:4001/state 取得狀態。
+- 若 WebSocket 連線失敗，前端會自動 fallback 以 HTTP GET <http://localhost:4001/state> 取得狀態。
 - **所有空調相關狀態（溫度、AC開關、風速、出風方向等）皆會根據資料庫 ac_settings table 的即時資料自動同步顯示，並非僅溫度。**
 - 所有溫度（temperature）欄位皆假設為 float 型態，前端已移除 parseFloat 步驟，請確保資料庫 schema 設定正確（FLOAT/REAL/DOUBLE PRECISION）。
 - 前端調整溫度/AC 狀態時，會即時送出 JSON 給 WS，後端自動更新資料庫並廣播。

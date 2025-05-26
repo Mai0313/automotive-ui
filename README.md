@@ -72,7 +72,7 @@ App.tsx                # Entry point for the React Native app
 server.js              # WebSocket & REST fallback server
 scripts/init_db.tsx    # Database schema, triggers & notification setup
 README.md              # Project overview and setup instructions
-``` 
+```
 
 ## Getting Started
 
