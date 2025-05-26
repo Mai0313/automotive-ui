@@ -47,6 +47,7 @@ const AIAssistantScreen: React.FC = () => {
   const [abortController, setAbortController] =
     useState<AbortController | null>(null);
   const [isRecording, setIsRecording] = useState<boolean>(false);
+  const [isTextMode, setIsTextMode] = useState<boolean>(false); // 新增：是否為打字模式
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [currentSound, setCurrentSound] = useState<AudioPlayer | null>(null); // For playing TTS audio
 
@@ -351,20 +352,14 @@ const AIAssistantScreen: React.FC = () => {
 
         console.log("Transcribed text:", transcribedText);
 
+        // 辨識完後，移除 placeholder，再呼叫 sendMessage
         setMessages((prevMessages) =>
-          prevMessages.map((msg) =>
-            msg.id === transcriptionPlaceholderId
-              ? { ...msg, text: transcribedText }
-              : msg,
-          ),
+          prevMessages.filter((msg) => msg.id !== transcriptionPlaceholderId),
         );
 
         if (transcribedText.trim()) {
           await sendMessage(transcribedText);
         } else {
-          setMessages((prevMessages) =>
-            prevMessages.filter((msg) => msg.id !== transcriptionPlaceholderId),
-          );
           setIsTyping(false);
         }
       } catch (error) {
@@ -397,6 +392,22 @@ const AIAssistantScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={commonStyles.container}>
+      {/* 右上角切換模式按鈕 */}
+      <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: "center", padding: 10 }}>
+        <TouchableOpacity
+          onPress={() => setIsTextMode((prev) => !prev)}
+          style={styles.switchModeButton}
+        >
+          <MaterialIcons
+            name={isTextMode ? "mic" : "keyboard"}
+            size={28}
+            color="#3498db"
+          />
+          <Text style={{ color: "#3498db", marginLeft: 6, fontSize: 15 }}>
+            {isTextMode ? "語音模式" : "打字模式"}
+          </Text>
+        </TouchableOpacity>
+      </View>
       {/* Chat Area */}
       <View style={styles.chatContainer}>
         <FlatList
@@ -408,75 +419,110 @@ const AIAssistantScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
         />
 
-        {/* Input Area */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.inputContainer}
-        >
-          <View style={styles.inputRow}>
-            <TextInput
-              editable={!isTyping && !isRecording} // Disable input when recording
-              placeholder="請輸入訊息..."
-              placeholderTextColor="#777"
-              style={styles.input}
-              value={inputText}
-              onChangeText={setInputText}
-              onSubmitEditing={() => sendMessage()}
-            />
-            {isTyping && !isRecording ? ( // Show close icon only when typing and not recording
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={cancelRequest}
-              >
-                <MaterialIcons color="#e74c3c" name="close" size={24} />
-              </TouchableOpacity>
-            ) : !isRecording ? ( // Show send icon only when not recording
-              <TouchableOpacity
-                disabled={!inputText.trim() || isTyping}
-                style={[
-                  styles.iconButton,
-                  (!inputText.trim() || isTyping) && styles.iconButtonDisabled,
-                ]}
-                onPress={() => sendMessage()}
-              >
-                <MaterialIcons color="#3498db" name="send" size={24} />
-              </TouchableOpacity>
-            ) : null}
-            {/* Microphone Button */}
+        {/* 輸入區域：根據模式切換 */}
+        {isTextMode ? (
+          // 打字模式
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.inputContainer}
+          >
+            <View style={styles.inputRow}>
+              <TextInput
+                editable={!isTyping && !isRecording}
+                placeholder="請輸入訊息..."
+                placeholderTextColor="#777"
+                style={styles.input}
+                value={inputText}
+                onChangeText={setInputText}
+                onSubmitEditing={() => sendMessage()}
+              />
+              {isTyping && !isRecording ? (
+                <TouchableOpacity
+                  style={styles.iconButton}
+                  onPress={cancelRequest}
+                >
+                  <MaterialIcons color="#e74c3c" name="close" size={24} />
+                </TouchableOpacity>
+              ) : !isRecording ? (
+                <TouchableOpacity
+                  disabled={!inputText.trim() || isTyping}
+                  style={[
+                    styles.iconButton,
+                    (!inputText.trim() || isTyping) && styles.iconButtonDisabled,
+                  ]}
+                  onPress={() => sendMessage()}
+                >
+                  <MaterialIcons color="#3498db" name="send" size={24} />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+            {(isTyping || isRecording) && (
+              <View style={styles.typingIndicator}>
+                <ActivityIndicator color="#3498db" size="small" />
+                <Text style={styles.typingText}>
+                  {isRecording
+                    ? "正在錄音中..."
+                    : isTyping
+                      ? "AI 正在回應中..."
+                      : ""}
+                </Text>
+              </View>
+            )}
+          </KeyboardAvoidingView>
+        ) : (
+          // 語音模式
+          <View style={styles.voiceModeContainer}>
             <TouchableOpacity
-              disabled={isTyping && !isRecording} // Disable mic if AI is responding (but allow stopping if already recording)
-              style={[styles.iconButton, isTyping && styles.iconButtonDisabled]} // Disable mic when AI is typing
-              onPress={
-                isRecording ? stopRecordingAndTranscribe : startRecording
-              }
+              style={[
+                styles.voiceButton,
+                isRecording && styles.voiceButtonActive,
+              ]}
+              onPress={isRecording ? stopRecordingAndTranscribe : startRecording}
+              disabled={isTyping}
             >
               <MaterialIcons
-                color={isRecording ? "#e74c3c" : "#3498db"}
                 name={isRecording ? "stop" : "mic"}
-                size={24}
+                size={48}
+                color={isRecording ? "#fff" : "#3498db"}
               />
-            </TouchableOpacity>
-          </View>
-
-          {(isTyping || isRecording) && ( // Show indicator if AI is typing OR user is recording
-            <View style={styles.typingIndicator}>
-              <ActivityIndicator color="#3498db" size="small" />
-              <Text style={styles.typingText}>
-                {isRecording
-                  ? "正在錄音中..."
-                  : isTyping
-                    ? "AI 正在回應中..."
-                    : ""}
+              <Text style={{
+                color: isRecording ? "#fff" : "#3498db",
+                fontSize: 18,
+                marginTop: 8,
+                fontWeight: "bold"
+              }}>
+                {isRecording ? "停止錄音" : "開始語音對話"}
               </Text>
-            </View>
-          )}
-        </KeyboardAvoidingView>
+            </TouchableOpacity>
+            {(isTyping || isRecording) && (
+              <View style={styles.typingIndicatorVoice}>
+                <ActivityIndicator color="#3498db" size="small" />
+                <Text style={styles.typingText}>
+                  {isRecording
+                    ? "正在錄音中..."
+                    : isTyping
+                      ? "AI 正在回應中..."
+                      : ""}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  switchModeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#222",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    alignSelf: "flex-end",
+  },
   chatContainer: {
     flex: 1,
     paddingHorizontal: 10,
@@ -548,6 +594,36 @@ const styles = StyleSheet.create({
     color: "#3498db",
     marginLeft: 8,
     fontSize: 14,
+  },
+  // 新增語音模式大按鈕
+  voiceModeContainer: {
+    alignItems: "center",
+    paddingVertical: 24,
+    borderTopWidth: 1,
+    borderTopColor: "#222",
+  },
+  voiceButton: {
+    backgroundColor: "#222",
+    borderRadius: 60,
+    width: 120,
+    height: 120,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  voiceButtonActive: {
+    backgroundColor: "#e74c3c",
+  },
+  typingIndicatorVoice: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 18,
+    marginLeft: 0,
+    justifyContent: "center",
   },
 });
 
