@@ -122,6 +122,11 @@ const HomeScreen: React.FC = () => {
               role: "user",
               content: `
               車輛出現異常：「${userPrompt}」
+              當前位置：${
+                mapPreviewLocation
+                  ? `經度 ${mapPreviewLocation.longitude}，緯度 ${mapPreviewLocation.latitude}`
+                  : "未知"
+              }
               請與使用者交互確認使用者是否需要幫忙並提出簡短建議。
               例如 發現 XX 異常 請問是否需要幫您查詢最近的XXX解決問題
               `,

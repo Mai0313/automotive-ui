@@ -180,9 +180,7 @@ export async function textToSpeech(text: string): Promise<string | null> {
   const client = createClient();
 
   try {
-    console.log(
-      `[TTS] Attempting to generate speech for text: "${text.substring(0, 30)}..."`,
-    );
+    console.log(`[TTS] Attempting to generate speech for text:\n"${text}"`);
     const response = await client.audio.speech.create({
       model: "tts-1-hd",
       voice: "alloy",
