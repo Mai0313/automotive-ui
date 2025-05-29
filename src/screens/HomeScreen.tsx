@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
   },
   // bottomBar 內新增溫度調整區樣式
   bottomBarBtn: {
-    backgroundColor: "#000000",
+    backgroundColor: "transparent",
     borderRadius: 20,
     padding: 10,
     marginHorizontal: 16, // 原本 6，調大間隔
@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 16,
-    backgroundColor: "#000000",
+    backgroundColor: "transparent",
     minHeight: 36,
   },
   tempOff: {

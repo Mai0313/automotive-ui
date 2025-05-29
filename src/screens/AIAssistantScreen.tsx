@@ -25,6 +25,7 @@ import {
 
 import { chatCompletion, transcribeAudio, textToSpeech } from "../hooks/openai"; // Added textToSpeech
 import commonStyles from "../styles/commonStyles";
+import Orb from "../components/Orb";
 
 interface Message {
   id: number;
@@ -47,7 +48,7 @@ const AIAssistantScreen: React.FC = () => {
   const [abortController, setAbortController] =
     useState<AbortController | null>(null);
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [isTextMode, setIsTextMode] = useState<boolean>(false); // 新增：是否為打字模式
+  const [isDevMode, setIsDevMode] = useState<boolean>(false); // 新增：開發模式
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [currentSound, setCurrentSound] = useState<AudioPlayer | null>(null); // For playing TTS audio
 
@@ -242,6 +243,7 @@ const AIAssistantScreen: React.FC = () => {
 
   // Function to start recording audio
   const startRecording = async () => {
+    console.log("[startRecording] 函數被呼叫");
     if (Platform.OS === "web") {
       // For web, check if MediaRecorder is available, which expo-audio uses under the hood.
       // Also, ensure the site is served over HTTPS for microphone access.
@@ -303,6 +305,7 @@ const AIAssistantScreen: React.FC = () => {
 
   // Function to stop recording audio and transcribe
   const stopRecordingAndTranscribe = async () => {
+    console.log("[stopRecordingAndTranscribe] 函數被呼叫");
     let transcriptionPlaceholderId: number | null = null; // Declare here for wider scope
 
     if (!audioRecorder.isRecording) {
@@ -392,157 +395,169 @@ const AIAssistantScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={commonStyles.container}>
-      {/* 右上角切換模式按鈕 */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "flex-end",
-          alignItems: "center",
-          padding: 10,
-        }}
-      >
-        <TouchableOpacity
-          style={styles.switchModeButton}
-          onPress={() => setIsTextMode((prev) => !prev)}
-        >
-          <MaterialIcons
-            color="#3498db"
-            name={isTextMode ? "mic" : "keyboard"}
-            size={28}
-          />
-          <Text style={{ color: "#3498db", marginLeft: 6, fontSize: 15 }}>
-            {isTextMode ? "語音模式" : "打字模式"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-      {/* Chat Area */}
-      <View style={styles.chatContainer}>
-        <FlatList
-          ref={flatListRef}
-          contentContainerStyle={styles.messagesList}
-          data={messages}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderMessage}
-          showsVerticalScrollIndicator={false}
-        />
+      {/* 直接顯示 Orb 語音助理介面 */}
+      <View style={styles.orbContainer}>
+        {Platform.OS === "web" ? (
+          <View style={styles.orbWrapper}>
+            <Orb
+              forceHoverState={isRecording}
+              hoverIntensity={0.5}
+              hue={0}
+              rotateOnHover={true}
+            />
 
-        {/* 輸入區域：根據模式切換 */}
-        {isTextMode ? (
-          // 打字模式
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={styles.inputContainer}
-          >
-            <View style={styles.inputRow}>
-              <TextInput
-                editable={!isTyping && !isRecording}
-                placeholder="請輸入訊息..."
-                placeholderTextColor="#777"
-                style={styles.input}
-                value={inputText}
-                onChangeText={setInputText}
-                onSubmitEditing={() => sendMessage()}
-              />
-              {isTyping && !isRecording ? (
-                <TouchableOpacity
-                  style={styles.iconButton}
-                  onPress={cancelRequest}
-                >
-                  <MaterialIcons color="#e74c3c" name="close" size={24} />
-                </TouchableOpacity>
-              ) : !isRecording ? (
-                <TouchableOpacity
-                  disabled={!inputText.trim() || isTyping}
-                  style={[
-                    styles.iconButton,
-                    (!inputText.trim() || isTyping) &&
-                      styles.iconButtonDisabled,
-                  ]}
-                  onPress={() => sendMessage()}
-                >
-                  <MaterialIcons color="#3498db" name="send" size={24} />
-                </TouchableOpacity>
-              ) : null}
-            </View>
-            {(isTyping || isRecording) && (
-              <View style={styles.typingIndicator}>
-                <ActivityIndicator color="#3498db" size="small" />
-                <Text style={styles.typingText}>
-                  {isRecording
-                    ? "正在錄音中..."
-                    : isTyping
-                      ? "AI 正在回應中..."
-                      : ""}
-                </Text>
-              </View>
-            )}
-          </KeyboardAvoidingView>
-        ) : (
-          // 語音模式
-          <View style={styles.voiceModeContainer}>
+            {/* 錄音控制覆蓋層 */}
             <TouchableOpacity
               disabled={isTyping}
-              style={[
-                styles.voiceButton,
-                isRecording && styles.voiceButtonActive,
-              ]}
-              onPress={
-                isRecording ? stopRecordingAndTranscribe : startRecording
-              }
+              style={styles.orbOverlay}
+              onPress={() => {
+                console.log("[TouchableOpacity] 被點擊，isRecording:", isRecording);
+                if (isRecording) {
+                  stopRecordingAndTranscribe();
+                } else {
+                  startRecording();
+                }
+              }}
             >
-              <MaterialIcons
-                color={isRecording ? "#fff" : "#3498db"}
-                name={isRecording ? "stop" : "mic"}
-                size={48}
-              />
-              <Text
-                style={{
-                  color: isRecording ? "#fff" : "#3498db",
-                  fontSize: 18,
-                  marginTop: 8,
-                  fontWeight: "bold",
-                }}
-              >
-                {isRecording ? "停止錄音" : "開始語音對話"}
-              </Text>
+              {/* 空的 TouchableOpacity，覆蓋整個 Orb 區域以接收點擊 */}
             </TouchableOpacity>
-            {(isTyping || isRecording) && (
-              <View style={styles.typingIndicatorVoice}>
-                <ActivityIndicator color="#3498db" size="small" />
-                <Text style={styles.typingText}>
-                  {isRecording
-                    ? "正在錄音中..."
-                    : isTyping
-                      ? "AI 正在回應中..."
-                      : ""}
-                </Text>
-              </View>
-            )}
+          </View>
+        ) : (
+          // 原生平台的替代 UI
+          <TouchableOpacity
+            disabled={isTyping}
+            style={[
+              styles.nativeOrbButton,
+              isRecording && styles.nativeOrbButtonActive,
+            ]}
+            onPress={
+              isRecording ? stopRecordingAndTranscribe : startRecording
+            }
+          >
+            <MaterialIcons
+              color={isRecording ? "#fff" : "#3498db"}
+              name={isRecording ? "stop" : "mic"}
+              size={80}
+            />
+            <Text
+              style={[
+                styles.nativeOrbButtonText,
+                isRecording && styles.nativeOrbButtonTextActive,
+              ]}
+            >
+              {isRecording
+                ? "停止錄音"
+                : isTyping
+                  ? "AI 正在思考..."
+                  : "開始對話"}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* 狀態指示器 */}
+        {(isTyping || isRecording) && (
+          <View style={styles.statusIndicator}>
+            <ActivityIndicator color="#3498db" size="small" />
+            <Text style={styles.statusText}>
+              {isRecording ? "正在錄音中..." : "AI 正在回應中..."}
+            </Text>
           </View>
         )}
+
+        {/* 開發模式按鈕 - 右上角 */}
+        <TouchableOpacity
+          style={styles.devModeButton}
+          onPress={() => setIsDevMode(true)}
+        >
+          <MaterialIcons color="#666" name="keyboard" size={24} />
+          <Text style={styles.devModeButtonText}>開發模式</Text>
+        </TouchableOpacity>
       </View>
+
+      {/* Dev Mode 彈出視窗 */}
+      {isDevMode && (
+        <View style={styles.devModeOverlay}>
+          <View style={styles.devModeContainer}>
+            <View style={styles.devModeHeader}>
+              <Text style={styles.devModeTitle}>開發模式 - 文字輸入與聊天歷史</Text>
+              <TouchableOpacity
+                style={styles.devModeCloseButton}
+                onPress={() => setIsDevMode(false)}
+              >
+                <MaterialIcons color="#fff" name="close" size={24} />
+              </TouchableOpacity>
+            </View>
+
+            {/* 聊天歷史區域 */}
+            <View style={styles.chatContainer}>
+              <FlatList
+                ref={flatListRef}
+                contentContainerStyle={styles.messagesList}
+                data={messages}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderMessage}
+                showsVerticalScrollIndicator={false}
+              />
+            </View>
+
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+              style={styles.devInputContainer}
+            >
+              <View style={styles.inputRow}>
+                <TextInput
+                  multiline
+                  editable={!isTyping && !isRecording}
+                  placeholder="請輸入訊息..."
+                  placeholderTextColor="#777"
+                  style={styles.input}
+                  value={inputText}
+                  onChangeText={setInputText}
+                  onSubmitEditing={() => sendMessage()}
+                />
+                {isTyping && !isRecording ? (
+                  <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={cancelRequest}
+                  >
+                    <MaterialIcons color="#e74c3c" name="close" size={24} />
+                  </TouchableOpacity>
+                ) : !isRecording ? (
+                  <TouchableOpacity
+                    disabled={!inputText.trim() || isTyping}
+                    style={[
+                      styles.iconButton,
+                      (!inputText.trim() || isTyping) &&
+                        styles.iconButtonDisabled,
+                    ]}
+                    onPress={() => sendMessage()}
+                  >
+                    <MaterialIcons color="#3498db" name="send" size={24} />
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+              {(isTyping || isRecording) && (
+                <View style={styles.typingIndicator}>
+                  <ActivityIndicator color="#3498db" size="small" />
+                  <Text style={styles.typingText}>
+                    {isRecording
+                      ? "正在錄音中..."
+                      : isTyping
+                        ? "AI 正在回應中..."
+                        : ""}
+                  </Text>
+                </View>
+              )}
+            </KeyboardAvoidingView>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  switchModeButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#222",
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    alignSelf: "flex-end",
-  },
-  chatContainer: {
-    flex: 1,
-    paddingHorizontal: 10,
-    paddingBottom: 10,
-  },
-  messagesList: {
-    paddingVertical: 10,
-  },
+  // Message styles (still needed for dev mode)
   messageBubble: {
     marginBottom: 15,
     maxWidth: "80%",
@@ -565,6 +580,162 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
   },
+  chatContainer: {
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingBottom: 10,
+  },
+  messagesList: {
+    paddingVertical: 10,
+  },
+  devModeButton: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(34, 34, 34, 0.8)",
+    borderRadius: 15,
+    padding: 10,
+    zIndex: 10,
+  },
+  devModeButtonText: {
+    color: "#666",
+    fontSize: 14,
+    marginLeft: 8,
+  },
+  orbContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  orbWrapper: {
+    width: "100%",
+    height: 400,
+    position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  orbOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "transparent",
+    zIndex: 10, // 確保在 Orb 上方
+  },
+  orbStatus: {
+    position: "absolute",
+    bottom: -80, // 移到 Orb 容器下方
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    zIndex: 5, // 低於覆蓋層
+  },
+  orbStatusText: {
+    color: "#fff",
+    fontSize: 16,
+    textAlign: "center",
+    backgroundColor: "rgba(0,0,0,0.7)",
+    padding: 10,
+    borderRadius: 15,
+  },
+  nativeOrbButton: {
+    backgroundColor: "#222",
+    borderRadius: 100,
+    width: 200,
+    height: 200,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  nativeOrbButtonActive: {
+    backgroundColor: "#e74c3c",
+  },
+  nativeOrbButtonText: {
+    color: "#3498db",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 12,
+    textAlign: "center",
+  },
+  nativeOrbButtonTextActive: {
+    color: "#fff",
+  },
+  statusIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 20,
+    justifyContent: "center",
+  },
+  statusText: {
+    color: "#3498db",
+    marginLeft: 8,
+    fontSize: 14,
+  },
+  orbControls: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+    marginTop: 40,
+  },
+  controlButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#222",
+    borderRadius: 15,
+    padding: 12,
+    paddingHorizontal: 16,
+  },
+  controlButtonText: {
+    color: "#666",
+    fontSize: 14,
+    marginLeft: 8,
+  },
+  devModeOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  devModeContainer: {
+    backgroundColor: "#111",
+    borderRadius: 20,
+    padding: 20,
+    width: "90%",
+    maxHeight: "80%",
+  },
+  devModeHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  devModeTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  devModeCloseButton: {
+    padding: 5,
+  },
+  devInputContainer: {
+    flex: 1,
+  },
   inputContainer: {
     paddingHorizontal: 10,
     paddingVertical: 10,
@@ -573,16 +744,17 @@ const styles = StyleSheet.create({
   },
   inputRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-end",
   },
   input: {
     flex: 1,
     backgroundColor: "#222",
     color: "#fff",
     padding: 12,
-    borderRadius: 25,
+    borderRadius: 15,
     marginRight: 10,
     fontSize: 16,
+    maxHeight: 100,
   },
   iconButton: {
     width: 45,
@@ -606,36 +778,6 @@ const styles = StyleSheet.create({
     color: "#3498db",
     marginLeft: 8,
     fontSize: 14,
-  },
-  // 新增語音模式大按鈕
-  voiceModeContainer: {
-    alignItems: "center",
-    paddingVertical: 24,
-    borderTopWidth: 1,
-    borderTopColor: "#222",
-  },
-  voiceButton: {
-    backgroundColor: "#222",
-    borderRadius: 60,
-    width: 120,
-    height: 120,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  voiceButtonActive: {
-    backgroundColor: "#e74c3c",
-  },
-  typingIndicatorVoice: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 18,
-    marginLeft: 0,
-    justifyContent: "center",
   },
 });
 
