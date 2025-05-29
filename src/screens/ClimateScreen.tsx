@@ -7,8 +7,11 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import useClimateSettings from "../hooks/useClimateSettings";
 import commonStyles from "../styles/commonStyles";
 import ControlButton from "../components/ControlButton";
+import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 
 const ClimateScreen: React.FC = () => {
+  const responsiveScale = useResponsiveStyles();
+
   const {
     acOn,
     toggleAc,
@@ -44,11 +47,22 @@ const ClimateScreen: React.FC = () => {
 
         {/* Fan Speed Control */}
         <View style={styles.fanControl}>
-          <Text style={styles.controlLabel}>風速控制</Text>
+          <Text
+            style={[
+              styles.controlLabel,
+              { fontSize: responsiveScale.mediumFontSize },
+            ]}
+          >
+            風速控制
+          </Text>
 
           <View style={styles.fanSliderContainer}>
             <TouchableOpacity onPress={decreaseFan}>
-              <MaterialCommunityIcons color="#aaa" name="fan-off" size={24} />
+              <MaterialCommunityIcons
+                color="#aaa"
+                name="fan-off"
+                size={responsiveScale.mediumIconSize}
+              />
             </TouchableOpacity>
 
             <Slider
@@ -64,7 +78,11 @@ const ClimateScreen: React.FC = () => {
             />
 
             <TouchableOpacity onPress={increaseFan}>
-              <MaterialCommunityIcons color="#fff" name="fan" size={24} />
+              <MaterialCommunityIcons
+                color="#fff"
+                name="fan"
+                size={responsiveScale.mediumIconSize}
+              />
             </TouchableOpacity>
           </View>
 
@@ -105,7 +123,14 @@ const ClimateScreen: React.FC = () => {
 
         {/* Air Flow Direction */}
         <View style={styles.airFlowContainer}>
-          <Text style={styles.controlLabel}>出風方向</Text>
+          <Text
+            style={[
+              styles.controlLabel,
+              { fontSize: responsiveScale.mediumFontSize },
+            ]}
+          >
+            出風方向
+          </Text>
 
           <View style={styles.airFlowButtons}>
             <ControlButton

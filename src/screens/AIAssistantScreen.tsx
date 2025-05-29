@@ -26,6 +26,7 @@ import {
 import { chatCompletion, transcribeAudio, textToSpeech } from "../hooks/openai"; // Added textToSpeech
 import commonStyles from "../styles/commonStyles";
 import Orb from "../components/Orb";
+import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 
 interface Message {
   id: number;
@@ -35,6 +36,8 @@ interface Message {
 }
 
 const AIAssistantScreen: React.FC = () => {
+  const responsiveScale = useResponsiveStyles();
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -411,7 +414,10 @@ const AIAssistantScreen: React.FC = () => {
               disabled={isTyping}
               style={styles.orbOverlay}
               onPress={() => {
-                console.log("[TouchableOpacity] 被點擊，isRecording:", isRecording);
+                console.log(
+                  "[TouchableOpacity] 被點擊，isRecording:",
+                  isRecording,
+                );
                 if (isRecording) {
                   stopRecordingAndTranscribe();
                 } else {
@@ -430,19 +436,18 @@ const AIAssistantScreen: React.FC = () => {
               styles.nativeOrbButton,
               isRecording && styles.nativeOrbButtonActive,
             ]}
-            onPress={
-              isRecording ? stopRecordingAndTranscribe : startRecording
-            }
+            onPress={isRecording ? stopRecordingAndTranscribe : startRecording}
           >
             <MaterialIcons
               color={isRecording ? "#fff" : "#3498db"}
               name={isRecording ? "stop" : "mic"}
-              size={80}
+              size={responsiveScale.largeIconSize * 2.5}
             />
             <Text
               style={[
                 styles.nativeOrbButtonText,
                 isRecording && styles.nativeOrbButtonTextActive,
+                { fontSize: responsiveScale.mediumFontSize },
               ]}
             >
               {isRecording
@@ -458,7 +463,12 @@ const AIAssistantScreen: React.FC = () => {
         {(isTyping || isRecording) && (
           <View style={styles.statusIndicator}>
             <ActivityIndicator color="#3498db" size="small" />
-            <Text style={styles.statusText}>
+            <Text
+              style={[
+                styles.statusText,
+                { fontSize: responsiveScale.smallFontSize },
+              ]}
+            >
               {isRecording ? "正在錄音中..." : "AI 正在回應中..."}
             </Text>
           </View>
@@ -466,11 +476,25 @@ const AIAssistantScreen: React.FC = () => {
 
         {/* 開發模式按鈕 - 右上角 */}
         <TouchableOpacity
-          style={styles.devModeButton}
+          style={[
+            styles.devModeButton,
+            { padding: responsiveScale.mediumPadding },
+          ]}
           onPress={() => setIsDevMode(true)}
         >
-          <MaterialIcons color="#666" name="keyboard" size={24} />
-          <Text style={styles.devModeButtonText}>開發模式</Text>
+          <MaterialIcons
+            color="#666"
+            name="keyboard"
+            size={responsiveScale.mediumIconSize}
+          />
+          <Text
+            style={[
+              styles.devModeButtonText,
+              { fontSize: responsiveScale.smallFontSize },
+            ]}
+          >
+            開發模式
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -479,12 +503,26 @@ const AIAssistantScreen: React.FC = () => {
         <View style={styles.devModeOverlay}>
           <View style={styles.devModeContainer}>
             <View style={styles.devModeHeader}>
-              <Text style={styles.devModeTitle}>開發模式 - 文字輸入與聊天歷史</Text>
+              <Text
+                style={[
+                  styles.devModeTitle,
+                  { fontSize: responsiveScale.largeFontSize },
+                ]}
+              >
+                開發模式 - 文字輸入與聊天歷史
+              </Text>
               <TouchableOpacity
-                style={styles.devModeCloseButton}
+                style={[
+                  styles.devModeCloseButton,
+                  { padding: responsiveScale.smallPadding },
+                ]}
                 onPress={() => setIsDevMode(false)}
               >
-                <MaterialIcons color="#fff" name="close" size={24} />
+                <MaterialIcons
+                  color="#fff"
+                  name="close"
+                  size={responsiveScale.mediumIconSize}
+                />
               </TouchableOpacity>
             </View>
 
@@ -517,29 +555,54 @@ const AIAssistantScreen: React.FC = () => {
                 />
                 {isTyping && !isRecording ? (
                   <TouchableOpacity
-                    style={styles.iconButton}
+                    style={[
+                      styles.iconButton,
+                      {
+                        width: responsiveScale.buttonSize,
+                        height: responsiveScale.buttonSize,
+                        borderRadius: responsiveScale.buttonSize / 2,
+                      },
+                    ]}
                     onPress={cancelRequest}
                   >
-                    <MaterialIcons color="#e74c3c" name="close" size={24} />
+                    <MaterialIcons
+                      color="#e74c3c"
+                      name="close"
+                      size={responsiveScale.mediumIconSize}
+                    />
                   </TouchableOpacity>
                 ) : !isRecording ? (
                   <TouchableOpacity
                     disabled={!inputText.trim() || isTyping}
                     style={[
                       styles.iconButton,
+                      {
+                        width: responsiveScale.buttonSize,
+                        height: responsiveScale.buttonSize,
+                        borderRadius: responsiveScale.buttonSize / 2,
+                      },
                       (!inputText.trim() || isTyping) &&
                         styles.iconButtonDisabled,
                     ]}
                     onPress={() => sendMessage()}
                   >
-                    <MaterialIcons color="#3498db" name="send" size={24} />
+                    <MaterialIcons
+                      color="#3498db"
+                      name="send"
+                      size={responsiveScale.mediumIconSize}
+                    />
                   </TouchableOpacity>
                 ) : null}
               </View>
               {(isTyping || isRecording) && (
                 <View style={styles.typingIndicator}>
                   <ActivityIndicator color="#3498db" size="small" />
-                  <Text style={styles.typingText}>
+                  <Text
+                    style={[
+                      styles.typingText,
+                      { fontSize: responsiveScale.smallFontSize },
+                    ]}
+                  >
                     {isRecording
                       ? "正在錄音中..."
                       : isTyping

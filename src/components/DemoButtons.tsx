@@ -3,12 +3,15 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 
+import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
+
 interface Props {
   ws: WebSocket | null;
 }
 
 const DemoButtons: React.FC<Props> = ({ ws }) => {
   const [tpmsActive, setTpmsActive] = useState(false);
+  const responsiveScale = useResponsiveStyles();
 
   const toggleTpms = () => {
     const newValue = !tpmsActive;
@@ -20,9 +23,33 @@ const DemoButtons: React.FC<Props> = ({ ws }) => {
   };
 
   return (
-    <View pointerEvents="box-none" style={styles.container}>
-      <TouchableOpacity style={styles.button} onPress={toggleTpms}>
-        <Text style={styles.buttonText}>
+    <View
+      pointerEvents="box-none"
+      style={[
+        styles.container,
+        {
+          bottom: responsiveScale.buttonSize * 2.5,
+          right: responsiveScale.mediumPadding,
+        },
+      ]}
+    >
+      <TouchableOpacity
+        style={[
+          styles.button,
+          {
+            paddingVertical: responsiveScale.smallPadding / 2,
+            paddingHorizontal: responsiveScale.smallPadding,
+            borderRadius: responsiveScale.borderRadius,
+          },
+        ]}
+        onPress={toggleTpms}
+      >
+        <Text
+          style={[
+            styles.buttonText,
+            { fontSize: responsiveScale.smallFontSize },
+          ]}
+        >
           {tpmsActive
             ? "Clear Tire Pressure Warning"
             : "Trigger Tire Pressure Warning"}

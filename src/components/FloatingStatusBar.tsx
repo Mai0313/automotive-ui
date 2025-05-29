@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
 import useCurrentTime from "../hooks/useCurrentTime";
+import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 
 interface FloatingStatusBarProps {
   temperature?: string;
@@ -11,11 +12,34 @@ const FloatingStatusBar: React.FC<FloatingStatusBarProps> = ({
   temperature = "30°C",
 }) => {
   const currentTime = useCurrentTime();
+  const responsiveScale = useResponsiveStyles();
 
   return (
-    <View style={[styles.container, { pointerEvents: "none" }]}>
-      <Text style={styles.info}>{temperature}</Text>
-      <Text style={[styles.info, { marginLeft: 10 }]}>{currentTime}</Text>
+    <View
+      style={[
+        styles.container,
+        {
+          pointerEvents: "none",
+          borderRadius: responsiveScale.borderRadius,
+          paddingHorizontal: responsiveScale.smallPadding,
+          paddingVertical: responsiveScale.smallPadding / 2,
+        },
+      ]}
+    >
+      <Text style={[styles.info, { fontSize: responsiveScale.smallFontSize }]}>
+        {temperature}
+      </Text>
+      <Text
+        style={[
+          styles.info,
+          {
+            marginLeft: responsiveScale.smallPadding,
+            fontSize: responsiveScale.smallFontSize,
+          },
+        ]}
+      >
+        {currentTime}
+      </Text>
     </View>
   );
 };

@@ -17,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 
 import commonStyles from "../styles/commonStyles";
+import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 
 // mapping from warning keys to icon names
 export const warningIconMap: Record<string, string> = {
@@ -39,6 +40,8 @@ interface Props {
 }
 
 const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
+  const responsiveScale = useResponsiveStyles();
+
   // Mock vehicle data
   const speed = 0;
   const range = "315 mi";
@@ -106,8 +109,19 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
         {/* Range & Battery Info */}
         <View style={styles.rangeContainer}>
           <View style={styles.batteryInfoSmall}>
-            <Icon color="#4CAF50" name={`battery-${batteryLevel}`} size={22} />
-            <Text style={styles.rangeTextSmall}>{range}</Text>
+            <Icon
+              color="#4CAF50"
+              name={`battery-${batteryLevel}`}
+              size={responsiveScale.mediumIconSize}
+            />
+            <Text
+              style={[
+                styles.rangeTextSmall,
+                { fontSize: responsiveScale.smallFontSize },
+              ]}
+            >
+              {range}
+            </Text>
           </View>
         </View>
 
@@ -123,12 +137,13 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
             <Icon
               color={lockOn ? "#3498db" : "#fff"}
               name="car-door"
-              size={30}
+              size={responsiveScale.largeIconSize}
             />
             <Text
               style={[
                 commonStyles.controlText,
                 lockOn && commonStyles.activeText,
+                { fontSize: responsiveScale.smallFontSize },
               ]}
             >
               門鎖
@@ -144,12 +159,13 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
             <Icon
               color={lightOn ? "#3498db" : "#fff"}
               name="car-light-high"
-              size={30}
+              size={responsiveScale.largeIconSize}
             />
             <Text
               style={[
                 commonStyles.controlText,
                 lightOn && commonStyles.activeText,
+                { fontSize: responsiveScale.smallFontSize },
               ]}
             >
               車燈
@@ -165,12 +181,13 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
             <Icon
               color={autoDriveOn ? "#3498db" : "#fff"}
               name="car-cruise-control"
-              size={30}
+              size={responsiveScale.largeIconSize}
             />
             <Text
               style={[
                 commonStyles.controlText,
                 autoDriveOn && commonStyles.activeText,
+                { fontSize: responsiveScale.smallFontSize },
               ]}
             >
               自動駕駛
@@ -182,14 +199,18 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
         {Platform.OS !== "web" && (
           <TouchableOpacity
             style={{
-              margin: 20,
+              margin: responsiveScale.mediumMargin,
               backgroundColor: "#3498db",
-              padding: 10,
-              borderRadius: 8,
+              padding: responsiveScale.mediumPadding,
+              borderRadius: responsiveScale.borderRadius,
             }}
             onPress={pickImage}
           >
-            <Text style={{ color: "#fff" }}>選取圖片 (expo-image-picker)</Text>
+            <Text
+              style={{ color: "#fff", fontSize: responsiveScale.smallFontSize }}
+            >
+              選取圖片 (expo-image-picker)
+            </Text>
           </TouchableOpacity>
         )}
 
@@ -220,7 +241,7 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
                   typeof Icon
                 >["name"]
               }
-              size={30}
+              size={responsiveScale.largeIconSize}
               style={styles.warningIcon}
             />
           ))}

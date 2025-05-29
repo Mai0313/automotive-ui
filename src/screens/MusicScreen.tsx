@@ -15,6 +15,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import commonStyles from "../styles/commonStyles";
+import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 
 // Slider fallback for web with proper HTML attributes
 const Slider =
@@ -49,6 +50,7 @@ const formatTime = (secs: number) => {
 };
 
 const MusicScreen: React.FC = () => {
+  const responsiveScale = useResponsiveStyles();
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   // Mock music data
@@ -131,7 +133,11 @@ const MusicScreen: React.FC = () => {
             style={[styles.controls, isLandscape && styles.controlsLandscape]}
           >
             <TouchableOpacity style={styles.controlButton}>
-              <MaterialIcons color="#fff" name="skip-previous" size={50} />
+              <MaterialIcons
+                color="#fff"
+                name="skip-previous"
+                size={responsiveScale.largeIconSize * 1.5}
+              />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -141,12 +147,16 @@ const MusicScreen: React.FC = () => {
               <MaterialIcons
                 color="#fff"
                 name={isPlaying ? "pause" : "play-arrow"}
-                size={70}
+                size={responsiveScale.largeIconSize * 2.2}
               />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.controlButton}>
-              <MaterialIcons color="#fff" name="skip-next" size={50} />
+              <MaterialIcons
+                color="#fff"
+                name="skip-next"
+                size={responsiveScale.largeIconSize * 1.5}
+              />
             </TouchableOpacity>
           </View>
 
@@ -158,19 +168,35 @@ const MusicScreen: React.FC = () => {
             ]}
           >
             <TouchableOpacity style={styles.additionalControlButton}>
-              <MaterialIcons color="#888" name="shuffle" size={25} />
+              <MaterialIcons
+                color="#888"
+                name="shuffle"
+                size={responsiveScale.mediumIconSize}
+              />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.additionalControlButton}>
-              <MaterialIcons color="#888" name="repeat" size={25} />
+              <MaterialIcons
+                color="#888"
+                name="repeat"
+                size={responsiveScale.mediumIconSize}
+              />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.additionalControlButton}>
-              <MaterialIcons color="#888" name="queue-music" size={25} />
+              <MaterialIcons
+                color="#888"
+                name="queue-music"
+                size={responsiveScale.mediumIconSize}
+              />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.additionalControlButton}>
-              <MaterialIcons color="#888" name="devices" size={25} />
+              <MaterialIcons
+                color="#888"
+                name="devices"
+                size={responsiveScale.mediumIconSize}
+              />
             </TouchableOpacity>
           </View>
         </View>

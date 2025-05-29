@@ -17,6 +17,7 @@ import MapView from "../components/MapView"; // Import MapView
 import DemoButtons from "../components/DemoButtons";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useHomeClimateSettings from "../hooks/useHomeClimateSettings";
+import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 import { chatCompletion, textToSpeech } from "../hooks/openai";
 
 import { warningIconMap } from "./VehicleInfoScreen";
@@ -27,6 +28,8 @@ import AIAssistantScreen from "./AIAssistantScreen";
 // import NavigationScreen from "./NavigationScreen";
 
 const HomeScreen: React.FC = () => {
+  const responsiveScale = useResponsiveStyles();
+
   const [activeOverlay, setActiveOverlay] = React.useState<
     "vehicle" | "music" | "climate" | "ai" | null
   >(null);
@@ -302,7 +305,7 @@ const HomeScreen: React.FC = () => {
                 typeof MaterialCommunityIcons
               >["name"]
             }
-            size={28}
+            size={responsiveScale.largeIconSize}
           />
         </View>
       )}
@@ -339,7 +342,11 @@ const HomeScreen: React.FC = () => {
           {/* Header with close and expand */}
           <View style={styles.overlayHeader}>
             <TouchableOpacity onPress={() => setActiveOverlay(null)}>
-              <MaterialIcons color="#fff" name="close" size={24} />
+              <MaterialIcons
+                color="#fff"
+                name="close"
+                size={responsiveScale.mediumIconSize}
+              />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setFullScreenOverlay(!fullScreenOverlay)}
@@ -347,7 +354,7 @@ const HomeScreen: React.FC = () => {
               <MaterialIcons
                 color="#fff"
                 name={fullScreenOverlay ? "fullscreen-exit" : "fullscreen"}
-                size={24}
+                size={responsiveScale.mediumIconSize}
               />
             </TouchableOpacity>
           </View>
@@ -370,7 +377,11 @@ const HomeScreen: React.FC = () => {
           onPress={() => handleOverlayPress("vehicle")}
         >
           <View style={styles.iconWithBadge}>
-            <MaterialCommunityIcons color="#fff" name="car" size={28} />
+            <MaterialCommunityIcons
+              color="#fff"
+              name="car"
+              size={responsiveScale.largeIconSize}
+            />
             {Object.values(vehicleWarnings).some((v) => v) && (
               <View style={styles.badge} />
             )}
@@ -384,7 +395,7 @@ const HomeScreen: React.FC = () => {
           <MaterialCommunityIcons
             color="#fff"
             name="air-conditioner"
-            size={28}
+            size={responsiveScale.largeIconSize}
           />
         </TouchableOpacity>
         {/* 溫度調整區（顯示溫度本身為 AC 開關按鈕，關閉時顯示紅色圓圈+icon） */}
@@ -397,7 +408,7 @@ const HomeScreen: React.FC = () => {
               <MaterialCommunityIcons
                 color="#fff"
                 name="chevron-up"
-                size={28}
+                size={responsiveScale.largeIconSize}
               />
             </TouchableOpacity>
           )}
@@ -406,7 +417,12 @@ const HomeScreen: React.FC = () => {
             onPress={toggleAC}
           >
             {isAC ? (
-              <Animated.Text style={styles.tempText}>
+              <Animated.Text
+                style={[
+                  styles.tempText,
+                  { fontSize: responsiveScale.mediumFontSize },
+                ]}
+              >
                 {temperature}°C
               </Animated.Text>
             ) : (
@@ -414,7 +430,7 @@ const HomeScreen: React.FC = () => {
                 <MaterialCommunityIcons
                   color="#e74c3c"
                   name="power"
-                  size={28}
+                  size={responsiveScale.largeIconSize}
                   style={{ marginRight: 4 }}
                 />
               </View>
@@ -428,7 +444,7 @@ const HomeScreen: React.FC = () => {
               <MaterialCommunityIcons
                 color="#fff"
                 name="chevron-down"
-                size={28}
+                size={responsiveScale.largeIconSize}
               />
             </TouchableOpacity>
           )}
@@ -438,14 +454,22 @@ const HomeScreen: React.FC = () => {
           style={styles.bottomBarBtn}
           onPress={() => handleOverlayPress("music")}
         >
-          <MaterialIcons color="#fff" name="music-note" size={28} />
+          <MaterialIcons
+            color="#fff"
+            name="music-note"
+            size={responsiveScale.largeIconSize}
+          />
         </TouchableOpacity>
         {/* AI icon */}
         <TouchableOpacity
           style={styles.bottomBarBtn}
           onPress={() => handleOverlayPress("ai")}
         >
-          <MaterialIcons color="#fff" name="mic" size={28} />
+          <MaterialIcons
+            color="#fff"
+            name="mic"
+            size={responsiveScale.largeIconSize}
+          />
         </TouchableOpacity>
       </View>
     </View>
