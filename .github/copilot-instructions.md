@@ -276,3 +276,4 @@ App.tsx            # 專案入口
 - 2025-05-26: AI 助理頁面大幅改版，預設為語音模式（僅顯示大錄音按鈕），右上角可切換打字模式。語音辨識完成後僅新增一則訊息，避免訊息重複。兩種模式可隨時切換，適合車載語音優先與辦公室開發。
 - 2025-05-26: 【重大】首頁車輛異常語音建議功能升級：偵測到車輛異常時，會自動將異常資訊送進 chatCompletion，由 LLM 產生建議，再用 textToSpeech 轉語音自動播報。每種異常僅播報一次，建議內容由 LLM 動態生成。Web 平台自動播放 audio 可能因瀏覽器政策（需用戶互動）導致 NotAllowedError，這是瀏覽器安全限制，非程式錯誤。
 - 2025-05-29: 【重大】實現全面響應式按鈕系統：新增 `useResponsiveStyles` Hook，根據螢幕尺寸自動計算按鈕、圖標、文字、間距等比例。所有元件（HomeScreen、ClimateScreen、VehicleInfoScreen、MusicScreen、NavigationScreen、AIAssistantScreen、ControlButton、BottomBarButton、FloatingStatusBar、DemoButtons）皆已更新為響應式設計，支援手機、平板、桌面等不同螢幕尺寸自動縮放，縮放範圍 0.6-2.0x，確保在各種設備上保持適當的操作體驗與視覺比例。
+- 2025-06-02: Demo 按鈕優化：將原本較大的「Trigger Tire Pressure Warning」按鈕改為左上角小圖標形式，與實時語音圖標並列顯示，提供更簡潔的測試介面。
