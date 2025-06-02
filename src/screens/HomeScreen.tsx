@@ -294,6 +294,24 @@ const HomeScreen: React.FC = () => {
     <View style={{ flex: 1 }}>
       {/* Demo-only buttons to trigger vehicle warnings */}
       <DemoButtons ws={wsRef.current} />
+
+      {/* 實時語音狀態圖標 - 左上角 */}
+      {/* <TouchableOpacity
+        style={styles.voiceStatusIcon}
+        onPress={() => isConnected ? disconnect() : connect()}
+        onLongPress={() => {
+          console.log("長按重新生成 session...");
+          regenerateSession();
+        }}
+        activeOpacity={0.7}
+      >
+        <MaterialIcons
+          name={voiceState.icon as any}
+          size={16}
+          color={voiceState.color}
+        />
+      </TouchableOpacity> */}
+
       {/* Notification icon for first active warning */}
       {activeWarningKeys.length > 0 && (
         <View style={styles.notificationIcon}>
@@ -491,6 +509,18 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: Platform.OS === "web" ? 40 : 10,
     right: 20,
+    zIndex: 150,
+  },
+  voiceStatusIcon: {
+    position: "absolute",
+    top: Platform.OS === "web" ? 40 : 10,
+    left: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    alignItems: "center",
+    justifyContent: "center",
     zIndex: 150,
   },
   overlayCard: {
