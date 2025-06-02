@@ -483,7 +483,7 @@ const AIAssistantScreen: React.FC = () => {
           onPress={() => setIsDevMode(true)}
         >
           <MaterialIcons
-            color="#666"
+            color="#ffffff"
             name="keyboard"
             size={responsiveScale.mediumIconSize}
           />
@@ -664,7 +664,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   devModeButtonText: {
-    color: "#666",
+    color: "#ffffff",
     fontSize: 14,
     marginLeft: 8,
   },
@@ -760,7 +760,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   controlButtonText: {
-    color: "#666",
+    color: "#ffffff",
     fontSize: 14,
     marginLeft: 8,
   },

@@ -6,6 +6,7 @@ import { Provider as PaperProvider, DefaultTheme } from "react-native-paper";
 
 import HomeScreen from "./src/screens/HomeScreen";
 import FloatingStatusBar from "./src/components/FloatingStatusBar";
+import { RealtimeVoiceProvider } from "./src/components/RealtimeVoiceProvider";
 
 // Define the dark theme for Tesla-like UI
 const darkTheme = {
@@ -17,7 +18,7 @@ const darkTheme = {
     background: "#000",
     surface: "#121212",
     text: "#fff",
-    disabled: "#666",
+    disabled: "#ffffff",
   },
 };
 
@@ -25,11 +26,13 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <PaperProvider theme={darkTheme}>
-        <NavigationContainer>
-          <StatusBar style="light" />
-          <FloatingStatusBar />
-          <HomeScreen />
-        </NavigationContainer>
+        <RealtimeVoiceProvider>
+          <NavigationContainer>
+            <StatusBar style="light" />
+            <FloatingStatusBar />
+            <HomeScreen />
+          </NavigationContainer>
+        </RealtimeVoiceProvider>
       </PaperProvider>
     </SafeAreaProvider>
   );
