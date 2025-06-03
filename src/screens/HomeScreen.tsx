@@ -101,15 +101,15 @@ const HomeScreen: React.FC = () => {
     if (newWarnings.length === 0) return;
 
     // 檢查 OpenAI 配置
-    if (!isOpenAIConfigured()) {
-      console.warn("🚫 [車輛異常播報] OpenAI 未配置，跳過語音播報功能");
-      // 標記為已播報，避免重複檢查
-      const warningKey = newWarnings[0];
+    // if (!isOpenAIConfigured()) {
+    //   console.warn("🚫 [車輛異常播報] OpenAI 未配置，跳過語音播報功能");
+    //   // 標記為已播報，避免重複檢查
+    //   const warningKey = newWarnings[0];
 
-      setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
+    //   setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
 
-      return;
-    }
+    //   return;
+    // }
 
     // 只播報第一個新異常
     const warningKey = newWarnings[0];
@@ -137,6 +137,23 @@ const HomeScreen: React.FC = () => {
           exterior_light_failure_warning: "外部燈光故障",
         };
         const userPrompt = warningNameMap[warningKey] || warningKey;
+
+        console.log(`🔊 [車輛異常播報] 檢測到異常：${userPrompt}，播放示例音檔`);
+
+        // 暫時註解掉 OpenAI 功能，直接播放示例音檔
+        /* 
+        // 檢查 OpenAI 配置
+        if (!isOpenAIConfigured()) {
+          console.warn("🚫 [車輛異常播報] OpenAI 未配置，跳過語音播報功能");
+          // 標記為已播報，避免重複檢查
+          setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
+          setIsSpeaking(false);
+          return;
+        }
+
+        // 組 prompt
+        const systemPrompt =
+          "你是車輛助理，請針對車輛異常提出具體建議，語氣親切且務實。";
 
         let llmResponse = "";
 
@@ -184,6 +201,26 @@ const HomeScreen: React.FC = () => {
         } else {
           setIsSpeaking(false);
         }
+        */
+
+        // 直接播放示例音檔 public/es-US_sample.wav
+        const audioUri = Platform.OS === "web" 
+          ? `${window.location.origin}/es-US_sample.wav`
+          : require("../../public/es-US_sample.wav");
+
+        const { sound } = await Audio.Sound.createAsync(
+          Platform.OS === "web" ? { uri: audioUri } : audioUri,
+          { shouldPlay: true },
+        );
+
+        // 播放結束後釋放資源
+        sound.setOnPlaybackStatusUpdate((status) => {
+          if (status.isLoaded && status.didJustFinish) {
+            sound.unloadAsync();
+            setIsSpeaking(false);
+          }
+        });
+
         setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
       } catch (err) {
         console.error("🚫 [車輛異常播報] 播報失敗", err);
