@@ -1,7 +1,4 @@
 <!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
----
-applyTo: "**"
----
 
 # 車機 UI Demo 專案需求（React Native + TypeScript）
 
@@ -11,6 +8,7 @@ applyTo: "**"
 ## 1. 專案目標
 
 從零開始製作一個全新的車機 UI Demo，使用 TypeScript 搭配 React Native，方便未來跨平台（iOS/Android/Web UI）發展。
+套件透過 `npm` 管理，並使用 `expo` 進行開發與測試。
 
 ---
 
@@ -34,19 +32,16 @@ applyTo: "**"
      - 首頁預設浮現的面板為「車輛狀態卡片」，參照 Tesla 車機設計（如下補充）。
      - 地圖與各類浮層卡片皆需預留橫屏/直屏響應布局設計。
 
-2. **導航頁**
-   - 地圖展示、路線規劃（假資料）
-
-3. **音樂播放頁**
+2. **音樂播放頁**
    - 播放/暫停、曲目資訊、專輯封面
 
-4. **車輛資訊頁**
+3. **車輛資訊頁**
    - 顯示速度、油量/電量、里程等（假資料）
 
-5. **空調控制頁**
+4. **空調控制頁**
    - 溫度調整、風量設定、模式切換
 
-6. **AI 助理頁**
+5. **AI 助理頁**
    - 語音/文字互動，展示 AI 回應。
    - **互動模式說明（2025-05-26 更新）：**
      - 預設進入頁面為「語音模式」，僅顯示一個大錄音按鈕，點擊即可開始錄音，直到再次點擊停止。
