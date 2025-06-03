@@ -14,6 +14,23 @@ function getRequiredEnv(key: string): string {
 }
 
 /**
+ * Get optional environment variable with warning if not set
+ */
+function getOptionalEnv(key: string): string | undefined {
+  const value = process.env[key];
+
+  if (!value) {
+    console.warn(
+      `⚠️  [Environment] ${key} is not configured. Related functionality may be disabled.`,
+    );
+
+    return undefined;
+  }
+
+  return value;
+}
+
+/**
  * Get current hostname for web platform
  */
 function getCurrentHostname(): string {
@@ -79,46 +96,33 @@ export function getRealtimeVoiceUrl(): string {
 // OpenAI Configuration Functions
 
 /**
- * Get OpenAI API type
- */
-export function getOpenAIApiType(): string {
-  return getRequiredEnv("EXPO_PUBLIC_OPENAI_API_TYPE");
-}
-
-/**
  * Get OpenAI API key
  */
-export function getOpenAIApiKey(): string {
-  return getRequiredEnv("EXPO_PUBLIC_OPENAI_API_KEY");
+export function getOpenAIApiKey(): string | undefined {
+  return getOptionalEnv("EXPO_PUBLIC_OPENAI_API_KEY");
 }
 
 /**
  * Get OpenAI base URL
  */
-export function getOpenAIBaseUrl(): string {
-  return getRequiredEnv("EXPO_PUBLIC_OPENAI_BASE_URL");
-}
-
-/**
- * Get OpenAI API version
- */
-export function getOpenAIApiVersion(): string {
-  return getRequiredEnv("EXPO_PUBLIC_OPENAI_API_VERSION");
+export function getOpenAIBaseUrl(): string | undefined {
+  return getOptionalEnv("EXPO_PUBLIC_OPENAI_BASE_URL");
 }
 
 /**
  * Get OpenAI model name
  */
-export function getOpenAIModel(): string {
-  return getRequiredEnv("EXPO_PUBLIC_OPENAI_MODEL");
+export function getOpenAIModel(): string | undefined {
+  return getOptionalEnv("EXPO_PUBLIC_OPENAI_MODEL");
 }
 
 /**
- * Get OpenAI deployment name (optional, for Azure)
+ * Check if all required OpenAI environment variables are configured
  */
-export function getOpenAIDeploymentName(): string | undefined {
-  const deployment = process.env.EXPO_PUBLIC_OPENAI_DEPLOYMENT_NAME;
-  const model = process.env.EXPO_PUBLIC_OPENAI_MODEL;
+export function isOpenAIConfigured(): boolean {
+  const apiKey = getOpenAIApiKey();
+  const baseUrl = getOpenAIBaseUrl();
+  const model = getOpenAIModel();
 
-  return deployment || model;
+  return !!(apiKey && baseUrl && model);
 }

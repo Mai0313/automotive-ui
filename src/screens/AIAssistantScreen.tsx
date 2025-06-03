@@ -24,6 +24,7 @@ import {
 } from "expo-audio";
 
 import { chatCompletion, transcribeAudio, textToSpeech } from "../hooks/openai"; // Added textToSpeech
+import { isOpenAIConfigured } from "../utils/env";
 import commonStyles from "../styles/commonStyles";
 import Orb from "../components/Orb";
 import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
@@ -41,7 +42,9 @@ const AIAssistantScreen: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: "您好！我是您的車載 AI 助理。我可以幫您控制車輛功能、查詢資訊或提供幫助。請問需要什麼協助？",
+      text: isOpenAIConfigured()
+        ? "您好！我是您的車載 AI 助理。我可以幫您控制車輛功能、查詢資訊或提供幫助。請問需要什麼協助？"
+        : "您好！歡迎使用車載 AI 助理。目前 AI 功能需要設定 OpenAI API，請參考 .env.example 檔案進行配置。",
       isUser: false,
       timestamp: "10:18 AM",
     },
@@ -115,6 +118,41 @@ const AIAssistantScreen: React.FC = () => {
 
     if (!currentText.trim() || isTyping) return;
 
+    // Check OpenAI configuration before proceeding
+    if (!isOpenAIConfigured()) {
+      console.warn(
+        "🚫 [AIAssistant] OpenAI not configured, showing configuration message",
+      );
+
+      // Add user message
+      const userMessage: Message = {
+        id: nextIdRef.current++,
+        text: currentText,
+        isUser: true,
+        timestamp: getCurrentTime(),
+      };
+
+      // Add configuration error response
+      const configErrorMessage: Message = {
+        id: nextIdRef.current++,
+        text: "❌ AI 功能目前無法使用，請設定 OpenAI API 金鑰。請參考專案的 .env.example 檔案了解如何配置環境變數。",
+        isUser: false,
+        timestamp: getCurrentTime(),
+      };
+
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        userMessage,
+        configErrorMessage,
+      ]);
+
+      if (!textToSend) {
+        setInputText("");
+      }
+
+      return;
+    }
+
     // Cancel any ongoing request
     if (abortController) {
       cancelRequest();
@@ -186,33 +224,38 @@ const AIAssistantScreen: React.FC = () => {
 
       // After streaming is complete, play TTS if response is not empty
       if (accumulatedResponse.trim()) {
-        if (currentSound) {
-          console.log("[SendMessage] Stopping and releasing previous sound.");
-          await currentSound.pause();
-          currentSound.release();
-        }
-        console.log("[SendMessage] Attempting to call textToSpeech.");
-        const audioUri = await textToSpeech(accumulatedResponse);
+        try {
+          if (currentSound) {
+            console.log("[SendMessage] Stopping and releasing previous sound.");
+            await currentSound.pause();
+            currentSound.release();
+          }
+          console.log("[SendMessage] Attempting to call textToSpeech.");
+          const audioUri = await textToSpeech(accumulatedResponse);
 
-        if (audioUri) {
-          const player = createAudioPlayer({ uri: audioUri });
+          if (audioUri) {
+            const player = createAudioPlayer({ uri: audioUri });
 
-          setCurrentSound(player);
-          await player.play();
-          const subscription = player.addListener(
-            "playbackStatusUpdate",
-            (status: AudioStatus) => {
-              // Add AudioStatus type
-              if (status.didJustFinish) {
-                console.log("TTS playback finished.");
-                player.release();
-                setCurrentSound(null);
-                subscription.remove(); // Clean up listener
-              }
-            },
-          );
-        } else {
-          console.warn("TTS audio URI is null, cannot play.");
+            setCurrentSound(player);
+            await player.play();
+            const subscription = player.addListener(
+              "playbackStatusUpdate",
+              (status: AudioStatus) => {
+                // Add AudioStatus type
+                if (status.didJustFinish) {
+                  console.log("TTS playback finished.");
+                  player.release();
+                  setCurrentSound(null);
+                  subscription.remove(); // Clean up listener
+                }
+              },
+            );
+          } else {
+            console.warn("TTS audio URI is null, cannot play.");
+          }
+        } catch (ttsError) {
+          console.error("🚫 [SendMessage] TTS failed:", ttsError);
+          // Don't show error to user, just log it
         }
       }
     } catch (error) {
@@ -306,6 +349,26 @@ const AIAssistantScreen: React.FC = () => {
     console.log("[stopRecordingAndTranscribe] 函數被呼叫");
     let transcriptionPlaceholderId: number | null = null; // Declare here for wider scope
 
+    // Check OpenAI configuration before starting transcription
+    if (!isOpenAIConfigured()) {
+      console.warn(
+        "🚫 [AIAssistant] OpenAI not configured, cannot transcribe audio",
+      );
+      setIsRecording(false);
+
+      // Add error message
+      const errorMessage: Message = {
+        id: nextIdRef.current++,
+        text: "❌ 語音辨識功能需要 OpenAI API 配置。",
+        isUser: false,
+        timestamp: getCurrentTime(),
+      };
+
+      setMessages((prevMessages) => [...prevMessages, errorMessage]);
+
+      return;
+    }
+
     if (!audioRecorder.isRecording) {
       if (audioRecorder.uri) {
         // If already stopped but URI exists
@@ -364,11 +427,14 @@ const AIAssistantScreen: React.FC = () => {
           setIsTyping(false);
         }
       } catch (error) {
-        console.error("Transcription error:", error);
+        console.error("🚫 [Transcription] Error:", error);
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
             transcriptionPlaceholderId && msg.id === transcriptionPlaceholderId // Check if ID was set
-              ? { ...msg, text: "[語音辨識失敗]" }
+              ? {
+                  ...msg,
+                  text: "❌ 語音辨識失敗，請重試或檢查 OpenAI API 配置。",
+                }
               : msg,
           ),
         );

@@ -19,7 +19,11 @@ import useCurrentLocation from "../hooks/useCurrentLocation";
 import useHomeClimateSettings from "../hooks/useHomeClimateSettings";
 import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
-import { getWebSocketUrl, getHttpServerUrl } from "../utils/env";
+import {
+  getWebSocketUrl,
+  getHttpServerUrl,
+  isOpenAIConfigured,
+} from "../utils/env";
 import { chatCompletion, textToSpeech } from "../hooks/openai";
 
 import { warningIconMap } from "./VehicleInfoScreen";
@@ -96,6 +100,17 @@ const HomeScreen: React.FC = () => {
 
     if (newWarnings.length === 0) return;
 
+    // 檢查 OpenAI 配置
+    if (!isOpenAIConfigured()) {
+      console.warn("🚫 [車輛異常播報] OpenAI 未配置，跳過語音播報功能");
+      // 標記為已播報，避免重複檢查
+      const warningKey = newWarnings[0];
+
+      setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
+
+      return;
+    }
+
     // 只播報第一個新異常
     const warningKey = newWarnings[0];
 
@@ -171,8 +186,10 @@ const HomeScreen: React.FC = () => {
         }
         setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
       } catch (err) {
-        console.error("[LLM TTS] 播報異常失敗", err);
+        console.error("🚫 [車輛異常播報] 播報失敗", err);
         setIsSpeaking(false);
+        // 即使失敗也標記為已播報，避免持續重試
+        setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
       }
     })();
   }, [vehicleWarnings]);
