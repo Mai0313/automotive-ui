@@ -17,7 +17,7 @@ export interface MapViewProps {
 
 // Generate the Google Maps URL with the given latitude, longitude, and zoom level
 const getGoogleMapsUrl = (lat: number, lng: number, zoom = 13) =>
-  `https://www.googles.com/maps?q=${lat},${lng}&z=${zoom}&output=embed`;
+  `https://www.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed`;
 
 // Default center coordinates
 const DEFAULT_CENTER = { latitude: 25.0339639, longitude: 121.5644722 };
