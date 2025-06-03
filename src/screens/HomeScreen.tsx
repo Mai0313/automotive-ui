@@ -33,8 +33,8 @@ const HomeScreen: React.FC = () => {
 
   // Realtime voice功能 - 在web上自動開始
   const realtimeVoice = useRealtimeVoice({
-    serverUrl: 'ws://localhost:8100/ws',
-    autoStart: Platform.OS === 'web', // 僅在web上自動開始
+    serverUrl: "ws://localhost:8100/ws",
+    autoStart: Platform.OS === "web", // 僅在web上自動開始
   });
 
   const [activeOverlay, setActiveOverlay] = React.useState<
@@ -300,8 +300,7 @@ const HomeScreen: React.FC = () => {
   return (
     <View style={{ flex: 1 }}>
       {/* Demo-only buttons to trigger vehicle warnings */}
-      <DemoButtons 
-        ws={wsRef.current} 
+      <DemoButtons
         realtimeVoice={{
           isConnected: realtimeVoice.isConnected,
           isRecording: realtimeVoice.isRecording,
@@ -309,6 +308,7 @@ const HomeScreen: React.FC = () => {
           startAudio: realtimeVoice.startAudio,
           stopAudio: realtimeVoice.stopAudio,
         }}
+        ws={wsRef.current}
       />
 
       {/* 實時語音狀態圖標 - 左上角 */}

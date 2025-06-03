@@ -30,7 +30,7 @@ const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice }) => {
 
   const toggleRealtimeVoice = () => {
     if (!realtimeVoice) return;
-    
+
     if (realtimeVoice.isRecording) {
       realtimeVoice.stopAudio();
     } else {
@@ -43,34 +43,34 @@ const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice }) => {
       {/* Realtime Voice Debug Button */}
       {realtimeVoice && (
         <TouchableOpacity
+          activeOpacity={0.7}
           style={[styles.container, styles.voiceDebugButton]}
           onPress={toggleRealtimeVoice}
-          activeOpacity={0.7}
         >
           <MaterialCommunityIcons
-            name={realtimeVoice.isRecording ? "microphone" : "microphone-off"}
-            size={16}
             color={
-              realtimeVoice.error 
-                ? "#ff4444" 
-                : realtimeVoice.isConnected 
-                  ? "#00ff00" 
+              realtimeVoice.error
+                ? "#ff4444"
+                : realtimeVoice.isConnected
+                  ? "#00ff00"
                   : "#ffffff"
             }
+            name={realtimeVoice.isRecording ? "microphone" : "microphone-off"}
+            size={16}
           />
         </TouchableOpacity>
       )}
-      
+
       {/* TPMS Demo Button */}
       <TouchableOpacity
+        activeOpacity={0.7}
         style={styles.container}
         onPress={toggleTpms}
-        activeOpacity={0.7}
       >
         <MaterialCommunityIcons
+          color={tpmsActive ? "#ff4444" : "#ffffff"}
           name={tpmsActive ? "car-tire-alert" : "car-tire-alert"}
           size={16}
-          color={tpmsActive ? "#ff4444" : "#ffffff"}
         />
       </TouchableOpacity>
     </View>

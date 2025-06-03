@@ -25,11 +25,11 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <PaperProvider theme={darkTheme}>
-          <NavigationContainer>
-            <StatusBar style="light" />
-            <FloatingStatusBar />
-            <HomeScreen />
-          </NavigationContainer>
+        <NavigationContainer>
+          <StatusBar style="light" />
+          <FloatingStatusBar />
+          <HomeScreen />
+        </NavigationContainer>
       </PaperProvider>
     </SafeAreaProvider>
   );

@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import { Platform } from 'react-native';
-import { useAudioRecorder, AudioModule } from 'expo-audio';
-
-// @ts-ignore - protobufjs doesn't have proper types for React Native
-import protobuf from 'protobufjs';
+import { useEffect, useRef, useState } from "react";
+import { Platform } from "react-native";
+import { useAudioRecorder, AudioModule } from "expo-audio";
+import protobuf from "protobufjs";
 
 interface RealtimeVoiceConfig {
   serverUrl?: string;
@@ -14,10 +12,10 @@ interface RealtimeVoiceConfig {
 
 export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   const {
-    serverUrl = 'ws://localhost:8100/ws',
+    serverUrl = "ws://localhost:8100/ws",
     sampleRate = 16000,
     numChannels = 1,
-    autoStart = false
+    autoStart = false,
   } = config;
 
   const [isConnected, setIsConnected] = useState(false);
@@ -26,23 +24,26 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   const [error, setError] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
-  const audioRecorder = useAudioRecorder({
-    extension: '.wav',
-    sampleRate: sampleRate,
-    numberOfChannels: numChannels,
-    bitRate: 128000,
-    android: {
-      outputFormat: 'mpeg4',
-      audioEncoder: 'aac',
+  const audioRecorder = useAudioRecorder(
+    {
+      extension: ".wav",
+      sampleRate: sampleRate,
+      numberOfChannels: numChannels,
+      bitRate: 128000,
+      android: {
+        outputFormat: "mpeg4",
+        audioEncoder: "aac",
+      },
+      ios: {
+        outputFormat: "MPEG4AAC",
+        audioQuality: 96,
+      },
     },
-    ios: {
-      outputFormat: 'MPEG4AAC',
-      audioQuality: 96,
+    (status) => {
+      // Handle recording status updates if needed
+      console.log("Recording status:", status);
     },
-  }, (status) => {
-    // Handle recording status updates if needed
-    console.log('Recording status:', status);
-  });
+  );
   const audioContextRef = useRef<AudioContext | null>(null);
   const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
@@ -61,20 +62,21 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   useEffect(() => {
     const initProtobuf = async () => {
       try {
-        if (Platform.OS === 'web') {
+        if (Platform.OS === "web") {
           // For web, load protobuf from public folder
-          const response = await fetch('/frames.proto');
+          const response = await fetch("/frames.proto");
           const protoText = await response.text();
           const root = protobuf.parse(protoText).root;
-          frameTypeRef.current = root.lookupType('pipecat.Frame');
+
+          frameTypeRef.current = root.lookupType("pipecat.Frame");
         } else {
           // For native, we might need to handle differently
           // For now, we'll skip protobuf on native platforms
-          console.warn('Protobuf not supported on native platforms yet');
+          console.warn("Protobuf not supported on native platforms yet");
         }
       } catch (err) {
-        console.error('Failed to initialize protobuf:', err);
-        setError('Failed to initialize protobuf');
+        console.error("Failed to initialize protobuf:", err);
+        setError("Failed to initialize protobuf");
       }
     };
 
@@ -84,10 +86,14 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   // Convert Float32 to PCM S16
   const convertFloat32ToS16PCM = (float32Array: Float32Array): Int16Array => {
     const int16Array = new Int16Array(float32Array.length);
+
     for (let i = 0; i < float32Array.length; i++) {
       const clampedValue = Math.max(-1, Math.min(1, float32Array[i]));
-      int16Array[i] = clampedValue < 0 ? clampedValue * 32768 : clampedValue * 32767;
+
+      int16Array[i] =
+        clampedValue < 0 ? clampedValue * 32768 : clampedValue * 32767;
     }
+
     return int16Array;
   };
 
@@ -95,19 +101,26 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   const handleWebSocketMessage = async (event: MessageEvent) => {
     try {
       // Try to parse as JSON first
-      if (typeof event.data === 'string') {
+      if (typeof event.data === "string") {
         const jsonData = JSON.parse(event.data);
-        console.log('Received JSON:', jsonData);
+
+        console.log("Received JSON:", jsonData);
+
         return;
       }
 
       // Handle binary data (audio)
-      if (Platform.OS === 'web' && frameTypeRef.current && audioContextRef.current) {
+      if (
+        Platform.OS === "web" &&
+        frameTypeRef.current &&
+        audioContextRef.current
+      ) {
         const arrayBuffer = await event.data.arrayBuffer();
+
         enqueueAudioFromProto(arrayBuffer);
       }
     } catch (err) {
-      console.error('Error handling WebSocket message:', err);
+      console.error("Error handling WebSocket message:", err);
     }
   };
 
@@ -116,13 +129,15 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     if (!frameTypeRef.current || !audioContextRef.current) return;
 
     try {
-      const parsedFrame = frameTypeRef.current.decode(new Uint8Array(arrayBuffer));
-      
+      const parsedFrame = frameTypeRef.current.decode(
+        new Uint8Array(arrayBuffer),
+      );
+
       // Stop active audio if we receive text (interrupt signal)
       if (parsedFrame?.text) {
-        activeSources.current.forEach(source => {
+        activeSources.current.forEach((source) => {
           source.stop();
-          console.log('Stopped active audio due to interrupt signal');
+          console.log("Stopped active audio due to interrupt signal");
         });
         activeSources.current = [];
         playTimeRef.current = 0;
@@ -131,7 +146,9 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       if (!parsedFrame?.audio) return;
 
       // Reset play time if needed
-      const diffTime = audioContextRef.current.currentTime - lastMessageTimeRef.current;
+      const diffTime =
+        audioContextRef.current.currentTime - lastMessageTimeRef.current;
+
       if (playTimeRef.current === 0 || diffTime > 1.0) {
         playTimeRef.current = audioContextRef.current.currentTime;
       }
@@ -139,22 +156,23 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
 
       // Process audio data
       const audioVector = Array.from(parsedFrame.audio.audio);
-      const audioArray = new Uint8Array(audioVector.map(x => Number(x)));
+      const audioArray = new Uint8Array(audioVector.map((x) => Number(x)));
 
       audioContextRef.current.decodeAudioData(audioArray.buffer, (buffer) => {
         if (!audioContextRef.current) return;
-        
+
         const source = new AudioBufferSourceNode(audioContextRef.current);
+
         source.buffer = buffer;
         source.start(playTimeRef.current);
         source.connect(audioContextRef.current.destination);
         playTimeRef.current += buffer.duration;
         activeSources.current.push(source);
-        
-        console.log('New audio playback started');
+
+        console.log("New audio playback started");
       });
     } catch (err) {
-      console.error('Error processing audio frame:', err);
+      console.error("Error processing audio frame:", err);
     }
   };
 
@@ -162,27 +180,28 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   const initWebSocket = () => {
     const uuid = generateUUID8();
     const wsUrl = `${serverUrl}/${uuid}`;
-    
+
     const ws = new WebSocket(wsUrl);
+
     wsRef.current = ws;
 
-    ws.addEventListener('open', () => {
-      console.log('WebSocket connection established');
+    ws.addEventListener("open", () => {
+      console.log("WebSocket connection established");
       setIsConnected(true);
       setError(null);
     });
 
-    ws.addEventListener('message', handleWebSocketMessage);
+    ws.addEventListener("message", handleWebSocketMessage);
 
-    ws.addEventListener('close', (event) => {
-      console.log('WebSocket connection closed:', event.code, event.reason);
+    ws.addEventListener("close", (event) => {
+      console.log("WebSocket connection closed:", event.code, event.reason);
       setIsConnected(false);
       stopAudio();
     });
 
-    ws.addEventListener('error', (event) => {
-      console.error('WebSocket error:', event);
-      setError('WebSocket connection failed');
+    ws.addEventListener("error", (event) => {
+      console.error("WebSocket error:", event);
+      setError("WebSocket connection failed");
       setIsConnected(false);
     });
   };
@@ -192,7 +211,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     try {
       setError(null);
 
-      if (Platform.OS === 'web') {
+      if (Platform.OS === "web") {
         await startWebAudio();
         initWebSocket();
         setIsRecording(true);
@@ -202,23 +221,26 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
         // Just start recording without realtime streaming for now
         await startNativeAudio();
         setIsRecording(true);
-        console.log('Native recording started - realtime streaming not yet implemented');
+        console.log(
+          "Native recording started - realtime streaming not yet implemented",
+        );
       }
     } catch (err) {
-      console.error('Error starting audio:', err);
-      setError('Failed to start audio');
+      console.error("Error starting audio:", err);
+      setError("Failed to start audio");
     }
   };
 
   // Start web audio
   const startWebAudio = async () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      throw new Error('getUserMedia is not supported');
+      throw new Error("getUserMedia is not supported");
     }
 
-    audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({
-      latencyHint: 'interactive',
-      sampleRate: sampleRate
+    audioContextRef.current = new (window.AudioContext ||
+      (window as any).webkitAudioContext)({
+      latencyHint: "interactive",
+      sampleRate: sampleRate,
     });
 
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -228,13 +250,17 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
         autoGainControl: true,
         echoCancellation: true,
         noiseSuppression: true,
-      }
+      },
     });
 
     microphoneStreamRef.current = stream;
-    scriptProcessorRef.current = audioContextRef.current.createScriptProcessor(512, 1, 1);
+    scriptProcessorRef.current = audioContextRef.current.createScriptProcessor(
+      512,
+      1,
+      1,
+    );
     sourceRef.current = audioContextRef.current.createMediaStreamSource(stream);
-    
+
     sourceRef.current.connect(scriptProcessorRef.current);
     scriptProcessorRef.current.connect(audioContextRef.current.destination);
 
@@ -244,16 +270,19 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       const audioData = event.inputBuffer.getChannelData(0);
       const pcmS16Array = convertFloat32ToS16PCM(audioData);
       const pcmByteArray = new Uint8Array(pcmS16Array.buffer);
-      
+
       const frame = frameTypeRef.current.create({
         audio: {
           audio: Array.from(pcmByteArray),
           sampleRate: sampleRate,
-          numChannels: numChannels
-        }
+          numChannels: numChannels,
+        },
       });
 
-      const encodedFrame = new Uint8Array(frameTypeRef.current.encode(frame).finish());
+      const encodedFrame = new Uint8Array(
+        frameTypeRef.current.encode(frame).finish(),
+      );
+
       wsRef.current.send(encodedFrame);
     };
   };
@@ -261,16 +290,17 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   // Start native audio (simplified for now)
   const startNativeAudio = async () => {
     const { granted } = await AudioModule.requestPermissionsAsync();
+
     if (!granted) {
-      throw new Error('Audio permission not granted');
+      throw new Error("Audio permission not granted");
     }
 
     try {
       await audioRecorder.prepareToRecordAsync();
       await audioRecorder.record();
-      console.log('Native recording started');
+      console.log("Native recording started");
     } catch (err) {
-      console.error('Failed to start native recording:', err);
+      console.error("Failed to start native recording:", err);
       throw err;
     }
   };
@@ -290,7 +320,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       setIsConnected(false);
 
       // Stop web audio
-      if (Platform.OS === 'web') {
+      if (Platform.OS === "web") {
         if (scriptProcessorRef.current) {
           scriptProcessorRef.current.disconnect();
           scriptProcessorRef.current = null;
@@ -300,10 +330,12 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
           sourceRef.current = null;
         }
         if (microphoneStreamRef.current) {
-          microphoneStreamRef.current.getTracks().forEach(track => track.stop());
+          microphoneStreamRef.current
+            .getTracks()
+            .forEach((track) => track.stop());
           microphoneStreamRef.current = null;
         }
-        activeSources.current.forEach(source => source.stop());
+        activeSources.current.forEach((source) => source.stop());
         activeSources.current = [];
       }
 
@@ -312,17 +344,18 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
         await audioRecorder.stop();
       }
     } catch (err) {
-      console.error('Error stopping audio:', err);
+      console.error("Error stopping audio:", err);
     }
   };
 
   // Auto start if configured
   useEffect(() => {
-    if (autoStart && Platform.OS === 'web') {
+    if (autoStart && Platform.OS === "web") {
       // Add a small delay for user interaction on web
       const timer = setTimeout(() => {
         startAudio();
       }, 1000);
+
       return () => clearTimeout(timer);
     }
   }, [autoStart]);
