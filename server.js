@@ -5,17 +5,37 @@ dotenv.config();
 process.env.POSTGRES_URL = process.env.POSTGRES_URL || 'postgresql://postgres:postgres@localhost:5432/automotive';
 
 // Validate required environment variables
-if (!process.env.WS_SERVER_PORT) {
-  console.error('Error: WS_SERVER_PORT environment variable is required');
+if (!process.env.WS_SERVER_URL) {
+  console.error('Error: WS_SERVER_URL environment variable is required');
   process.exit(1);
 }
-if (!process.env.HTTP_SERVER_PORT) {
-  console.error('Error: HTTP_SERVER_PORT environment variable is required');
+if (!process.env.HTTP_SERVER_URL) {
+  console.error('Error: HTTP_SERVER_URL environment variable is required');
   process.exit(1);
 }
 
-const WS_PORT = parseInt(process.env.WS_SERVER_PORT);
-const HTTP_PORT = parseInt(process.env.HTTP_SERVER_PORT);
+/**
+ * Replace localhost with 0.0.0.0 for server binding
+ * This allows the server to accept connections from any interface
+ */
+function replaceLocalhostForServerBinding(url) {
+  if (url.includes('localhost')) {
+    return url.replace('localhost', '0.0.0.0');
+  }
+  return url;
+}
+
+// Parse server URLs and convert localhost to 0.0.0.0 for binding
+const wsUrlForBinding = replaceLocalhostForServerBinding(process.env.WS_SERVER_URL);
+const httpUrlForBinding = replaceLocalhostForServerBinding(process.env.HTTP_SERVER_URL);
+
+const wsUrl = new URL(wsUrlForBinding);
+const httpUrl = new URL(httpUrlForBinding);
+
+const WS_HOST = wsUrl.hostname;
+const WS_PORT = parseInt(wsUrl.port);
+const HTTP_HOST = httpUrl.hostname;
+const HTTP_PORT = parseInt(httpUrl.port);
 
 import { Client } from 'pg';
 import { WebSocketServer } from 'ws';
@@ -48,7 +68,7 @@ async function start() {
     }
   });
   const httpServer = http.createServer(app);
-  httpServer.listen(HTTP_PORT, () => console.log(`HTTP server running on http://localhost:${HTTP_PORT}`));
+  httpServer.listen(HTTP_PORT, HTTP_HOST, () => console.log(`HTTP server running on ${process.env.HTTP_SERVER_URL}`));
 
   // Listen to ac_settings updates
   await client.query('LISTEN ac_settings_update');
@@ -58,8 +78,8 @@ async function start() {
   console.log('Listening to vehicle_info_update channel.');
 
   // Setup WebSocket server
-  const wss = new WebSocketServer({ port: WS_PORT });
-  console.log(`WebSocket server running on ws://localhost:${WS_PORT}`);
+  const wss = new WebSocketServer({ port: WS_PORT, host: WS_HOST });
+  console.log(`WebSocket server running on ${process.env.WS_SERVER_URL}`);
 
   wss.on('connection', async (ws) => {
     console.log('Client connected');

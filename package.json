@@ -6,7 +6,7 @@
     "start": "npx tsx scripts/init_db.tsx && expo start",
     "android": "npx tsx scripts/init_db.tsx && expo start --android",
     "ios": "npx tsx scripts/init_db.tsx && expo start --ios",
-    "web": "npx tsx scripts/init_db.tsx && expo start --web",
+    "web": "npx tsx scripts/init_db.tsx && expo start --web --host lan --port 8081",
     "lint": "eslint --fix",
     "db": "npx tsx scripts/init_db.tsx",
     "ws": "node server.js"
@@ -48,7 +48,7 @@
     "react-native-paper": "^5.14.4",
     "react-native-reanimated": "^3.17.5",
     "react-native-safe-area-context": "^5.4.0",
-    "react-native-screens": "^4.10.0",
+    "react-native-screens": "~4.11.1",
     "react-native-svg": "^15.11.2",
     "react-native-web": "^0.20.0",
     "react-native-webview": "^13.13.5",

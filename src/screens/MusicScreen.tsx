@@ -1,7 +1,3 @@
-// TODO: 若需播放音樂，請優先使用 expo-av 實作音樂播放功能
-// import { Audio } from "expo-av";
-// 參考：https://docs.expo.dev/versions/latest/sdk/av/
-
 import React, { useState } from "react";
 import {
   View,

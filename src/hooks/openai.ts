@@ -7,18 +7,24 @@ import { AzureOpenAI, OpenAI } from "openai";
 import { Stream } from "openai/streaming";
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system"; // Added import
+import {
+  getOpenAIApiType,
+  getOpenAIApiKey,
+  getOpenAIBaseUrl,
+  getOpenAIApiVersion,
+  getOpenAIModel,
+  getOpenAIDeploymentName
+} from "../utils/env";
 
 // Initialize the appropriate client based on api_type
 const createClient = () => {
-  const apiType = process.env.EXPO_PUBLIC_OPENAI_API_TYPE;
+  const apiType = getOpenAIApiType();
 
   if (apiType === "azure") {
-    const apiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
-    const baseURL = process.env.EXPO_PUBLIC_OPENAI_BASE_URL + "/openai";
-    const deployment =
-      process.env.EXPO_PUBLIC_OPENAI_DEPLOYMENT_NAME ||
-      process.env.EXPO_PUBLIC_OPENAI_MODEL;
-    const apiVersion = process.env.EXPO_PUBLIC_OPENAI_API_VERSION;
+    const apiKey = getOpenAIApiKey();
+    const baseURL = getOpenAIBaseUrl() + "/openai";
+    const deployment = getOpenAIDeploymentName();
+    const apiVersion = getOpenAIApiVersion();
 
     return new AzureOpenAI({
       apiKey,
@@ -28,8 +34,8 @@ const createClient = () => {
       dangerouslyAllowBrowser: true,
     });
   } else {
-    const apiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
-    const baseURL = process.env.EXPO_PUBLIC_OPENAI_BASE_URL;
+    const apiKey = getOpenAIApiKey();
+    const baseURL = getOpenAIBaseUrl();
 
     return new OpenAI({
       apiKey,
@@ -54,7 +60,7 @@ export async function chatCompletion({
 
     const stream = await client.chat.completions.create(
       {
-        model: process.env.EXPO_PUBLIC_OPENAI_MODEL,
+        model: getOpenAIModel(),
         messages,
         stream: true,
       },
