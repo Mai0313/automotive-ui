@@ -195,15 +195,10 @@ const AIAssistantScreen: React.FC = () => {
         const audioUri = await textToSpeech(accumulatedResponse);
 
         if (audioUri) {
-          console.log("[SendMessage] Playing TTS from URI:", audioUri);
           const player = createAudioPlayer({ uri: audioUri });
 
           setCurrentSound(player);
-          console.log("[SendMessage] Attempting to play sound.");
           await player.play();
-          console.log(
-            "[SendMessage] player.play() awaited successfully (or returned void).",
-          );
           const subscription = player.addListener(
             "playbackStatusUpdate",
             (status: AudioStatus) => {

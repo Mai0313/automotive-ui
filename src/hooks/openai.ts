@@ -13,10 +13,10 @@ const createClient = () => {
   const apiType = process.env.EXPO_PUBLIC_OPENAI_API_TYPE;
 
   if (apiType === "azure") {
-    const apiKey = process.env.EXPO_PUBLIC_AZURE_OPENAI_API_KEY;
-    const baseURL = process.env.EXPO_PUBLIC_AZURE_OPENAI_ENDPOINT + "/openai";
+    const apiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+    const baseURL = process.env.EXPO_PUBLIC_OPENAI_BASE_URL + "/openai";
     const deployment =
-      process.env.EXPO_PUBLIC_AZURE_OPENAI_DEPLOYMENT ||
+      process.env.EXPO_PUBLIC_OPENAI_DEPLOYMENT_NAME ||
       process.env.EXPO_PUBLIC_OPENAI_MODEL;
     const apiVersion = process.env.EXPO_PUBLIC_OPENAI_API_VERSION;
 
