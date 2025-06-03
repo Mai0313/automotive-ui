@@ -2,9 +2,13 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-process.env.POSTGRES_URL = process.env.POSTGRES_URL || 'postgresql://postgres:postgres@localhost:5432/automotive';
-
 // Validate required environment variables
+if (!process.env.POSTGRES_URL) {
+  console.error('Error: POSTGRES_URL environment variable is required');
+  console.error('Please set POSTGRES_URL in .env file, for example:');
+  console.error('POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/automotive');
+  process.exit(1);
+}
 if (!process.env.WS_SERVER_URL) {
   console.error('Error: WS_SERVER_URL environment variable is required');
   process.exit(1);
@@ -43,7 +47,9 @@ import express from 'express';
 import http from 'http';
 
 async function start() {
-  const connectionString = process.env.POSTGRES_URL;
+  // 這裡要監聽 automotive 資料庫的 ac_settings 和 vehicle_info 表的變更
+  // 跟 init_db.tsx 不同 因為那邊是在創建資料庫
+  const connectionString = `${process.env.POSTGRES_URL}/automotive`;
   const client = new Client({ connectionString });
   await client.connect();
   console.log('Connected to PostgreSQL for WS.');

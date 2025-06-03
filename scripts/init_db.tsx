@@ -1,4 +1,8 @@
+import dotenv from "dotenv";
 import { Client } from "pg";
+
+// 載入環境變數
+dotenv.config();
 
 // ANSI 顏色代碼
 const colors = {
@@ -41,9 +45,22 @@ const logger = {
 };
 
 // 資料庫配置
-const POSTGRES_URL =
-  process.env.POSTGRES_URL ||
-  "postgresql://postgres:postgres@localhost:5432/postgres";
+const POSTGRES_URL = process.env.POSTGRES_URL;
+
+if (!POSTGRES_URL) {
+  logger.error("環境變數 POSTGRES_URL 未設定");
+  logger.error("請在 .env 檔案中設定 POSTGRES_URL，例如：");
+  logger.operation(
+    "POSTGRES_URL=postgresql://postgres:postgres@xxxxx:5432/postgres",
+  );
+  process.exit(1);
+}
+
+// TypeScript 確保 POSTGRES_URL 不是 undefined
+// 因為這裡要創建 table 所以需要連接到 admin 資料庫
+// 與 server.js 不同很正常
+const dbUrl: string = `${POSTGRES_URL}/postgres`;
+
 const DB_NAME = "automotive";
 const TABLE_NAME = "ac_settings";
 // 新增車輛資訊表名稱
@@ -167,7 +184,7 @@ function parseConnectionString(url: string): {
 // 確保資料庫存在
 async function ensureDatabaseExists(): Promise<void> {
   // 解析連接字串以獲取連接資訊
-  const connInfo = parseConnectionString(POSTGRES_URL);
+  const connInfo = parseConnectionString(dbUrl);
   // 連接到默認的postgres資料庫進行管理操作
   const adminConnectionString = `postgresql://${connInfo.user}:${connInfo.password}@${connInfo.host}:${connInfo.port}/postgres`;
   const adminClient = new Client({
@@ -204,7 +221,7 @@ async function ensureDatabaseExists(): Promise<void> {
 // 重新創建資料表
 async function recreateTable(): Promise<void> {
   // 解析連接字串以替換資料庫名稱
-  const dbConnectionString = POSTGRES_URL.replace(/\/[^\/]+$/, `/${DB_NAME}`);
+  const dbConnectionString = dbUrl.replace(/\/[^\/]+$/, `/${DB_NAME}`);
   const client = new Client({
     connectionString: dbConnectionString,
   });
@@ -380,7 +397,7 @@ async function initDatabase(): Promise<void> {
   console.log(
     `\n${colors.bright}${colors.cyan}=== PostgreSQL Database Initialization ===${colors.reset}\n`,
   );
-  logger.info(`Connection: ${POSTGRES_URL.replace(/:[^:@]+@/, ":****@")}`);
+  logger.info(`Connection: ${dbUrl}`);
   logger.info(`Target database: ${DB_NAME}`);
   logger.info(`Target table: ${TABLE_NAME}`);
   logger.divider();
