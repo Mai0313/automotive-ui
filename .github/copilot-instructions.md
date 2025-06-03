@@ -300,3 +300,29 @@ App.tsx            # 專案入口
     - Web 平台需要 HTTPS 或 localhost 才能存取麥克風。
     - 原生平台目前僅支援基礎錄音，即時串流功能待後續完善。
     - 後端需搭配支援 pipecat.Frame 協議的語音伺服器。
+- 2025-06-03: 【重大】環境變數重構：將所有硬編碼的伺服器 URL 重構為可配置的環境變數，提升部署靈活性與安全性。
+  - 新增環境變數配置：
+    - `EXPO_PUBLIC_WS_SERVER_URL`：WebSocket 即時資料同步伺服器 URL (預設: ws://localhost:4000)
+    - `EXPO_PUBLIC_HTTP_SERVER_URL`：HTTP REST API fallback 伺服器 URL (預設: http://localhost:4001)
+    - `EXPO_PUBLIC_REALTIME_VOICE_URL`：即時語音 WebSocket 伺服器 URL (預設: ws://localhost:8100/ws)
+    - `WS_SERVER_PORT`：後端 WebSocket 伺服器連接埠 (預設: 4000)
+    - `HTTP_SERVER_PORT`：後端 HTTP 伺服器連接埠 (預設: 4001)
+  - 技術改進：
+    - 修改 `server.js` 加入 `dotenv` 環境變數載入，並加入必要環境變數驗證，若未設定會報錯退出。
+    - 新增 `src/utils/env.ts` 環境變數管理工具，提供 `getWebSocketUrl()`、`getHttpServerUrl()`、`getRealtimeVoiceUrl()` 函式，支援 Android 模擬器自動 localhost → 10.0.2.2 轉換。
+    - 更新所有相關 Hook 與元件：`useClimateSettings`、`useHomeClimateSettings`、`useRealtimeVoice`、`HomeScreen` 等，移除硬編碼 URL。
+    - 更新 `.env.example` 文件，提供完整的環境變數配置範例與說明。
+  - 重構檔案：
+    - `server.js`：加入環境變數載入與驗證
+    - `src/utils/env.ts`：環境變數管理工具（新增）
+    - `src/hooks/useClimateSettings.ts`：使用環境變數取代硬編碼 URL
+    - `src/hooks/useHomeClimateSettings.ts`：使用環境變數取代硬編碼 URL
+    - `src/hooks/useRealtimeVoice.ts`：使用環境變數取代硬編碼 URL
+    - `src/screens/HomeScreen.tsx`：移除硬編碼 serverUrl 參數
+    - `.env` 與 `.env.example`：新增所有伺服器 URL 環境變數配置
+  - 優勢：
+    - 支援不同環境（開發、測試、生產）的靈活配置
+    - 提升安全性，避免硬編碼敏感資訊
+    - 環境變數未設定時自動報錯，避免靜默失敗
+    - 自動處理 Android 模擬器網路映射 (localhost → 10.0.2.2)
+    - 統一的環境變數管理與驗證機制

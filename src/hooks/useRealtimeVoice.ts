@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
 import { useAudioRecorder, AudioModule } from "expo-audio";
 import protobuf from "protobufjs";
+import { getRealtimeVoiceUrl } from "../utils/env";
 
 interface RealtimeVoiceConfig {
   serverUrl?: string;
@@ -12,7 +13,7 @@ interface RealtimeVoiceConfig {
 
 export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   const {
-    serverUrl = "ws://localhost:8100/ws",
+    serverUrl = getRealtimeVoiceUrl(),
     sampleRate = 16000,
     numChannels = 1,
     autoStart = false,

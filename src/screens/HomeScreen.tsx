@@ -19,6 +19,7 @@ import useCurrentLocation from "../hooks/useCurrentLocation";
 import useHomeClimateSettings from "../hooks/useHomeClimateSettings";
 import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
+import { getWebSocketUrl, getHttpServerUrl } from "../utils/env";
 import { chatCompletion, textToSpeech } from "../hooks/openai";
 
 import { warningIconMap } from "./VehicleInfoScreen";
@@ -33,7 +34,6 @@ const HomeScreen: React.FC = () => {
 
   // Realtime voice功能 - 在web上自動開始
   const realtimeVoice = useRealtimeVoice({
-    serverUrl: "ws://localhost:8100/ws",
     autoStart: Platform.OS === "web", // 僅在web上自動開始
   });
 
@@ -178,8 +178,7 @@ const HomeScreen: React.FC = () => {
   }, [vehicleWarnings]);
 
   useEffect(() => {
-    const wsUrl =
-      Platform.OS === "android" ? "ws://10.0.2.2:4000" : "ws://localhost:4000";
+    const wsUrl = getWebSocketUrl();
 
     console.log("[Home WS] connecting to", wsUrl);
     const ws = new WebSocket(wsUrl);
@@ -207,7 +206,7 @@ const HomeScreen: React.FC = () => {
     ws.onerror = (err) => {
       console.error("[Home WS] error", err);
       // Fetch fallback
-      fetch("http://localhost:4001/state")
+      fetch(`${getHttpServerUrl()}/state`)
         .then((res) => res.json())
         .then((data) => {
           // 處理車輛警示燈狀態 fallback

@@ -1,5 +1,22 @@
 // server.js - WebSocket server to broadcast climate data updates from Postgres
+import dotenv from 'dotenv';
+dotenv.config();
+
 process.env.POSTGRES_URL = process.env.POSTGRES_URL || 'postgresql://postgres:postgres@localhost:5432/automotive';
+
+// Validate required environment variables
+if (!process.env.WS_SERVER_PORT) {
+  console.error('Error: WS_SERVER_PORT environment variable is required');
+  process.exit(1);
+}
+if (!process.env.HTTP_SERVER_PORT) {
+  console.error('Error: HTTP_SERVER_PORT environment variable is required');
+  process.exit(1);
+}
+
+const WS_PORT = parseInt(process.env.WS_SERVER_PORT);
+const HTTP_PORT = parseInt(process.env.HTTP_SERVER_PORT);
+
 import { Client } from 'pg';
 import { WebSocketServer } from 'ws';
 import express from 'express';
@@ -31,7 +48,7 @@ async function start() {
     }
   });
   const httpServer = http.createServer(app);
-  httpServer.listen(4001, () => console.log('HTTP server running on http://localhost:4001'));
+  httpServer.listen(HTTP_PORT, () => console.log(`HTTP server running on http://localhost:${HTTP_PORT}`));
 
   // Listen to ac_settings updates
   await client.query('LISTEN ac_settings_update');
@@ -41,8 +58,8 @@ async function start() {
   console.log('Listening to vehicle_info_update channel.');
 
   // Setup WebSocket server
-  const wss = new WebSocketServer({ port: 4000 });
-  console.log('WebSocket server running on ws://localhost:4000');
+  const wss = new WebSocketServer({ port: WS_PORT });
+  console.log(`WebSocket server running on ws://localhost:${WS_PORT}`);
 
   wss.on('connection', async (ws) => {
     console.log('Client connected');

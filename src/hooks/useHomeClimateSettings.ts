@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Platform } from "react-native";
-
-const getWsUrl = () =>
-  Platform.OS === "android" ? "ws://10.0.2.2:4000" : "ws://localhost:4000";
+import { getWebSocketUrl, getHttpServerUrl } from "../utils/env";
 
 export default function useHomeClimateSettings() {
   const [temperature, setTemperature] = useState<number>(26);
@@ -10,7 +8,7 @@ export default function useHomeClimateSettings() {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket(getWsUrl());
+    const ws = new WebSocket(getWebSocketUrl());
 
     wsRef.current = ws;
     ws.onopen = () => {
@@ -29,7 +27,7 @@ export default function useHomeClimateSettings() {
       }
     };
     ws.onerror = () => {
-      fetch("http://localhost:4001/state")
+      fetch(`${getHttpServerUrl()}/state`)
         .then((res) => res.json())
         .then((data) => {
           setTemperature(data.temperature);
