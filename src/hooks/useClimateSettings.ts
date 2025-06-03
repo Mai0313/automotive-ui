@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Platform } from "react-native";
 import * as Haptics from "expo-haptics";
+
 import { getWebSocketUrl, getHttpServerUrl } from "../utils/env";
 
 export default function useClimateSettings() {

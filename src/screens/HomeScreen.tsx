@@ -300,6 +300,7 @@ const HomeScreen: React.FC = () => {
     <View style={{ flex: 1 }}>
       {/* Demo-only buttons to trigger vehicle warnings */}
       <DemoButtons
+        locationError={errorMsg}
         realtimeVoice={{
           isConnected: realtimeVoice.isConnected,
           isRecording: realtimeVoice.isRecording,
@@ -308,7 +309,6 @@ const HomeScreen: React.FC = () => {
           stopAudio: realtimeVoice.stopAudio,
         }}
         ws={wsRef.current}
-        locationError={errorMsg}
       />
 
       {/* 實時語音狀態圖標 - 左上角 */}

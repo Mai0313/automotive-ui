@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
 import { useAudioRecorder, AudioModule } from "expo-audio";
 import protobuf from "protobufjs";
+
 import { getRealtimeVoiceUrl } from "../utils/env";
 
 interface RealtimeVoiceConfig {
@@ -228,9 +229,10 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       }
     } catch (err) {
       console.error("Error starting audio:", err);
-      
+
       // 提供更詳細的錯誤訊息
       let errorMessage = "無法啟動音訊";
+
       if (err instanceof Error) {
         if (err.name === "NotAllowedError") {
           errorMessage = "麥克風權限被拒絕。請允許網站存取麥克風。";
@@ -244,7 +246,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
           errorMessage = `音訊啟動失敗: ${err.message}`;
         }
       }
-      
+
       setError(errorMessage);
     }
   };
@@ -259,8 +261,8 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     // 檢查是否為安全上下文
     if (!window.isSecureContext) {
       throw new Error(
-        "需要安全上下文 (HTTPS 或 localhost)。請在 Chrome flags 中設定 'Insecure origins treated as secure' 加入當前網址: " + 
-        window.location.origin
+        "需要安全上下文 (HTTPS 或 localhost)。請在 Chrome flags 中設定 'Insecure origins treated as secure' 加入當前網址: " +
+          window.location.origin,
       );
     }
 

@@ -7,13 +7,14 @@ import { AzureOpenAI, OpenAI } from "openai";
 import { Stream } from "openai/streaming";
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system"; // Added import
+
 import {
   getOpenAIApiType,
   getOpenAIApiKey,
   getOpenAIBaseUrl,
   getOpenAIApiVersion,
   getOpenAIModel,
-  getOpenAIDeploymentName
+  getOpenAIDeploymentName,
 } from "../utils/env";
 
 // Initialize the appropriate client based on api_type

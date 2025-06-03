@@ -2,7 +2,13 @@
 // Demo-only component to trigger TPMS (tire pressure) warning via WebSocket toggle
 // Also includes realtime voice debug controls and permission status display
 import React, { useState, useEffect } from "react";
-import { TouchableOpacity, StyleSheet, Platform, View, Text } from "react-native";
+import {
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+  View,
+  Text,
+} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface Props {
@@ -24,7 +30,7 @@ const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice, locationError }) => {
   // 檢查是否有權限問題
   const hasPermissionIssues = Boolean(
     (realtimeVoice?.error && realtimeVoice.error.includes("權限")) ||
-    (locationError && locationError.includes("權限"))
+      (locationError && locationError.includes("權限")),
   );
 
   // 如果有權限問題，自動顯示說明
@@ -62,25 +68,22 @@ const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice, locationError }) => {
             style={styles.closeButton}
             onPress={() => setShowPermissionHelp(false)}
           >
-            <MaterialCommunityIcons name="close" size={16} color="#fff" />
+            <MaterialCommunityIcons color="#fff" name="close" size={16} />
           </TouchableOpacity>
-          
+
           <Text style={styles.helpTitle}>權限設定說明</Text>
           <Text style={styles.helpText}>
             在非安全環境 (HTTP) 中需要設定 Chrome flags:
           </Text>
-          <Text style={styles.helpSteps}>
-            1. 打開 chrome://flags/
-          </Text>
+          <Text style={styles.helpSteps}>1. 打開 chrome://flags/</Text>
           <Text style={styles.helpSteps}>
             2. 搜尋 "Insecure origins treated as secure"
           </Text>
           <Text style={styles.helpSteps}>
-            3. 加入當前網址: {typeof window !== "undefined" ? window.location.origin : ""}
+            3. 加入當前網址:{" "}
+            {typeof window !== "undefined" ? window.location.origin : ""}
           </Text>
-          <Text style={styles.helpSteps}>
-            4. 設為 "Enabled" 並重啟瀏覽器
-          </Text>
+          <Text style={styles.helpSteps}>4. 設為 "Enabled" 並重啟瀏覽器</Text>
         </View>
       )}
 
