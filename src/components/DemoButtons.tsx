@@ -77,13 +77,15 @@ const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice, locationError }) => {
           </Text>
           <Text style={styles.helpSteps}>1. 打開 chrome://flags/</Text>
           <Text style={styles.helpSteps}>
-            2. 搜尋 "Insecure origins treated as secure"
+            2. 搜尋 &quot;Insecure origins treated as secure&quot;
           </Text>
           <Text style={styles.helpSteps}>
             3. 加入當前網址:{" "}
             {typeof window !== "undefined" ? window.location.origin : ""}
           </Text>
-          <Text style={styles.helpSteps}>4. 設為 "Enabled" 並重啟瀏覽器</Text>
+          <Text style={styles.helpSteps}>
+            4. 設為 &quot;Enabled&quot; 並重啟瀏覽器
+          </Text>
         </View>
       )}
 
