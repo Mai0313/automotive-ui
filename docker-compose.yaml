@@ -5,6 +5,16 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile
       target: prod
+    environment:
+      EXPO_PUBLIC_OPENAI_API_TYPE: openai
+      EXPO_PUBLIC_OPENAI_BASE_URL: http://localhost:8889/v1
+      EXPO_PUBLIC_OPENAI_API_KEY: no-key-provided
+      EXPO_PUBLIC_OPENAI_API_VERSION: 2025-04-01-preview
+      EXPO_PUBLIC_OPENAI_MODEL: xxx
+      EXPO_PUBLIC_WS_SERVER_URL: ws://localhost:4000
+      EXPO_PUBLIC_HTTP_SERVER_URL: http://localhost:4001
+      EXPO_PUBLIC_REALTIME_VOICE_URL: ws://localhost:8100/ws
+      POSTGRES_URL: postgresql://postgres:postgres@postgresql:5432
     command:
       - npm
       - run
@@ -22,6 +32,10 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile
       target: prod
+    environment:
+      POSTGRES_URL: postgresql://postgres:postgres@postgresql:5432
+      EXPO_PUBLIC_WS_SERVER_URL: ws://localhost:4000
+      EXPO_PUBLIC_HTTP_SERVER_URL: http://localhost:4001
     command:
       - npm
       - run

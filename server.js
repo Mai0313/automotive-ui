@@ -9,12 +9,12 @@ if (!process.env.POSTGRES_URL) {
   console.error('POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/automotive');
   process.exit(1);
 }
-if (!process.env.WS_SERVER_URL) {
-  console.error('Error: WS_SERVER_URL environment variable is required');
+if (!process.env.EXPO_PUBLIC_WS_SERVER_URL) {
+  console.error('Error: EXPO_PUBLIC_WS_SERVER_URL environment variable is required');
   process.exit(1);
 }
-if (!process.env.HTTP_SERVER_URL) {
-  console.error('Error: HTTP_SERVER_URL environment variable is required');
+if (!process.env.EXPO_PUBLIC_HTTP_SERVER_URL) {
+  console.error('Error: EXPO_PUBLIC_HTTP_SERVER_URL environment variable is required');
   process.exit(1);
 }
 
@@ -30,8 +30,8 @@ function replaceLocalhostForServerBinding(url) {
 }
 
 // Parse server URLs and convert localhost to 0.0.0.0 for binding
-const wsUrlForBinding = replaceLocalhostForServerBinding(process.env.WS_SERVER_URL);
-const httpUrlForBinding = replaceLocalhostForServerBinding(process.env.HTTP_SERVER_URL);
+const wsUrlForBinding = replaceLocalhostForServerBinding(process.env.EXPO_PUBLIC_WS_SERVER_URL);
+const httpUrlForBinding = replaceLocalhostForServerBinding(process.env.EXPO_PUBLIC_HTTP_SERVER_URL);
 
 const wsUrl = new URL(wsUrlForBinding);
 const httpUrl = new URL(httpUrlForBinding);
@@ -74,7 +74,7 @@ async function start() {
     }
   });
   const httpServer = http.createServer(app);
-  httpServer.listen(HTTP_PORT, HTTP_HOST, () => console.log(`HTTP server running on ${process.env.HTTP_SERVER_URL}`));
+  httpServer.listen(HTTP_PORT, HTTP_HOST, () => console.log(`HTTP server running on ${process.env.EXPO_PUBLIC_HTTP_SERVER_URL}`));
 
   // Listen to ac_settings updates
   await client.query('LISTEN ac_settings_update');
@@ -85,7 +85,7 @@ async function start() {
 
   // Setup WebSocket server
   const wss = new WebSocketServer({ port: WS_PORT, host: WS_HOST });
-  console.log(`WebSocket server running on ${process.env.WS_SERVER_URL}`);
+  console.log(`WebSocket server running on ${process.env.EXPO_PUBLIC_WS_SERVER_URL}`);
 
   wss.on('connection', async (ws) => {
     console.log('Client connected');
