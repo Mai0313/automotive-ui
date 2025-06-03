@@ -228,14 +228,40 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       }
     } catch (err) {
       console.error("Error starting audio:", err);
-      setError("Failed to start audio");
+      
+      // 提供更詳細的錯誤訊息
+      let errorMessage = "無法啟動音訊";
+      if (err instanceof Error) {
+        if (err.name === "NotAllowedError") {
+          errorMessage = "麥克風權限被拒絕。請允許網站存取麥克風。";
+        } else if (err.name === "NotFoundError") {
+          errorMessage = "找不到麥克風設備。請確認麥克風已連接。";
+        } else if (err.name === "NotSupportedError") {
+          errorMessage = "瀏覽器不支援音訊錄製功能。";
+        } else if (err.message.includes("安全上下文")) {
+          errorMessage = err.message;
+        } else {
+          errorMessage = `音訊啟動失敗: ${err.message}`;
+        }
+      }
+      
+      setError(errorMessage);
     }
   };
 
   // Start web audio
   const startWebAudio = async () => {
+    // 檢查瀏覽器支援
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      throw new Error("getUserMedia is not supported");
+      throw new Error("瀏覽器不支援 getUserMedia API");
+    }
+
+    // 檢查是否為安全上下文
+    if (!window.isSecureContext) {
+      throw new Error(
+        "需要安全上下文 (HTTPS 或 localhost)。請在 Chrome flags 中設定 'Insecure origins treated as secure' 加入當前網址: " + 
+        window.location.origin
+      );
     }
 
     audioContextRef.current = new (window.AudioContext ||

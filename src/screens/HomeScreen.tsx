@@ -308,6 +308,7 @@ const HomeScreen: React.FC = () => {
           stopAudio: realtimeVoice.stopAudio,
         }}
         ws={wsRef.current}
+        locationError={errorMsg}
       />
 
       {/* 實時語音狀態圖標 - 左上角 */}

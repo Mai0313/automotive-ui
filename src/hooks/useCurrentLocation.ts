@@ -25,7 +25,12 @@ const useCurrentLocation = () => {
         let { status } = await Location.requestForegroundPermissionsAsync();
 
         if (status !== "granted") {
-          setErrorMsg("定位權限被拒絕");
+          const errorMessage = 
+            typeof window !== "undefined" && !window.isSecureContext
+              ? "定位權限被拒絕。在非安全上下文中需要在 Chrome flags 設定 'Insecure origins treated as secure' 加入: " + window.location.origin
+              : "定位權限被拒絕。請允許網站存取位置資訊。";
+          
+          setErrorMsg(errorMessage);
           setLocation(DEFAULT_LOCATION);
 
           return;

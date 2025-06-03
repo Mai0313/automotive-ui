@@ -361,3 +361,48 @@ App.tsx            # 專案入口
     - **向下相容**：localhost 訪問仍正常運作，不影響現有工作流程
     - **平台智能檢測**：Android 模擬器自動使用 10.0.2.2，Web 平台自動使用當前 hostname
     - **除錯友善**：新增主機偵測的 debug logging，方便故障排除
+- 2025-06-03: 【權限管理】改善非安全上下文權限處理與使用者引導
+  - **問題背景**：當從非 localhost（如 `http://172.21.140.52:8081`）訪問時，瀏覽器安全政策阻止存取麥克風和定位權限，導致功能無法正常運作。
+  - **解決方案與改進**：
+    - **權限錯誤檢測**：修改 `useRealtimeVoice.ts` 新增詳細權限檢測：
+      - 檢查 `window.isSecureContext` 判斷是否為安全上下文
+      - 提供具體錯誤訊息，指導使用者設定 Chrome flags
+      - 區分 `NotAllowedError`、`NotFoundError`、`NotSupportedError` 等不同錯誤類型
+    - **定位權限優化**：修改 `useCurrentLocation.ts` 新增權限拒絕時的詳細說明
+    - **使用者引導介面**：修改 `DemoButtons.tsx` 新增權限設定說明面板：
+      - 自動偵測權限問題並顯示設定指南
+      - 提供 Chrome flags 設定步驟說明
+      - 顯示當前網址，方便使用者複製到 Chrome flags 設定中
+      - 可關閉的浮動說明面板，不影響正常操作
+  - **Chrome Flags 設定指南**：
+    - 打開 `chrome://flags/`
+    - 搜尋 "Insecure origins treated as secure"
+    - 在設定值中加入當前網址（如 `http://172.21.140.52:8081`）
+    - 設為 "Enabled" 並重新啟動瀏覽器
+  - **技術改進**：
+    - 更精確的錯誤分類與訊息提示
+    - 自動偵測安全上下文狀態
+    - 動態顯示當前網址供使用者參考
+    - 優雅的錯誤處理，不會因權限問題導致應用崩潰
+  - **實作檔案**：
+    - `src/hooks/useRealtimeVoice.ts`：新增安全上下文檢測與詳細錯誤處理
+    - `src/hooks/useCurrentLocation.ts`：改善定位權限錯誤訊息
+    - `src/components/DemoButtons.tsx`：新增權限設定說明面板與狀態顯示
+    - `src/screens/HomeScreen.tsx`：傳遞 location error 到 DemoButtons
+  - **使用者體驗**：
+    - 清楚的權限問題說明與解決步驟
+    - 自動顯示相關的設定指引
+    - 不會因權限問題影響其他功能正常運作
+    - 提供開發與測試環境的便利設定方法
+- 2025-06-03: 【UI 改善】Realtime Voice 狀態圖標優化
+  - **功能說明**：改善左上角 Realtime Voice 按鈕的視覺狀態指示，讓使用者能清楚了解當前連線與錄音狀態。
+  - **圖標狀態規則**：
+    - **沒順利連接到 realtime ws server**：顯示 `wifi-off` 圖標，紅色 (#ff4444)
+    - **順利連接且正在錄音**：顯示 `microphone` 圖標，綠色 (#00ff00)
+    - **順利連接但手動關閉錄音**：顯示 `microphone-off` 圖標，紅色 (#ff4444)
+  - **實作檔案**：
+    - `src/components/DemoButtons.tsx`：修改 Realtime Voice 按鈕的圖標邏輯，根據 `isConnected` 和 `isRecording` 狀態動態顯示對應圖標與顏色
+  - **使用者體驗改善**：
+    - 直觀的狀態指示：使用者能立即識別連線狀態
+    - 清楚的操作回饋：不同顏色與圖標對應不同功能狀態
+    - 提升除錯效率：開發者能快速判斷 WebSocket 連線是否正常
