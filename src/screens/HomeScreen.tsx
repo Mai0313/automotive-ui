@@ -18,6 +18,7 @@ import DemoButtons from "../components/DemoButtons";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useHomeClimateSettings from "../hooks/useHomeClimateSettings";
 import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
+import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
 import { chatCompletion, textToSpeech } from "../hooks/openai";
 
 import { warningIconMap } from "./VehicleInfoScreen";
@@ -29,6 +30,12 @@ import AIAssistantScreen from "./AIAssistantScreen";
 
 const HomeScreen: React.FC = () => {
   const responsiveScale = useResponsiveStyles();
+
+  // Realtime voice功能 - 在web上自動開始
+  const realtimeVoice = useRealtimeVoice({
+    serverUrl: 'ws://localhost:8100/ws',
+    autoStart: Platform.OS === 'web', // 僅在web上自動開始
+  });
 
   const [activeOverlay, setActiveOverlay] = React.useState<
     "vehicle" | "music" | "climate" | "ai" | null
@@ -293,7 +300,16 @@ const HomeScreen: React.FC = () => {
   return (
     <View style={{ flex: 1 }}>
       {/* Demo-only buttons to trigger vehicle warnings */}
-      <DemoButtons ws={wsRef.current} />
+      <DemoButtons 
+        ws={wsRef.current} 
+        realtimeVoice={{
+          isConnected: realtimeVoice.isConnected,
+          isRecording: realtimeVoice.isRecording,
+          error: realtimeVoice.error,
+          startAudio: realtimeVoice.startAudio,
+          stopAudio: realtimeVoice.stopAudio,
+        }}
+      />
 
       {/* 實時語音狀態圖標 - 左上角 */}
       {/* <TouchableOpacity

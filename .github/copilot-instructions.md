@@ -277,3 +277,26 @@ App.tsx            # 專案入口
 - 2025-05-26: 【重大】首頁車輛異常語音建議功能升級：偵測到車輛異常時，會自動將異常資訊送進 chatCompletion，由 LLM 產生建議，再用 textToSpeech 轉語音自動播報。每種異常僅播報一次，建議內容由 LLM 動態生成。Web 平台自動播放 audio 可能因瀏覽器政策（需用戶互動）導致 NotAllowedError，這是瀏覽器安全限制，非程式錯誤。
 - 2025-05-29: 【重大】實現全面響應式按鈕系統：新增 `useResponsiveStyles` Hook，根據螢幕尺寸自動計算按鈕、圖標、文字、間距等比例。所有元件（HomeScreen、ClimateScreen、VehicleInfoScreen、MusicScreen、NavigationScreen、AIAssistantScreen、ControlButton、BottomBarButton、FloatingStatusBar、DemoButtons）皆已更新為響應式設計，支援手機、平板、桌面等不同螢幕尺寸自動縮放，縮放範圍 0.6-2.0x，確保在各種設備上保持適當的操作體驗與視覺比例。
 - 2025-06-02: Demo 按鈕優化：將原本較大的「Trigger Tire Pressure Warning」按鈕改為左上角小圖標形式，與實時語音圖標並列顯示，提供更簡潔的測試介面。
+- 2025-06-03: 【重大】新增 Realtime Voice 即時語音互動功能：整合基於 WebSocket + protobuf 的即時語音通訊，Web 平台開啟後自動開始錄音，透過 ws://localhost:8100/ws/{uuid} 與後端語音伺服器即時傳輸音訊。支援 PCM S16 格式音訊編碼、自動音訊解碼播放、連線狀態指示。新增左上角 Debug 按鈕可手動控制錄音開關。使用 `useRealtimeVoice` Hook 處理核心邏輯，整合至 HomeScreen 與 DemoButtons。原生平台目前支援基礎錄音，即時串流功能待後續完善。
+- 2025-06-03: 【新增】Realtime Voice 即時語音互動功能
+  - 整合基於 WebSocket 的即時語音互動功能，使用 protobuf 協議與後端語音伺服器 (ws://localhost:8100/ws) 通訊。
+  - 功能特色：
+    - Web 平台：網頁開啟後自動開始錄音，實現真正的即時語音對話。
+    - 音訊處理：使用 AudioContext 和 ScriptProcessor 捕捉麥克風音訊，轉換為 PCM S16 格式後透過 protobuf 封包傳送。
+    - 即時播放：接收後端傳回的音訊串流，自動解碼並播放語音回應。
+    - 左上角 Debug 按鈕：提供手動開啟/關閉錄音功能，方便開發測試。
+    - 協議支援：使用 public/frames.proto 定義的 Frame 格式，支援 AudioRawFrame、TextFrame、TranscriptionFrame 三種訊息類型。
+    - UUID 連線：每次連線自動產生 8 位數 UUID，確保 WebSocket 連線的唯一性 (ws://localhost:8100/ws/{uuid})。
+    - 狀態指示：Debug 按鈕顏色會根據連線狀態變化（綠色=已連線、紅色=錯誤、白色=離線）。
+  - 實作檔案：
+    - `src/hooks/useRealtimeVoice.ts`：核心 Hook，處理 WebSocket 連線、音訊錄製/播放、protobuf 編解碼。
+    - `src/components/DemoButtons.tsx`：整合 realtime voice debug 控制按鈕。
+    - `src/screens/HomeScreen.tsx`：在首頁整合並啟用 realtime voice 功能。
+  - 技術依賴：
+    - protobufjs：處理 .proto 檔案解析與二進位編解碼。
+    - expo-audio：原生平台錄音支援（目前簡化實作）。
+    - AudioContext：Web 平台即時音訊處理。
+  - 注意事項：
+    - Web 平台需要 HTTPS 或 localhost 才能存取麥克風。
+    - 原生平台目前僅支援基礎錄音，即時串流功能待後續完善。
+    - 後端需搭配支援 pipecat.Frame 協議的語音伺服器。
