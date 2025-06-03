@@ -3,7 +3,7 @@
 # 車機 UI Demo 專案需求（React Native + TypeScript）
 
 每一次你進行功能修改/增減 請記得對應編輯這份文件 好讓其他人可以更快熟悉此專案
-開發流程: 確認需求 -> 編寫/修改程式碼 -> 確認是運行報錯 -> 修改此文件並紀錄每一次的修改
+開發流程: 確認需求 -> 編寫/修改程式碼 -> 確認是運行報錯 -> 修改 `.github/copilot-instructions.md` 並紀錄每一次的修改
 
 ## 1. 專案目標
 
@@ -374,7 +374,7 @@ App.tsx            # 專案入口
     - 搜尋 "Insecure origins treated as secure"
     - 在設定值中加入當前網址（如 `http://172.21.140.52:8081`）
     - 設為 "Enabled" 並重新啟動瀏覽器
-  - **技術改進**：
+  - **技術改进**：
     - 更精確的錯誤分類與訊息提示
     - 自動偵測安全上下文狀態
     - 動態顯示當前網址供使用者參考
@@ -401,3 +401,44 @@ App.tsx            # 專案入口
     - 直觀的狀態指示：使用者能立即識別連線狀態
     - 清楚的操作回饋：不同顏色與圖標對應不同功能狀態
     - 提升除錯效率：開發者能快速判斷 WebSocket 連線是否正常
+- 2025-06-03: 【重大】OpenAI API 狀態檢測系統
+  - **功能說明**：新增自動檢測 OpenAI API 連線狀態功能，在 UI 啟動時自動測試 Chat Completion 和 Text-to-Speech API 的可用性，並在權限設定面板中顯示詳細的錯誤診斷資訊。
+  - **核心功能**：
+    - **自動 API 測試**：應用啟動時自動執行 Chat Completion ("hi" 訊息) 和 TTS ("test" 文字) 測試
+    - **錯誤分類診斷**：提供詳細錯誤分析 (401/Unauthorized, 404/Not Found, 429/Rate limit, Network issues)
+    - **環境變數檢查**：自動檢測 OpenAI API key 等必要環境變數配置狀態
+    - **統一錯誤顯示**：整合至 DemoButtons 權限說明面板，統一顯示 API、權限、連線問題
+  - **實作檔案**：
+    - `src/hooks/useOpenAIStatus.ts`：新增 OpenAI API 狀態檢測 Hook，自動測試 API 連線並分類錯誤
+    - `src/hooks/usePermissionHelp.ts`：重構權限說明 Hook，整合 OpenAI API 狀態與 Realtime Voice 連線狀態
+    - `src/components/DemoButtons.tsx`：完全重寫，使用 Hook 架構取代內聯邏輯，支援滾動式錯誤顯示面板
+    - `docs/OpenAI-Status-Detection.md`：新增詳細技術文件說明實作細節與故障排除指南
+  - **使用者體驗改善**：
+    - **即時診斷**：啟動時立即了解 API 連線狀況，無需手動測試
+    - **詳細指引**：根據不同錯誤類型提供對應的解決方案
+    - **統一介面**：將權限、API、連線問題整合至單一說明面板
+    - **滾動支援**：支援長錯誤訊息列表的滾動檢視
+  - **錯誤分類**：
+    - **401 Unauthorized**：API key 無效或過期
+    - **404 Not Found**：API endpoint 不存在或 model 不可用
+    - **429 Rate Limit**：API 請求頻率超限
+    - **Network Error**：網路連線問題或伺服器無回應
+    - **Environment Config**：缺少必要環境變數 (OPENAI_API_KEY 等)
+- 2025-06-03: 【擴展】Realtime Voice 連線狀態整合
+  - **功能說明**：將 Realtime Voice WebSocket 連線問題整合至統一的狀態檢測系統，與 OpenAI API 和瀏覽器權限問題一併顯示診斷資訊。
+  - **連線狀態檢測**：
+    - **連線狀態監控**：自動監控 WebSocket 連線狀態 (已連線/未連線/錯誤)
+    - **錯誤分類**：區分權限錯誤與連線錯誤，提供對應解決方案
+    - **狀態指示**：即時顯示連線狀態與錯誤訊息
+  - **整合顯示**：
+    - **統一面板**：Realtime Voice 問題與 OpenAI API、權限問題一併顯示於說明面板
+    - **分類顯示**：使用分隔線區分不同類型問題 (權限/API/連線)
+    - **解決指引**：提供 Realtime Voice 伺服器設定與故障排除步驟
+  - **實作更新**：
+    - `src/hooks/usePermissionHelp.ts`：新增 `hasRealtimeVoiceIssues`、`realtimeVoiceStatus` 等連線狀態檢測
+    - `src/components/DemoButtons.tsx`：整合 Realtime Voice 連線狀態到權限說明面板，提供伺服器設定指引
+  - **技術優勢**：
+    - **全面診斷**：覆蓋瀏覽器權限、OpenAI API、WebSocket 連線三大類問題
+    - **智能檢測**：自動區分不同錯誤類型並提供對應解決方案
+    - **開發友善**：提供詳細的故障排除資訊，加速開發除錯流程
+    - **使用者引導**：清楚的設定步驟說明，降低使用門檻

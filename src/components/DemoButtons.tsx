@@ -1,15 +1,19 @@
 // DemoButtons.tsx
 // Demo-only component to trigger TPMS (tire pressure) warning via WebSocket toggle
 // Also includes realtime voice debug controls and permission status display
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   TouchableOpacity,
   StyleSheet,
   Platform,
   View,
   Text,
+  ScrollView,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+import { usePermissionHelp } from "../hooks/usePermissionHelp";
+import { useOpenAIStatus } from "../hooks/useOpenAIStatus";
 
 interface Props {
   ws: WebSocket | null;
@@ -25,20 +29,45 @@ interface Props {
 
 const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice, locationError }) => {
   const [tpmsActive, setTpmsActive] = useState(false);
-  const [showPermissionHelp, setShowPermissionHelp] = useState(false);
 
-  // 檢查是否有權限問題
-  const hasPermissionIssues = Boolean(
-    (realtimeVoice?.error && realtimeVoice.error.includes("權限")) ||
-      (locationError && locationError.includes("權限")),
-  );
+  // 使用 OpenAI 狀態檢測 hook
+  const { status: openAIStatus } = useOpenAIStatus();
 
-  // 如果有權限問題，自動顯示說明
-  useEffect(() => {
-    if (hasPermissionIssues) {
-      setShowPermissionHelp(true);
-    }
-  }, [hasPermissionIssues]);
+  // 收集 OpenAI 錯誤訊息
+  const openAIErrors: string[] = [];
+
+  if (!openAIStatus.configurationStatus.isConfigured) {
+    openAIErrors.push(
+      `缺少環境變數: ${openAIStatus.configurationStatus.missingVars.join(", ")}`,
+    );
+  }
+  if (
+    openAIStatus.chatCompletionStatus.tested &&
+    !openAIStatus.chatCompletionStatus.isAvailable
+  ) {
+    openAIErrors.push(`Chat API: ${openAIStatus.chatCompletionStatus.error}`);
+  }
+  if (
+    openAIStatus.textToSpeechStatus.tested &&
+    !openAIStatus.textToSpeechStatus.isAvailable
+  ) {
+    openAIErrors.push(`TTS API: ${openAIStatus.textToSpeechStatus.error}`);
+  }
+
+  // 使用權限設定說明 hook - 增加 Realtime Voice 連線狀態
+  const realtimeVoiceConnectionStatus = realtimeVoice?.isConnected
+    ? "已連線"
+    : realtimeVoice?.error
+      ? `連線失敗: ${realtimeVoice.error}`
+      : "未連線";
+
+  const { config: helpConfig, setShowHelp } = usePermissionHelp({
+    realtimeVoiceError: realtimeVoice?.error,
+    locationError,
+    openAIErrors,
+    isRealtimeVoiceConnected: realtimeVoice?.isConnected,
+    realtimeVoiceConnectionStatus,
+  });
 
   const toggleTpms = () => {
     const newValue = !tpmsActive;
@@ -61,33 +90,94 @@ const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice, locationError }) => {
 
   return (
     <View style={styles.buttonContainer}>
-      {/* Permission Help Panel */}
-      {showPermissionHelp && hasPermissionIssues && Platform.OS === "web" && (
-        <View style={styles.permissionHelp}>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => setShowPermissionHelp(false)}
-          >
-            <MaterialCommunityIcons color="#fff" name="close" size={16} />
-          </TouchableOpacity>
+      {/* Permission and API Status Help Panel */}
+      {helpConfig.showHelp &&
+        (helpConfig.hasPermissionIssues ||
+          helpConfig.hasOpenAIIssues ||
+          helpConfig.hasRealtimeVoiceIssues) &&
+        Platform.OS === "web" && (
+          <View style={styles.permissionHelp}>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowHelp(false)}
+            >
+              <MaterialCommunityIcons color="#fff" name="close" size={16} />
+            </TouchableOpacity>
 
-          <Text style={styles.helpTitle}>權限設定說明</Text>
-          <Text style={styles.helpText}>
-            在非安全環境 (HTTP) 中需要設定 Chrome flags:
-          </Text>
-          <Text style={styles.helpSteps}>1. 打開 chrome://flags/</Text>
-          <Text style={styles.helpSteps}>
-            2. 搜尋 &quot;Insecure origins treated as secure&quot;
-          </Text>
-          <Text style={styles.helpSteps}>
-            3. 加入當前網址:{" "}
-            {typeof window !== "undefined" ? window.location.origin : ""}
-          </Text>
-          <Text style={styles.helpSteps}>
-            4. 設為 &quot;Enabled&quot; 並重啟瀏覽器
-          </Text>
-        </View>
-      )}
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={styles.helpScrollView}
+            >
+              {/* 權限問題說明 */}
+              {helpConfig.hasPermissionIssues && (
+                <>
+                  <Text style={styles.helpTitle}>權限設定說明</Text>
+                  <Text style={styles.helpText}>
+                    在非安全環境 (HTTP) 中需要設定 Chrome flags:
+                  </Text>
+                  <Text style={styles.helpSteps}>1. 打開 chrome://flags/</Text>
+                  <Text style={styles.helpSteps}>
+                    2. 搜尋 &quot;Insecure origins treated as secure&quot;
+                  </Text>
+                  <Text style={styles.helpSteps}>
+                    3. 加入當前網址: {helpConfig.currentOrigin}
+                  </Text>
+                  <Text style={styles.helpSteps}>
+                    4. 設為 &quot;Enabled&quot; 並重啟瀏覽器
+                  </Text>
+
+                  {(helpConfig.hasOpenAIIssues ||
+                    helpConfig.hasRealtimeVoiceIssues) && (
+                    <View style={styles.separator} />
+                  )}
+                </>
+              )}
+
+              {/* OpenAI API 問題說明 */}
+              {helpConfig.hasOpenAIIssues && (
+                <>
+                  <Text style={styles.helpTitle}>OpenAI API 設定問題</Text>
+                  <Text style={styles.helpText}>檢測到以下 API 連線問題：</Text>
+                  {helpConfig.openAIErrors.map((error, index) => (
+                    <Text key={index} style={styles.errorText}>
+                      • {error}
+                    </Text>
+                  ))}
+
+                  {helpConfig.hasRealtimeVoiceIssues && (
+                    <View style={styles.separator} />
+                  )}
+                </>
+              )}
+
+              {/* Realtime Voice 連線問題說明 */}
+              {helpConfig.hasRealtimeVoiceIssues && (
+                <>
+                  <Text style={styles.helpTitle}>即時語音連線問題</Text>
+                  <Text style={styles.helpText}>
+                    Realtime Voice WebSocket 連線狀態：
+                  </Text>
+                  <Text style={styles.errorText}>
+                    • 狀態: {helpConfig.realtimeVoiceStatus}
+                  </Text>
+                  {helpConfig.realtimeVoiceError && (
+                    <Text style={styles.errorText}>
+                      • 錯誤: {helpConfig.realtimeVoiceError}
+                    </Text>
+                  )}
+                  <Text style={styles.helpText}>請確認：</Text>
+                  <Text style={styles.helpSteps}>
+                    1. Realtime Voice 伺服器已啟動 (ws://localhost:8100)
+                  </Text>
+                  <Text style={styles.helpSteps}>2. 網路連線正常</Text>
+                  <Text style={styles.helpSteps}>
+                    3. 如使用非 localhost，請檢查伺服器 URL 設定
+                  </Text>
+                </>
+              )}
+            </ScrollView>
+          </View>
+        )}
 
       {/* Realtime Voice Debug Button */}
       {realtimeVoice && (
@@ -156,13 +246,17 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 40,
     left: 0,
-    width: 320,
+    width: 350,
+    maxHeight: 400,
     backgroundColor: "rgba(0, 0, 0, 0.9)",
     padding: 16,
     borderRadius: 8,
     zIndex: 200,
     borderWidth: 1,
     borderColor: "#ffd700",
+  },
+  helpScrollView: {
+    maxHeight: 360,
   },
   closeButton: {
     position: "absolute",
@@ -174,6 +268,7 @@ const styles = StyleSheet.create({
     height: 24,
     alignItems: "center",
     justifyContent: "center",
+    zIndex: 210,
   },
   helpTitle: {
     color: "#ffd700",
@@ -194,6 +289,19 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     marginBottom: 4,
     lineHeight: 14,
+  },
+  errorText: {
+    color: "#ff8888",
+    fontSize: 11,
+    marginLeft: 8,
+    marginBottom: 4,
+    lineHeight: 14,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#444444",
+    marginVertical: 12,
+    marginRight: 30,
   },
 });
 
