@@ -22,9 +22,9 @@ import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
 import {
   getWebSocketUrl,
   getHttpServerUrl,
-  isOpenAIConfigured,
+  // isOpenAIConfigured,
 } from "../utils/env";
-import { chatCompletion, textToSpeech } from "../hooks/openai";
+// import { chatCompletion, textToSpeech } from "../hooks/openai";
 
 import { warningIconMap } from "./VehicleInfoScreen";
 import VehicleInfoScreen from "./VehicleInfoScreen";
