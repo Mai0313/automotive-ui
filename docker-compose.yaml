@@ -1,4 +1,23 @@
 services:
+  postgresql:
+    image: postgres:alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    healthcheck:
+      test: pg_isready -U postgres
+      start_period: 10s
+      timeout: 1s
+      retries: 5
+      interval: 5s
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+    restart: always
+    pull_policy: always
+
   ui:
     image: ghcr.io/mai0313/automotive-ui:latest
     depends_on:
@@ -21,6 +40,7 @@ services:
   ws:
     image: ghcr.io/mai0313/automotive-ui:latest
     depends_on:
+      - ui
       - postgresql
     build:
       context: .
@@ -37,25 +57,6 @@ services:
       - ./docker/.env.deploy:/app/.env
     pull_policy: always
     restart: always
-
-  postgresql:
-    image: postgres:alpine
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-postgres}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-    healthcheck:
-      test: pg_isready -U postgres
-      start_period: 10s
-      timeout: 1s
-      retries: 5
-      interval: 5s
-    ports:
-      - ${POSTGRES_PORT:-5432}:5432
-    volumes:
-      - postgresql-data:/var/lib/postgresql/data
-    restart: always
-    pull_policy: always
 
 volumes:
   postgresql-data: {}
