@@ -138,7 +138,9 @@ const HomeScreen: React.FC = () => {
         };
         const userPrompt = warningNameMap[warningKey] || warningKey;
 
-        console.log(`🔊 [車輛異常播報] 檢測到異常：${userPrompt}，播放示例音檔`);
+        console.log(
+          `🔊 [車輛異常播報] 檢測到異常：${userPrompt}，播放示例音檔`,
+        );
 
         // 暫時註解掉 OpenAI 功能，直接播放示例音檔
         /* 
@@ -204,9 +206,10 @@ const HomeScreen: React.FC = () => {
         */
 
         // 直接播放示例音檔 public/es-US_sample.wav
-        const audioUri = Platform.OS === "web" 
-          ? `${window.location.origin}/es-US_sample.wav`
-          : require("../../public/es-US_sample.wav");
+        const audioUri =
+          Platform.OS === "web"
+            ? `${window.location.origin}/es-US_sample.wav`
+            : require("../../public/es-US_sample.wav");
 
         const { sound } = await Audio.Sound.createAsync(
           Platform.OS === "web" ? { uri: audioUri } : audioUri,

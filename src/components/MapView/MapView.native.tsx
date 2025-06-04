@@ -15,20 +15,24 @@ export interface MapViewProps extends RnmMapViewProps {
 }
 
 // Load states for the map
-type LoadState = 'loading' | 'loaded' | 'error' | 'timeout';
+type LoadState = "loading" | "loaded" | "error" | "timeout";
 
 // Native MapView with timeout functionality
-const NativeMapView: React.FC<MapViewProps> = ({ style, children, ...props }) => {
-  const [loadState, setLoadState] = useState<LoadState>('loading');
+const NativeMapView: React.FC<MapViewProps> = ({
+  style,
+  children,
+  ...props
+}) => {
+  const [loadState, setLoadState] = useState<LoadState>("loading");
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 設置 10 秒超時機制
   useEffect(() => {
     // 開始計時 10 秒
     timeoutRef.current = setTimeout(() => {
-      if (loadState === 'loading') {
-        console.warn('React Native Maps 載入超時（10秒），切換到默認背景');
-        setLoadState('timeout');
+      if (loadState === "loading") {
+        console.warn("React Native Maps 載入超時（10秒），切換到默認背景");
+        setLoadState("timeout");
       }
     }, 10000); // 10 秒
 
@@ -42,8 +46,8 @@ const NativeMapView: React.FC<MapViewProps> = ({ style, children, ...props }) =>
 
   // 處理地圖載入完成
   const handleMapReady = () => {
-    console.log('React Native Maps 載入成功');
-    setLoadState('loaded');
+    console.log("React Native Maps 載入成功");
+    setLoadState("loaded");
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
@@ -51,8 +55,8 @@ const NativeMapView: React.FC<MapViewProps> = ({ style, children, ...props }) =>
 
   // 處理地圖載入失敗 - 在超時後觸發
   const handleMapLoadError = () => {
-    console.warn('React Native Maps 載入失敗或超時，切換到默認背景');
-    setLoadState('error');
+    console.warn("React Native Maps 載入失敗或超時，切換到默認背景");
+    setLoadState("error");
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
@@ -61,25 +65,23 @@ const NativeMapView: React.FC<MapViewProps> = ({ style, children, ...props }) =>
   // 渲染默認背景（當地圖載入失敗或超時時顯示）
   const renderDefaultBackground = () => (
     <View style={styles.defaultBackground}>
-      <MaterialCommunityIcons 
-        name="map-outline" 
-        size={80} 
-        color="#666" 
+      <MaterialCommunityIcons
+        color="#666"
+        name="map-outline"
+        size={80}
         style={styles.defaultIcon}
       />
       <Text style={styles.defaultText}>
-        {loadState === 'timeout' ? '地圖載入超時' : '地圖載入失敗'}
+        {loadState === "timeout" ? "地圖載入超時" : "地圖載入失敗"}
       </Text>
-      <Text style={styles.defaultSubText}>
-        使用預設背景模式
-      </Text>
+      <Text style={styles.defaultSubText}>使用預設背景模式</Text>
     </View>
   );
 
   // 渲染載入中狀態
   const renderLoading = () => (
     <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color="#fff" />
+      <ActivityIndicator color="#fff" size="large" />
       <Text style={styles.loadingText}>載入地圖中...</Text>
     </View>
   );
@@ -87,18 +89,18 @@ const NativeMapView: React.FC<MapViewProps> = ({ style, children, ...props }) =>
   return (
     <View style={[styles.container, style]}>
       {/* 根據載入狀態顯示不同內容 */}
-      {loadState === 'loading' && renderLoading()}
-      
-      {(loadState === 'error' || loadState === 'timeout') && renderDefaultBackground()}
-      
+      {loadState === "loading" && renderLoading()}
+
+      {(loadState === "error" || loadState === "timeout") &&
+        renderDefaultBackground()}
+
       {/* React Native Maps - 只有在載入中或載入成功時顯示 */}
-      {(loadState === 'loading' || loadState === 'loaded') && (
+      {(loadState === "loading" || loadState === "loaded") && (
         <RnmMapView
           {...props}
-          style={[
-            styles.map,
-            { opacity: loadState === 'loaded' ? 1 : 0 }
-          ] as any} // 載入完成前隱藏
+          style={
+            [styles.map, { opacity: loadState === "loaded" ? 1 : 0 }] as any
+          } // 載入完成前隱藏
           onMapReady={handleMapReady}
         >
           {children}
@@ -124,20 +126,20 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#242f3e",
   },
   loadingText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
     marginTop: 16,
-    fontFamily: 'System',
+    fontFamily: "System",
   },
   defaultBackground: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#1a1a1a",
     borderRadius: 8,
   },
@@ -146,16 +148,16 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   defaultText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 8,
-    fontFamily: 'System',
+    fontFamily: "System",
   },
   defaultSubText: {
-    color: '#999',
+    color: "#999",
     fontSize: 14,
-    fontFamily: 'System',
+    fontFamily: "System",
   },
 });
 
