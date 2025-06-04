@@ -36,6 +36,32 @@ import AIAssistantScreen from "./AIAssistantScreen";
 const HomeScreen: React.FC = () => {
   const responsiveScale = useResponsiveStyles();
 
+  // playFallbackAudio 函數：當 TTS 失敗時播放 demo.wav
+  const playFallbackAudio = async () => {
+    try {
+      const audioUri =
+        Platform.OS === "web"
+          ? `${window.location.origin}/demo.wav`
+          : require("../../public/demo.wav");
+
+      const { sound } = await Audio.Sound.createAsync(
+        Platform.OS === "web" ? { uri: audioUri } : audioUri,
+        { shouldPlay: true },
+      );
+
+      // 播放結束後釋放資源
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          sound.unloadAsync();
+          setIsSpeaking(false);
+        }
+      });
+    } catch (fallbackError) {
+      console.error("🚫 [車輛異常播報] Fallback 音檔播放失敗:", fallbackError);
+      setIsSpeaking(false);
+    }
+  };
+
   // Realtime voice功能 - 在web上自動開始
   const realtimeVoice = useRealtimeVoice({
     autoStart: Platform.OS === "web", // 僅在web上自動開始
@@ -178,49 +204,38 @@ const HomeScreen: React.FC = () => {
         });
 
         if (llmResponse.trim()) {
-          const audioUri = await textToSpeech(llmResponse);
+          try {
+            const audioUri = await textToSpeech(llmResponse);
 
-          if (audioUri) {
-            const { sound } = await Audio.Sound.createAsync(
-              { uri: audioUri },
-              { shouldPlay: true },
+            if (audioUri) {
+              const { sound } = await Audio.Sound.createAsync(
+                { uri: audioUri },
+                { shouldPlay: true },
+              );
+
+              // 播放結束後釋放資源
+              sound.setOnPlaybackStatusUpdate((status) => {
+                if (status.isLoaded && status.didJustFinish) {
+                  sound.unloadAsync();
+                  setIsSpeaking(false);
+                }
+              });
+            } else {
+              // textToSpeech 失敗，播放 fallback 音檔
+              console.warn("🔊 [車輛異常播報] TTS 失敗，播放 fallback 音檔");
+              await playFallbackAudio();
+            }
+          } catch (ttsError) {
+            // textToSpeech 拋出異常，播放 fallback 音檔
+            console.warn(
+              "🔊 [車輛異常播報] TTS 異常，播放 fallback 音檔:",
+              ttsError,
             );
-
-            // 播放結束後釋放資源
-            sound.setOnPlaybackStatusUpdate((status) => {
-              if (status.isLoaded && status.didJustFinish) {
-                sound.unloadAsync();
-                setIsSpeaking(false);
-              }
-            });
-          } else {
-            setIsSpeaking(false);
+            await playFallbackAudio();
           }
         } else {
           setIsSpeaking(false);
         }
-
-        /*
-        // 直接播放示例音檔 public/es-US_sample.wav
-        const audioUri =
-          Platform.OS === "web"
-            ? `${window.location.origin}/es-US_sample.wav`
-            : require("../../public/es-US_sample.wav");
-
-        const { sound } = await Audio.Sound.createAsync(
-          Platform.OS === "web" ? { uri: audioUri } : audioUri,
-          { shouldPlay: true },
-        );
-
-        // 播放結束後釋放資源
-        sound.setOnPlaybackStatusUpdate((status) => {
-          if (status.isLoaded && status.didJustFinish) {
-            sound.unloadAsync();
-            setIsSpeaking(false);
-          }
-        });
-        // 直接播放示例音檔 public/es-US_sample.wav
-        */
 
         setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
       } catch (err) {
