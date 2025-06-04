@@ -41,7 +41,7 @@ const WebMapView: React.FC<MapViewProps> = ({ style, initialRegion }) => {
     // 開始計時 10 秒
     timeoutRef.current = setTimeout(() => {
       if (loadState === "loading") {
-        console.warn("Google Maps 載入超時（10秒），切換到默認背景");
+        console.warn("Google Maps 載入超時，切換到默認背景");
         setLoadState("timeout");
       }
     }, 5000); // 5 秒
