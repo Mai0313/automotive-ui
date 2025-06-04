@@ -130,45 +130,45 @@ const HomeScreen: React.FC = () => {
 
         // 將異常 key 轉為中文描述
         const warningNameMap: Record<string, string> = {
-          tpms_warning: "胎壓異常",
-          engine_warning: "引擎警示燈亮起",
-          oil_pressure_warning: "機油壓力異常",
-          battery_warning: "電瓶電壓異常",
-          coolant_temp_warning: "冷卻液溫度過高",
-          brake_warning: "煞車系統異常",
-          abs_warning: "ABS 防鎖死煞車系統異常",
-          airbag_warning: "安全氣囊系統異常",
-          low_fuel_warning: "油量過低",
-          door_ajar_warning: "車門未關妥",
-          seat_belt_warning: "安全帶未繫上",
-          exterior_light_failure_warning: "外部燈光故障",
+          tpms_warning: "Tire Pressure Abnormal",
+          engine_warning: "Engine Warning Light On",
+          oil_pressure_warning: "Oil Pressure Abnormal",
+          battery_warning: "Battery Voltage Abnormal",
+          coolant_temp_warning: "Coolant Temperature Too High",
+          brake_warning: "Brake System Abnormal",
+          abs_warning: "ABS (Anti-lock Braking System) Abnormal",
+          airbag_warning: "Airbag System Abnormal",
+          low_fuel_warning: "Low Fuel Level",
+          door_ajar_warning: "Door Not Closed Properly",
+          seat_belt_warning: "Seat Belt Not Fastened",
+          exterior_light_failure_warning: "Exterior Light Failure",
         };
         const userPrompt = warningNameMap[warningKey] || warningKey;
 
         console.log(
-          `🔊 [車輛異常播報] 檢測到異常：${userPrompt}，使用 OpenAI Chat Completion + TTS`,
+          `🔊 [車輛異常播報] 檢測到異常：${userPrompt}, using Chat Completion + TTS`,
         );
 
         // 組 prompt
-        const systemPrompt =
-          "你是車輛助理，請針對車輛異常提出具體建議，語氣親切且務實。";
+        const assistantPrompt =
+          "You are a vehicle assistant. Please provide specific suggestions for vehicle anomalies in a friendly and practical manner. Limit your reply to within 50 words.";
 
         let llmResponse = "";
 
         await chatCompletion({
           messages: [
-            { role: "system", content: systemPrompt },
+            { role: "assistant", content: assistantPrompt },
             {
               role: "user",
               content: `
-              車輛出現異常：「${userPrompt}」
-              當前位置：${
-                mapPreviewLocation
-                  ? `經度 ${mapPreviewLocation.longitude}，緯度 ${mapPreviewLocation.latitude}`
-                  : "未知"
-              }
-              請與使用者交互確認使用者是否需要幫忙並提出簡短建議。
-              例如 發現 XX 異常 請問是否需要幫您查詢最近的XXX解決問題
+                Vehicle anomaly detected: "${userPrompt}"
+                Current location: ${
+                  mapPreviewLocation
+                    ? `Longitude ${mapPreviewLocation.longitude}, Latitude ${mapPreviewLocation.latitude}`
+                    : "Unknown"
+                }
+                Please interact with the user to confirm if they need assistance and provide a brief suggestion.
+                For example: "An XX anomaly has been detected. Would you like me to help you find the nearest XXX to resolve the issue?"
               `,
             },
           ],
