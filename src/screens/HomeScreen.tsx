@@ -11,7 +11,6 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { AudioModule } from "expo-audio";
 
 import MapView from "../components/MapView"; // Import MapView
 import DemoButtons from "../components/DemoButtons";
@@ -19,12 +18,12 @@ import useCurrentLocation from "../hooks/useCurrentLocation";
 import useHomeClimateSettings from "../hooks/useHomeClimateSettings";
 import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
+import { useRealtimeTTS } from "../hooks/useRealtimeTTS";
 import {
   getWebSocketUrl,
   getHttpServerUrl,
   isOpenAIConfigured,
 } from "../utils/env";
-import { chatCompletion, textToSpeech } from "../hooks/openai";
 
 import { warningIconMap } from "./VehicleInfoScreen";
 import VehicleInfoScreen from "./VehicleInfoScreen";
@@ -35,36 +34,23 @@ import AIAssistantScreen from "./AIAssistantScreen";
 const HomeScreen: React.FC = () => {
   const responsiveScale = useResponsiveStyles();
 
-  // playFallbackAudio 函數：當 TTS 失敗時播放 demo.wav
-  const playFallbackAudio = async () => {
-    try {
-      const audioUri =
-        Platform.OS === "web"
-          ? `${window.location.origin}/demo.wav`
-          : require("../../public/demo.wav");
-
-      // expo-audio 播放
-      const playback = await AudioModule.createPlayerAsync(
-        Platform.OS === "web" ? { uri: audioUri } : audioUri,
-        { shouldPlay: true },
-      );
-
-      // 播放結束後釋放資源
-      playback.setOnPlaybackStatusUpdate((status: any) => {
-        if (status.isLoaded && status.didJustFinish) {
-          playback.unloadAsync();
-          setIsSpeaking(false);
-        }
-      });
-    } catch (fallbackError) {
-      console.error("🚫 [車輛異常播報] Fallback 音檔播放失敗:", fallbackError);
-      setIsSpeaking(false);
-    }
-  };
-
   // Realtime voice功能 - 在web上自動開始
   const realtimeVoice = useRealtimeVoice({
     autoStart: Platform.OS === "web", // 僅在web上自動開始
+  });
+
+  // Realtime TTS 功能
+  const realtimeTTS = useRealtimeTTS({
+    onStatusChange: (status) => {
+      console.log("🔊 [RealtimeTTS] Status changed:", status);
+    },
+    onError: (error) => {
+      console.error("🚫 [RealtimeTTS] Error:", error);
+    },
+    onSpeakingComplete: () => {
+      console.log("✅ [RealtimeTTS] Speaking completed");
+      setIsSpeaking(false);
+    },
   });
 
   const [activeOverlay, setActiveOverlay] = React.useState<
@@ -112,6 +98,17 @@ const HomeScreen: React.FC = () => {
 
   // WebSocket ref
   const wsRef = useRef<WebSocket | null>(null);
+
+  // 初始化 Realtime TTS 連接
+  useEffect(() => {
+    // 自動連接到 TTS 服務器
+    realtimeTTS.connect();
+
+    return () => {
+      // 組件卸載時斷開連接
+      realtimeTTS.disconnect();
+    };
+  }, []);
 
   // Setup WS to sync temperature and AC
   // 異常燈號語音播報
@@ -172,17 +169,16 @@ const HomeScreen: React.FC = () => {
         const userPrompt = warningNameMap[warningKey] || warningKey;
 
         console.log(
-          `🔊 [車輛異常播報] 檢測到異常：${userPrompt}, using Chat Completion + TTS`,
+          `🔊 [車輛異常播報] 檢測到異常：${userPrompt}, using Realtime TTS`,
         );
 
         // 組 prompt
         const assistantPrompt =
           "You are a vehicle assistant. Please provide specific suggestions for vehicle anomalies in a friendly and practical manner. Limit your reply to within 50 words.";
 
-        let llmResponse = "";
-
-        await chatCompletion({
-          messages: [
+        // 使用 Realtime TTS 進行流式對話 + TTS
+        await realtimeTTS.processConversation(
+          [
             { role: "assistant", content: assistantPrompt },
             {
               role: "user",
@@ -198,44 +194,12 @@ const HomeScreen: React.FC = () => {
               `,
             },
           ],
-          onDelta: (delta: string) => {
-            llmResponse += delta;
+          {
+            onDelta: (delta: string) => {
+              console.log("🔊 [車輛異常播報] Received delta:", delta);
+            },
           },
-        });
-
-        if (llmResponse.trim()) {
-          try {
-            const audioUri = await textToSpeech(llmResponse);
-
-            if (audioUri) {
-              // expo-audio 播放
-              const playback = await AudioModule.createPlayerAsync(
-                { uri: audioUri },
-                { shouldPlay: true },
-              );
-
-              playback.setOnPlaybackStatusUpdate((status: any) => {
-                if (status.isLoaded && status.didJustFinish) {
-                  playback.unloadAsync();
-                  setIsSpeaking(false);
-                }
-              });
-            } else {
-              // textToSpeech 失敗，播放 fallback 音檔
-              console.warn("🔊 [車輛異常播報] TTS 失敗，播放 fallback 音檔");
-              await playFallbackAudio();
-            }
-          } catch (ttsError) {
-            // textToSpeech 拋出異常，播放 fallback 音檔
-            console.warn(
-              "🔊 [車輛異常播報] TTS 異常，播放 fallback 音檔:",
-              ttsError,
-            );
-            await playFallbackAudio();
-          }
-        } else {
-          setIsSpeaking(false);
-        }
+        );
 
         setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
       } catch (err) {

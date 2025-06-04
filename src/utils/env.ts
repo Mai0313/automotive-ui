@@ -93,6 +93,16 @@ export function getRealtimeVoiceUrl(): string {
   return replaceLocalhostWithHostname(voiceUrl);
 }
 
+/**
+ * Get Streaming TTS WebSocket server URL with platform-specific handling
+ */
+export function getStreamingTTSUrl(): string {
+  const ttsUrl =
+    process.env.EXPO_PUBLIC_STREAMING_TTS_URL || "ws://localhost:8100/tts";
+
+  return replaceLocalhostWithHostname(ttsUrl);
+}
+
 // OpenAI Configuration Functions
 
 /**
