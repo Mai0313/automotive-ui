@@ -131,13 +131,11 @@ const AIAssistantScreen: React.FC = () => {
           role: msg.isUser ? "user" : "assistant",
           content: msg.text,
         })) as ChatCompletionMessageParam[];
-      let accumulatedResponse = "";
 
       await chatCompletion({
         messages: conversationHistory,
         signal: controller.signal,
         onDelta: (delta: string) => {
-          accumulatedResponse += delta;
           setMessages((prevMessages) =>
             prevMessages.map((msg) =>
               msg.id === aiPlaceholderId

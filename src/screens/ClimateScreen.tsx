@@ -7,6 +7,14 @@ import {
   Platform,
   StyleSheet as RNStyleSheet,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+import useClimateSettings from "../hooks/useClimateSettings";
+import commonStyles from "../styles/commonStyles";
+import ControlButton from "../components/ControlButton";
+import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
+
 // Slider fallback for web with proper HTML attributes
 const Slider =
   Platform.OS === "web"
@@ -30,14 +38,6 @@ const Slider =
         />
       )
     : require("@react-native-community/slider").default;
-
-import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-
-import useClimateSettings from "../hooks/useClimateSettings";
-import commonStyles from "../styles/commonStyles";
-import ControlButton from "../components/ControlButton";
-import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 
 const ClimateScreen: React.FC = () => {
   const responsiveScale = useResponsiveStyles();
