@@ -123,17 +123,6 @@ const HomeScreen: React.FC = () => {
 
     if (newWarnings.length === 0) return;
 
-    // 檢查 OpenAI 配置
-    // if (!isOpenAIConfigured()) {
-    //   console.warn("🚫 [車輛異常播報] OpenAI 未配置，跳過語音播報功能");
-    //   // 標記為已播報，避免重複檢查
-    //   const warningKey = newWarnings[0];
-
-    //   setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
-
-    //   return;
-    // }
-
     // 只播報第一個新異常
     const warningKey = newWarnings[0];
 
@@ -204,28 +193,7 @@ const HomeScreen: React.FC = () => {
         setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
       } catch (err) {
         console.error("🚫 [車輛異常播報] 播報失敗", err);
-        console.log("🔄 [車輛異常播報] 使用 demo.wav 作為 fallback");
-        
-        // 使用 demo.wav 作為 fallback
-        try {
-          if (Platform.OS === "web") {
-            // Web 平台：直接播放 demo.wav
-            const audio = new window.Audio("/demo.wav");
-            audio.play().catch(console.error);
-            
-            audio.onended = () => {
-              setIsSpeaking(false);
-            };
-          } else {
-            // 原生平台：使用 realtimeTTS 的 playDemoFallback 方法
-            realtimeTTS.playDemoFallback();
-            setIsSpeaking(false);
-          }
-        } catch (fallbackErr) {
-          console.error("🚫 [車輛異常播報] Demo fallback 也失敗", fallbackErr);
-          setIsSpeaking(false);
-        }
-        
+        setIsSpeaking(false);
         // 即使失敗也標記為已播報，避免持續重試
         setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
       }

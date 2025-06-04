@@ -43,64 +43,6 @@ export const useRealtimeTTS = (config?: RealtimeTTSConfig) => {
   const audioQueueRef = useRef<ArrayBuffer[]>([]);
   const isPlayingQueueRef = useRef(false);
 
-  // 播放 demo.wav 作為 fallback
-  const playDemoFallback = useCallback(async () => {
-    try {
-      console.log("🔄 [RealtimeTTS] Playing demo.wav as fallback...");
-      
-      if (Platform.OS === "web") {
-        // Web 平台：直接播放 demo.wav
-        const audio = new window.Audio("/demo.wav");
-        audio.play().catch(console.error);
-        
-        setState((prev) => ({
-          ...prev,
-          isSpeaking: true,
-        }));
-        
-        audio.onended = () => {
-          setState((prev) => ({
-            ...prev,
-            isSpeaking: false,
-          }));
-          config?.onSpeakingComplete?.();
-        };
-      } else {
-        // 原生平台：使用 expo-av 播放
-        const { sound } = await Audio.Sound.createAsync(
-          { uri: "../../public/demo.wav" }
-        );
-        currentPlaybackRef.current = sound;
-        
-        setState((prev) => ({
-          ...prev,
-          isSpeaking: true,
-        }));
-        
-        sound.setOnPlaybackStatusUpdate((status) => {
-          if (status.isLoaded && status.didJustFinish) {
-            setState((prev) => ({
-              ...prev,
-              isSpeaking: false,
-            }));
-            config?.onSpeakingComplete?.();
-          }
-        });
-        
-        await sound.playAsync();
-      }
-      
-      console.log("✅ [RealtimeTTS] Demo fallback played successfully");
-    } catch (error) {
-      console.error("🚫 [RealtimeTTS] Demo fallback failed:", error);
-      setState((prev) => ({
-        ...prev,
-        isSpeaking: false,
-        error: "Fallback audio failed to play",
-      }));
-    }
-  }, [config]);
-
   // 初始化 AudioContext (Web only)
   const initializeAudioContext = useCallback(() => {
     if (Platform.OS === "web" && !audioContextRef.current) {
@@ -547,9 +489,6 @@ export const useRealtimeTTS = (config?: RealtimeTTSConfig) => {
           error: "WebSocket connection failed",
         }));
         config?.onError?.("WebSocket connection failed");
-        
-        // 自動播放 demo.wav 作為 fallback
-        playDemoFallback();
       };
     } catch (error) {
       console.error("🚫 [RealtimeTTS] Connection error:", error);
@@ -631,16 +570,9 @@ export const useRealtimeTTS = (config?: RealtimeTTSConfig) => {
       },
     ) => {
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-        try {
-          await connect();
-          // 等待連接建立
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        } catch (connectError) {
-          console.warn("🚫 [RealtimeTTS] WebSocket connection failed, using demo fallback");
-          // 如果連接失敗，直接播放 demo.wav
-          playDemoFallback();
-          return;
-        }
+        await connect();
+        // 等待連接建立
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       setState((prev) => ({
@@ -667,8 +599,8 @@ export const useRealtimeTTS = (config?: RealtimeTTSConfig) => {
         });
 
         // 檢查回應是否有效
-        if (!completeResponse || typeof completeResponse !== 'string') {
-          throw new Error('Failed to generate response');
+        if (!completeResponse || typeof completeResponse !== "string") {
+          throw new Error("Failed to generate response");
         }
 
         console.log(
@@ -703,13 +635,9 @@ export const useRealtimeTTS = (config?: RealtimeTTSConfig) => {
         config?.onError?.(
           error instanceof Error ? error.message : "Processing failed",
         );
-        
-        // 在處理錯誤時也播放 demo.wav fallback
-        console.log("🔄 [RealtimeTTS] Playing demo fallback due to processing error");
-        playDemoFallback();
       }
     },
-    [connect, reset, sendText, flush, config, playDemoFallback],
+    [connect, reset, sendText, flush, config],
   );
 
   // 斷開連接
@@ -752,7 +680,6 @@ export const useRealtimeTTS = (config?: RealtimeTTSConfig) => {
     flush,
     reset,
     processConversation,
-    playDemoFallback,
     isConnected: state.isConnected,
     isProcessing: state.isProcessing,
     isSpeaking: state.isSpeaking,

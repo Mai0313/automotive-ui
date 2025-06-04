@@ -99,7 +99,9 @@ export async function chatCompletion({
       );
 
       const content = completion.choices?.[0]?.message?.content || "";
+
       if (content && onDelta) onDelta(content);
+
       return content;
     }
   } catch (error) {
