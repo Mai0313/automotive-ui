@@ -1,6 +1,29 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import Slider from "@react-native-community/slider"; // Ensure this is installed or use a different slider
+import { View, Text, StyleSheet, TouchableOpacity, Platform, StyleSheet as RNStyleSheet } from "react-native";
+// Slider fallback for web with proper HTML attributes
+const Slider =
+  Platform.OS === "web"
+    ? ({
+        value,
+        onValueChange,
+        minimumValue = 0,
+        maximumValue = 10,
+        step = 1,
+        style,
+        ..._omit
+      }: any) => (
+        <input
+          max={maximumValue}
+          min={minimumValue}
+          step={step}
+          style={RNStyleSheet.flatten(style)}
+          type="range"
+          value={value}
+          onChange={(e) => onValueChange(parseFloat(e.target.value))}
+        />
+      )
+    : require("@react-native-community/slider").default;
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
