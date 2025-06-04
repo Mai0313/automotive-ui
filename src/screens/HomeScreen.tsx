@@ -22,9 +22,9 @@ import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
 import {
   getWebSocketUrl,
   getHttpServerUrl,
-  // isOpenAIConfigured,
+  isOpenAIConfigured,
 } from "../utils/env";
-// import { chatCompletion, textToSpeech } from "../hooks/openai";
+import { chatCompletion, textToSpeech } from "../hooks/openai";
 
 import { warningIconMap } from "./VehicleInfoScreen";
 import VehicleInfoScreen from "./VehicleInfoScreen";
@@ -118,9 +118,16 @@ const HomeScreen: React.FC = () => {
 
     (async () => {
       try {
-        // 組 prompt
-        const systemPrompt =
-          "你是車輛助理，請針對車輛異常提出具體建議，語氣親切且務實。";
+        // 檢查 OpenAI 配置
+        if (!isOpenAIConfigured()) {
+          console.warn("🚫 [車輛異常播報] OpenAI 未配置，跳過語音播報功能");
+          // 標記為已播報，避免重複檢查
+          setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
+          setIsSpeaking(false);
+
+          return;
+        }
+
         // 將異常 key 轉為中文描述
         const warningNameMap: Record<string, string> = {
           tpms_warning: "胎壓異常",
@@ -139,19 +146,8 @@ const HomeScreen: React.FC = () => {
         const userPrompt = warningNameMap[warningKey] || warningKey;
 
         console.log(
-          `🔊 [車輛異常播報] 檢測到異常：${userPrompt}，播放示例音檔`,
+          `🔊 [車輛異常播報] 檢測到異常：${userPrompt}，使用 OpenAI Chat Completion + TTS`,
         );
-
-        // 暫時註解掉 OpenAI 功能，直接播放示例音檔
-        /* 
-        // 檢查 OpenAI 配置
-        if (!isOpenAIConfigured()) {
-          console.warn("🚫 [車輛異常播報] OpenAI 未配置，跳過語音播報功能");
-          // 標記為已播報，避免重複檢查
-          setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
-          setIsSpeaking(false);
-          return;
-        }
 
         // 組 prompt
         const systemPrompt =
@@ -203,8 +199,8 @@ const HomeScreen: React.FC = () => {
         } else {
           setIsSpeaking(false);
         }
-        */
 
+        /*
         // 直接播放示例音檔 public/es-US_sample.wav
         const audioUri =
           Platform.OS === "web"
@@ -223,6 +219,8 @@ const HomeScreen: React.FC = () => {
             setIsSpeaking(false);
           }
         });
+        // 直接播放示例音檔 public/es-US_sample.wav
+        */
 
         setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
       } catch (err) {
@@ -367,23 +365,6 @@ const HomeScreen: React.FC = () => {
         }}
         ws={wsRef.current}
       />
-
-      {/* 實時語音狀態圖標 - 左上角 */}
-      {/* <TouchableOpacity
-        style={styles.voiceStatusIcon}
-        onPress={() => isConnected ? disconnect() : connect()}
-        onLongPress={() => {
-          console.log("長按重新生成 session...");
-          regenerateSession();
-        }}
-        activeOpacity={0.7}
-      >
-        <MaterialIcons
-          name={voiceState.icon as any}
-          size={16}
-          color={voiceState.color}
-        />
-      </TouchableOpacity> */}
 
       {/* Notification icon for first active warning */}
       {activeWarningKeys.length > 0 && (

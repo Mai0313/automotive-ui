@@ -53,15 +53,6 @@ const NativeMapView: React.FC<MapViewProps> = ({
     }
   };
 
-  // 處理地圖載入失敗 - 在超時後觸發
-  const handleMapLoadError = () => {
-    console.warn("React Native Maps 載入失敗或超時，切換到默認背景");
-    setLoadState("error");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-  };
-
   // 渲染默認背景（當地圖載入失敗或超時時顯示）
   const renderDefaultBackground = () => (
     <View style={styles.defaultBackground}>

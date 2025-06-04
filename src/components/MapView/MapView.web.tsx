@@ -110,7 +110,7 @@ const WebMapView: React.FC<MapViewProps> = ({ style, initialRegion }) => {
         (indicator) =>
           bodyText.includes(indicator) || titleText.includes(indicator),
       );
-    } catch (e) {
+    } catch {
       // 跨域限制可能導致無法訪問 contentDocument
       // 這種情況下假設載入成功
       return false;
