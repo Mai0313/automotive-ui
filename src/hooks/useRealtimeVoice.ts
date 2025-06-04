@@ -47,13 +47,13 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     },
   );
   const audioContextRef = useRef<AudioContext | null>(null);
-  const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const microphoneStreamRef = useRef<MediaStream | null>(null);
   const frameTypeRef = useRef<any>(null);
   const activeSources = useRef<AudioBufferSourceNode[]>([]);
   const playTimeRef = useRef<number>(0);
   const lastMessageTimeRef = useRef<number>(0);
+  const scriptProcessorRef = useRef<any>(null);
 
   // Generate 8-digit UUID
   const generateUUID8 = () => {
@@ -269,8 +269,11 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     audioContextRef.current = new (window.AudioContext ||
       (window as any).webkitAudioContext)({
       latencyHint: "interactive",
-      sampleRate: sampleRate,
+      sampleRate: sampleRate, // 這裡仍可傳入建議值，但實際值需偵測
     });
+
+    // 載入 AudioWorklet 處理器
+    await audioContextRef.current.audioWorklet.addModule("/voice-processor.js");
 
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -283,37 +286,40 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     });
 
     microphoneStreamRef.current = stream;
-    scriptProcessorRef.current = audioContextRef.current.createScriptProcessor(
-      512,
-      1,
-      1,
-    );
     sourceRef.current = audioContextRef.current.createMediaStreamSource(stream);
+    // 建立 AudioWorkletNode
+    const workletNode = new (window as any).AudioWorkletNode(
+      audioContextRef.current,
+      "voice-processor",
+    );
 
-    sourceRef.current.connect(scriptProcessorRef.current);
-    scriptProcessorRef.current.connect(audioContextRef.current.destination);
+    // 取得實際 sampleRate
+    const actualSampleRate = audioContextRef.current.sampleRate;
 
-    scriptProcessorRef.current.onaudioprocess = (event) => {
+    // 監聽 worklet 傳回的音訊資料
+    workletNode.port.onmessage = (event: MessageEvent) => {
       if (!wsRef.current || !frameTypeRef.current) return;
-
-      const audioData = event.inputBuffer.getChannelData(0);
+      const audioData = event.data as Float32Array;
       const pcmS16Array = convertFloat32ToS16PCM(audioData);
       const pcmByteArray = new Uint8Array(pcmS16Array.buffer);
-
       const frame = frameTypeRef.current.create({
         audio: {
           audio: Array.from(pcmByteArray),
-          sampleRate: sampleRate,
+          sampleRate: actualSampleRate, // 用實際 sampleRate
           numChannels: numChannels,
         },
       });
-
       const encodedFrame = new Uint8Array(
         frameTypeRef.current.encode(frame).finish(),
       );
 
       wsRef.current.send(encodedFrame);
     };
+
+    sourceRef.current.connect(workletNode);
+    workletNode.connect(audioContextRef.current.destination);
+    // 保留 workletNode 以便 stop 時清理
+    (scriptProcessorRef as any).current = workletNode;
   };
 
   // Start native audio (simplified for now)

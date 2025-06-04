@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Platform, StyleSheet as RNStyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  StyleSheet as RNStyleSheet,
+} from "react-native";
 // Slider fallback for web with proper HTML attributes
 const Slider =
   Platform.OS === "web"

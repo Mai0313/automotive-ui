@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 import { chatCompletion } from "../hooks/openai";
 import { isOpenAIConfigured } from "../utils/env";
 import commonStyles from "../styles/commonStyles";
@@ -31,7 +32,8 @@ const AIAssistantScreen: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState<string>("");
   const [isTyping, setIsTyping] = useState<boolean>(false);
-  const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null);
   const flatListRef = useRef<FlatList>(null);
   const nextIdRef = useRef(1);
 
@@ -68,6 +70,7 @@ const AIAssistantScreen: React.FC = () => {
 
   const sendMessage = async (textToSend?: string) => {
     const currentText = textToSend || inputText;
+
     if (!currentText.trim() || isTyping) return;
     if (!isOpenAIConfigured()) {
       const userMessage: Message = {
@@ -82,6 +85,7 @@ const AIAssistantScreen: React.FC = () => {
         isUser: false,
         timestamp: getCurrentTime(),
       };
+
       setMessages((prevMessages) => [
         ...prevMessages,
         userMessage,
@@ -90,6 +94,7 @@ const AIAssistantScreen: React.FC = () => {
       if (!textToSend) {
         setInputText("");
       }
+
       return;
     }
     if (abortController) {
@@ -101,6 +106,7 @@ const AIAssistantScreen: React.FC = () => {
       isUser: true,
       timestamp: getCurrentTime(),
     };
+
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     if (!textToSend) {
       setInputText("");
@@ -113,8 +119,10 @@ const AIAssistantScreen: React.FC = () => {
       isUser: false,
       timestamp: getCurrentTime(),
     };
+
     setMessages((prevMessages) => [...prevMessages, aiPlaceholder]);
     const controller = new AbortController();
+
     setAbortController(controller);
     try {
       const conversationHistory: ChatCompletionMessageParam[] = messages
@@ -124,6 +132,7 @@ const AIAssistantScreen: React.FC = () => {
           content: msg.text,
         })) as ChatCompletionMessageParam[];
       let accumulatedResponse = "";
+
       await chatCompletion({
         messages: conversationHistory,
         signal: controller.signal,
@@ -170,7 +179,7 @@ const AIAssistantScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={[commonStyles.container, { paddingBottom: 0 }]}> 
+    <SafeAreaView style={[commonStyles.container, { paddingBottom: 0 }]}>
       <View style={styles.flexGrowContainer}>
         <FlatList
           ref={flatListRef}
@@ -334,11 +343,11 @@ const styles = StyleSheet.create({
   },
   flexGrowContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   bottomAlignMessagesList: {
     flexGrow: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
     paddingHorizontal: 10,
     paddingBottom: 10,
   },
@@ -347,7 +356,7 @@ const styles = StyleSheet.create({
     // borderTopColor: '#222',
     // backgroundColor: '#111',
     paddingHorizontal: 10,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 10,
+    paddingBottom: Platform.OS === "ios" ? 24 : 10,
     paddingTop: 6,
   },
 });

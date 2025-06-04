@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { Audio } from "expo-av";
+import { AudioModule } from "expo-audio";
 
 import MapView from "../components/MapView"; // Import MapView
 import DemoButtons from "../components/DemoButtons";
@@ -43,15 +43,16 @@ const HomeScreen: React.FC = () => {
           ? `${window.location.origin}/demo.wav`
           : require("../../public/demo.wav");
 
-      const { sound } = await Audio.Sound.createAsync(
+      // expo-audio 播放
+      const playback = await AudioModule.createPlayerAsync(
         Platform.OS === "web" ? { uri: audioUri } : audioUri,
         { shouldPlay: true },
       );
 
       // 播放結束後釋放資源
-      sound.setOnPlaybackStatusUpdate((status) => {
+      playback.setOnPlaybackStatusUpdate((status: any) => {
         if (status.isLoaded && status.didJustFinish) {
-          sound.unloadAsync();
+          playback.unloadAsync();
           setIsSpeaking(false);
         }
       });
@@ -207,15 +208,15 @@ const HomeScreen: React.FC = () => {
             const audioUri = await textToSpeech(llmResponse);
 
             if (audioUri) {
-              const { sound } = await Audio.Sound.createAsync(
+              // expo-audio 播放
+              const playback = await AudioModule.createPlayerAsync(
                 { uri: audioUri },
                 { shouldPlay: true },
               );
 
-              // 播放結束後釋放資源
-              sound.setOnPlaybackStatusUpdate((status) => {
+              playback.setOnPlaybackStatusUpdate((status: any) => {
                 if (status.isLoaded && status.didJustFinish) {
-                  sound.unloadAsync();
+                  playback.unloadAsync();
                   setIsSpeaking(false);
                 }
               });
