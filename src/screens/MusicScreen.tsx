@@ -258,10 +258,7 @@ const styles = StyleSheet.create({
     maxWidth: 400, // limit size on wide displays
     aspectRatio: 1,
     marginBottom: 30,
-    shadowColor: "#3498db",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    boxShadow: "0px 2px 10px rgba(52, 152, 219, 0.3)",
     elevation: 5,
   },
   albumContainerPortrait: {
@@ -379,9 +376,7 @@ const styles = StyleSheet.create({
     padding: 0,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
+    boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.5)",
     elevation: 10,
   },
 });
