@@ -471,3 +471,18 @@ App.tsx            # 專案入口
     - **清楚狀態**：始終顯示當前載入狀態，使用者了解系統運作情況
     - **可靠性提升**：網路問題或地圖服務異常時系統仍可正常使用
     - **一致體驗**：Web 和原生平台提供相同的超時處理體驗
+- 2025-06-04: 【重大】Realtime TTS（即時語音合成）功能上線
+  - **功能說明**：首頁車輛異常語音建議、AI 助理等場景，已全面整合 Realtime TTS 串流語音合成服務。
+  - **技術細節**：
+    - 採用 WebSocket 協議與後端語音伺服器即時通訊，將 LLM 產生的完整建議文字傳送給 TTS 服務，實現即時語音播報。
+    - chatCompletion 預設改為非串流模式，先取得完整建議句子，再送往 TTS。
+    - 支援跨平台（Web/原生）語音播放，Web 端自動處理瀏覽器互動限制。
+    - 所有異常僅播報一次，避免重複提醒。
+    - 若 TTS 播報失敗，僅記錄錯誤，不再自動播放預設錄音（已移除 demo.wav fallback 機制）。
+  - **主要檔案**：
+    - `src/hooks/useRealtimeTTS.ts`：Realtime TTS hook，負責與 TTS 伺服器連線、發送文字、處理語音播放與錯誤。
+    - `src/hooks/openai.ts`：chatCompletion 支援 stream 參數，預設首頁異常建議為非串流模式。
+    - `src/screens/HomeScreen.tsx`：首頁異常語音建議流程，已整合 Realtime TTS，catch 區塊不再播放 demo.wav。
+  - **使用說明**：
+    - 呼叫 `realtimeTTS.processConversation(messages)` 會自動串接 LLM 與 TTS，並於 TTS 失敗時記錄錯誤。
+    - 不再提供預設語音 fallback，所有語音播報僅依據 LLM 實時生成內容。
