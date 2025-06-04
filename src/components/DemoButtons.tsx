@@ -47,12 +47,6 @@ const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice, locationError }) => {
   ) {
     openAIErrors.push(`Chat API: ${openAIStatus.chatCompletionStatus.error}`);
   }
-  if (
-    openAIStatus.textToSpeechStatus.tested &&
-    !openAIStatus.textToSpeechStatus.isAvailable
-  ) {
-    openAIErrors.push(`TTS API: ${openAIStatus.textToSpeechStatus.error}`);
-  }
 
   // 使用權限設定說明 hook - 增加 Realtime Voice 連線狀態
   const realtimeVoiceConnectionStatus = realtimeVoice?.isConnected
