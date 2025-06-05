@@ -17,19 +17,10 @@ import { useOpenAIStatus } from "../hooks/useOpenAIStatus";
 
 interface Props {
   ws: WebSocket | null;
-  realtimeVoice?: {
-    isConnected: boolean;
-    isRecording: boolean;
-    isMuted?: boolean;
-    error: string | null;
-    startAudio: () => void;
-    stopAudio: () => void;
-    toggleMute?: () => void;
-  };
   locationError?: string | null;
 }
 
-const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice, locationError }) => {
+const DemoButtons: React.FC<Props> = ({ ws, locationError }) => {
   const [tpmsActive, setTpmsActive] = useState(false);
 
   // 使用 OpenAI 狀態檢測 hook
@@ -50,19 +41,10 @@ const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice, locationError }) => {
     openAIErrors.push(`Chat API: ${openAIStatus.chatCompletionStatus.error}`);
   }
 
-  // 使用權限設定說明 hook - 增加 Realtime Voice 連線狀態
-  const realtimeVoiceConnectionStatus = realtimeVoice?.isConnected
-    ? "已連線"
-    : realtimeVoice?.error
-      ? `連線失敗: ${realtimeVoice.error}`
-      : "未連線";
-
+  // 使用權限設定說明 hook
   const { config: helpConfig, setShowHelp } = usePermissionHelp({
-    realtimeVoiceError: realtimeVoice?.error,
     locationError,
     openAIErrors,
-    isRealtimeVoiceConnected: realtimeVoice?.isConnected,
-    realtimeVoiceConnectionStatus,
   });
 
   const toggleTpms = () => {
@@ -74,28 +56,11 @@ const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice, locationError }) => {
     }
   };
 
-  const toggleRealtimeVoice = () => {
-    if (!realtimeVoice) return;
-
-    if (realtimeVoice.toggleMute) {
-      realtimeVoice.toggleMute();
-    } else {
-      // Fallback for older interface
-      if (realtimeVoice.isRecording) {
-        realtimeVoice.stopAudio();
-      } else {
-        realtimeVoice.startAudio();
-      }
-    }
-  };
-
   return (
     <View style={styles.buttonContainer}>
       {/* Permission and API Status Help Panel */}
       {helpConfig.showHelp &&
-        (helpConfig.hasPermissionIssues ||
-          helpConfig.hasOpenAIIssues ||
-          helpConfig.hasRealtimeVoiceIssues) &&
+        (helpConfig.hasPermissionIssues || helpConfig.hasOpenAIIssues) &&
         Platform.OS === "web" && (
           <View style={styles.permissionHelp}>
             <TouchableOpacity
@@ -127,10 +92,7 @@ const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice, locationError }) => {
                     4. 設為 &quot;Enabled&quot; 並重啟瀏覽器
                   </Text>
 
-                  {(helpConfig.hasOpenAIIssues ||
-                    helpConfig.hasRealtimeVoiceIssues) && (
-                    <View style={styles.separator} />
-                  )}
+                  {helpConfig.hasOpenAIIssues && <View style={styles.separator} />}
                 </>
               )}
 
@@ -144,72 +106,11 @@ const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice, locationError }) => {
                       • {error}
                     </Text>
                   ))}
-
-                  {helpConfig.hasRealtimeVoiceIssues && (
-                    <View style={styles.separator} />
-                  )}
-                </>
-              )}
-
-              {/* Realtime Voice 連線問題說明 */}
-              {helpConfig.hasRealtimeVoiceIssues && (
-                <>
-                  <Text style={styles.helpTitle}>即時語音連線問題</Text>
-                  <Text style={styles.helpText}>
-                    Realtime Voice WebSocket 連線狀態：
-                  </Text>
-                  <Text style={styles.errorText}>
-                    • 狀態: {helpConfig.realtimeVoiceStatus}
-                  </Text>
-                  {helpConfig.realtimeVoiceError && (
-                    <Text style={styles.errorText}>
-                      • 錯誤: {helpConfig.realtimeVoiceError}
-                    </Text>
-                  )}
-                  <Text style={styles.helpText}>請確認：</Text>
-                  <Text style={styles.helpSteps}>
-                    1. Realtime Voice 伺服器已啟動 (ws://localhost:8100)
-                  </Text>
-                  <Text style={styles.helpSteps}>2. 網路連線正常</Text>
-                  <Text style={styles.helpSteps}>
-                    3. 如使用非 localhost，請檢查伺服器 URL 設定
-                  </Text>
                 </>
               )}
             </ScrollView>
           </View>
         )}
-
-      {/* Realtime Voice Debug Button */}
-      {realtimeVoice && (
-        <TouchableOpacity
-          activeOpacity={0.7}
-          style={[styles.container, styles.voiceDebugButton]}
-          onPress={toggleRealtimeVoice}
-        >
-          <MaterialCommunityIcons
-            color={
-              !realtimeVoice.isConnected
-                ? "#ff4444" // 沒順利連接時顯示紅色
-                : realtimeVoice.isMuted
-                  ? "#ff4444" // 靜音時顯示紅色
-                  : realtimeVoice.isRecording
-                    ? "#00ff00" // 順利連接且正在錄音時顯示綠色
-                    : "#ff4444" // 其他情況顯示紅色
-            }
-            name={
-              !realtimeVoice.isConnected
-                ? "wifi-off" // 沒順利連接時顯示 wifi-off
-                : realtimeVoice.isMuted
-                  ? "microphone-off" // 靜音時顯示 microphone-off
-                  : realtimeVoice.isRecording
-                    ? "microphone" // 順利連接且正在錄音時顯示 microphone
-                    : "microphone-off" // 其他情況顯示 microphone-off
-            }
-            size={16}
-          />
-        </TouchableOpacity>
-      )}
 
       {/* TPMS Demo Button */}
       <TouchableOpacity
@@ -243,9 +144,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.6)",
     alignItems: "center",
     justifyContent: "center",
-  },
-  voiceDebugButton: {
-    // Additional styles for voice debug button if needed
   },
   permissionHelp: {
     position: "absolute",
