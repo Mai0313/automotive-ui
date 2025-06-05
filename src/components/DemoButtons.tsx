@@ -20,9 +20,11 @@ interface Props {
   realtimeVoice?: {
     isConnected: boolean;
     isRecording: boolean;
+    isMuted?: boolean;
     error: string | null;
     startAudio: () => void;
     stopAudio: () => void;
+    toggleMute?: () => void;
   };
   locationError?: string | null;
 }
@@ -75,10 +77,15 @@ const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice, locationError }) => {
   const toggleRealtimeVoice = () => {
     if (!realtimeVoice) return;
 
-    if (realtimeVoice.isRecording) {
-      realtimeVoice.stopAudio();
+    if (realtimeVoice.toggleMute) {
+      realtimeVoice.toggleMute();
     } else {
-      realtimeVoice.startAudio();
+      // Fallback for older interface
+      if (realtimeVoice.isRecording) {
+        realtimeVoice.stopAudio();
+      } else {
+        realtimeVoice.startAudio();
+      }
     }
   };
 
@@ -184,16 +191,20 @@ const DemoButtons: React.FC<Props> = ({ ws, realtimeVoice, locationError }) => {
             color={
               !realtimeVoice.isConnected
                 ? "#ff4444" // 沒順利連接時顯示紅色
-                : realtimeVoice.isRecording
-                  ? "#00ff00" // 順利連接且正在錄音時顯示綠色
-                  : "#ff4444" // 順利連接但手動關閉錄音時顯示紅色
+                : realtimeVoice.isMuted
+                  ? "#ff4444" // 靜音時顯示紅色
+                  : realtimeVoice.isRecording
+                    ? "#00ff00" // 順利連接且正在錄音時顯示綠色
+                    : "#ff4444" // 其他情況顯示紅色
             }
             name={
               !realtimeVoice.isConnected
                 ? "wifi-off" // 沒順利連接時顯示 wifi-off
-                : realtimeVoice.isRecording
-                  ? "microphone" // 順利連接且正在錄音時顯示 microphone
-                  : "microphone-off" // 順利連接但手動關閉錄音時顯示 microphone-off
+                : realtimeVoice.isMuted
+                  ? "microphone-off" // 靜音時顯示 microphone-off
+                  : realtimeVoice.isRecording
+                    ? "microphone" // 順利連接且正在錄音時顯示 microphone
+                    : "microphone-off" // 其他情況顯示 microphone-off
             }
             size={16}
           />

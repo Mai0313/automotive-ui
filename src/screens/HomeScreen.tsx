@@ -327,9 +327,11 @@ const HomeScreen: React.FC = () => {
         realtimeVoice={{
           isConnected: realtimeVoice.isConnected,
           isRecording: realtimeVoice.isRecording,
+          isMuted: realtimeVoice.isMuted,
           error: realtimeVoice.error,
           startAudio: realtimeVoice.startAudio,
           stopAudio: realtimeVoice.stopAudio,
+          toggleMute: realtimeVoice.toggleMute,
         }}
         ws={wsRef.current}
       />

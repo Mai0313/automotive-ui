@@ -23,6 +23,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -54,6 +55,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   const playTimeRef = useRef<number>(0);
   const lastMessageTimeRef = useRef<number>(0);
   const scriptProcessorRef = useRef<any>(null);
+  const isMutedRef = useRef<boolean>(false);
 
   // Generate 8-digit UUID
   const generateUUID8 = () => {
@@ -84,6 +86,11 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
 
     initProtobuf();
   }, []);
+
+  // Sync isMuted state to ref for use in callbacks
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+  }, [isMuted]);
 
   // Convert Float32 to PCM S16
   const convertFloat32ToS16PCM = (float32Array: Float32Array): Int16Array => {
@@ -161,7 +168,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       const audioArray = new Uint8Array(audioVector.map((x) => Number(x)));
 
       audioContextRef.current.decodeAudioData(audioArray.buffer, (buffer) => {
-        if (!audioContextRef.current) return;
+        if (!audioContextRef.current || isMutedRef.current) return;
 
         const source = new AudioBufferSourceNode(audioContextRef.current);
 
@@ -298,7 +305,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
 
     // 監聽 worklet 傳回的音訊資料
     workletNode.port.onmessage = (event: MessageEvent) => {
-      if (!wsRef.current || !frameTypeRef.current) return;
+      if (!wsRef.current || !frameTypeRef.current || isMutedRef.current) return;
       const audioData = event.data as Float32Array;
       const pcmS16Array = convertFloat32ToS16PCM(audioData);
       const pcmByteArray = new Uint8Array(pcmS16Array.buffer);
@@ -337,6 +344,40 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     } catch (err) {
       console.error("Failed to start native recording:", err);
       throw err;
+    }
+  };
+
+  // Mute audio (stop recording and playing but keep connection)
+  const muteAudio = () => {
+    setIsMuted(true);
+    setIsRecording(false);
+    setIsPlaying(false);
+
+    // Stop any currently playing audio
+    activeSources.current.forEach((source) => {
+      source.stop();
+    });
+    activeSources.current = [];
+    playTimeRef.current = 0;
+
+    console.log("Audio muted - WebSocket connection maintained");
+  };
+
+  // Unmute audio (resume recording and playing)
+  const unmuteAudio = () => {
+    setIsMuted(false);
+    setIsRecording(true);
+    setIsPlaying(true);
+
+    console.log("Audio unmuted - resuming recording and playback");
+  };
+
+  // Toggle mute state
+  const toggleMute = () => {
+    if (isMuted) {
+      unmuteAudio();
+    } else {
+      muteAudio();
     }
   };
 
@@ -406,8 +447,12 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     isConnected,
     isRecording,
     isPlaying,
+    isMuted,
     error,
     startAudio,
     stopAudio,
+    muteAudio,
+    unmuteAudio,
+    toggleMute,
   };
 };
