@@ -96,16 +96,6 @@ jobs:
         #       [worker.oci.environmentfile]
         #         GIT_SSL_NO_VERIFY = "true"
 
-      - name: Set image tags
-        id: set-tags
-        run: |
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            TAG_NAME=${GITHUB_REF#refs/tags/}
-            echo "MAIN_TAG=${TAG_NAME}" >> $GITHUB_OUTPUT
-          else
-            echo "MAIN_TAG=latest" >> $GITHUB_OUTPUT
-          fi
-
       - name: ${{ matrix.target.name }}
         uses: docker/build-push-action@v6
         with:
@@ -116,7 +106,7 @@ jobs:
           build-args: ${{ matrix.target.build_args }}
           labels: ${{ github.sha }}
           tags: |
-            ${{ matrix.target.tag }}:${{ steps.set-tags.outputs.MAIN_TAG }}
+            ${{ matrix.target.tag }}:latest
             ${{ matrix.target.tag }}:${{ github.sha }}
           sbom: false
           provenance: false
