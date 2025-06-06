@@ -312,6 +312,7 @@ const HomeScreen: React.FC = () => {
     if (realtimeVoice.isMuted) {
       return { icon: "microphone-off" as const, color: "#ff4444" }; // 靜音 - 紅色 mic-off
     }
+
     return { icon: "microphone" as const, color: "#00ff00" }; // 已連線且未靜音 - 綠色 mic
   };
 
@@ -335,6 +336,7 @@ const HomeScreen: React.FC = () => {
     <View style={{ flex: 1 }}>
       {/* Demo-only buttons to trigger vehicle warnings */}
       <DemoButtons
+        currentTpmsWarning={vehicleWarnings.tpms_warning}
         locationError={errorMsg}
         ws={wsRef.current}
       />

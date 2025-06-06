@@ -7,7 +7,6 @@ import { getRealtimeVoiceUrl } from "../utils/env";
 
 interface RealtimeVoiceConfig {
   serverUrl?: string;
-  sampleRate?: number;
   numChannels?: number;
   autoStart?: boolean;
 }
@@ -15,7 +14,6 @@ interface RealtimeVoiceConfig {
 export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   const {
     serverUrl = getRealtimeVoiceUrl(),
-    sampleRate = 16000,
     numChannels = 1,
     autoStart = false,
   } = config;
@@ -30,7 +28,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   const audioRecorder = useAudioRecorder(
     {
       extension: ".wav",
-      sampleRate: sampleRate,
+      sampleRate: 16000, // 固定使用 16000 Hz
       numberOfChannels: numChannels,
       bitRate: 128000,
       android: {
@@ -276,7 +274,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     audioContextRef.current = new (window.AudioContext ||
       (window as any).webkitAudioContext)({
       latencyHint: "interactive",
-      sampleRate: sampleRate, // 這裡仍可傳入建議值，但實際值需偵測
+      sampleRate: 16000, // 固定使用 16000 Hz
     });
 
     // 載入 AudioWorklet 處理器
@@ -284,7 +282,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
 
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
-        sampleRate: sampleRate,
+        sampleRate: 16000, // 固定使用 16000 Hz
         channelCount: numChannels,
         autoGainControl: true,
         echoCancellation: true,
@@ -300,9 +298,6 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       "voice-processor",
     );
 
-    // 取得實際 sampleRate
-    const actualSampleRate = audioContextRef.current.sampleRate;
-
     // 監聽 worklet 傳回的音訊資料
     workletNode.port.onmessage = (event: MessageEvent) => {
       if (!wsRef.current || !frameTypeRef.current || isMutedRef.current) return;
@@ -312,7 +307,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       const frame = frameTypeRef.current.create({
         audio: {
           audio: Array.from(pcmByteArray),
-          sampleRate: actualSampleRate, // 用實際 sampleRate
+          sampleRate: 16000, // 固定使用 16000 Hz
           numChannels: numChannels,
         },
       });

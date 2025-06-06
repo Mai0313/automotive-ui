@@ -1,12 +1,6 @@
 import React, { useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-} from "react-native";
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { View, StyleSheet, TouchableOpacity, Platform } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
@@ -15,7 +9,7 @@ import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 
 const AIAssistantScreen: React.FC = () => {
   const responsiveScale = useResponsiveStyles();
-  
+
   // 初始化 Realtime Voice Hook
   const realtimeVoice = useRealtimeVoice({
     autoStart: Platform.OS === "web", // 僅在 web 上自動開始
@@ -36,6 +30,7 @@ const AIAssistantScreen: React.FC = () => {
     if (realtimeVoice.isMuted) {
       return { icon: "microphone-off" as const, color: "#ff4444" }; // 靜音 - 紅色 mic-off
     }
+
     return { icon: "microphone" as const, color: "#00ff00" }; // 已連線且未靜音 - 綠色 mic
   };
 
@@ -46,6 +41,7 @@ const AIAssistantScreen: React.FC = () => {
       <View style={styles.content}>
         {/* 主要控制按鈕 */}
         <TouchableOpacity
+          disabled={!realtimeVoice.isConnected}
           style={[
             styles.primaryButton,
             {
@@ -55,12 +51,11 @@ const AIAssistantScreen: React.FC = () => {
             },
           ]}
           onPress={realtimeVoice.toggleMute}
-          disabled={!realtimeVoice.isConnected}
         >
           <MaterialCommunityIcons
+            color={color}
             name={icon}
             size={responsiveScale.largeIconSize * 2.5}
-            color={color}
           />
         </TouchableOpacity>
       </View>
@@ -70,19 +65,19 @@ const AIAssistantScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   content: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     flex: 1,
   },
   primaryButton: {
-    backgroundColor: '#2c3e50',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
+    backgroundColor: "#2c3e50",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,

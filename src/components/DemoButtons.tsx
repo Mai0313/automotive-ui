@@ -1,7 +1,7 @@
 // DemoButtons.tsx
 // Demo-only component to trigger TPMS (tire pressure) warning via WebSocket toggle
 // Also includes realtime voice debug controls and permission status display
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TouchableOpacity,
   StyleSheet,
@@ -18,10 +18,20 @@ import { useOpenAIStatus } from "../hooks/useOpenAIStatus";
 interface Props {
   ws: WebSocket | null;
   locationError?: string | null;
+  currentTpmsWarning?: boolean; // 當前數據庫中的 TPMS 警示狀態
 }
 
-const DemoButtons: React.FC<Props> = ({ ws, locationError }) => {
-  const [tpmsActive, setTpmsActive] = useState(false);
+const DemoButtons: React.FC<Props> = ({
+  ws,
+  locationError,
+  currentTpmsWarning = false,
+}) => {
+  const [tpmsActive, setTpmsActive] = useState(currentTpmsWarning);
+
+  // 當傳入的 currentTpmsWarning 改變時，同步更新本地狀態
+  useEffect(() => {
+    setTpmsActive(currentTpmsWarning);
+  }, [currentTpmsWarning]);
 
   // 使用 OpenAI 狀態檢測 hook
   const { status: openAIStatus } = useOpenAIStatus();
@@ -92,7 +102,9 @@ const DemoButtons: React.FC<Props> = ({ ws, locationError }) => {
                     4. 設為 &quot;Enabled&quot; 並重啟瀏覽器
                   </Text>
 
-                  {helpConfig.hasOpenAIIssues && <View style={styles.separator} />}
+                  {helpConfig.hasOpenAIIssues && (
+                    <View style={styles.separator} />
+                  )}
                 </>
               )}
 

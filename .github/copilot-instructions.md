@@ -486,3 +486,21 @@ App.tsx            # 專案入口
   - **使用說明**：
     - 呼叫 `realtimeTTS.processConversation(messages)` 會自動串接 LLM 與 TTS，並於 TTS 失敗時記錄錯誤。
     - 不再提供預設語音 fallback，所有語音播報僅依據 LLM 實時生成內容。
+- 2025-06-06: 【修正】Google Maps API 錯誤與 Demo 按鈕狀態同步
+  - **Google Maps 錯誤修正**：
+    - 解決 `main.js:37 Uncaught Error` Google Maps JavaScript API 錯誤
+    - 新增 `src/components/MapView/GoogleMapsConfig.ts` 配置模組，提供環境變數管理和 URL 生成功能
+    - 修改 `MapView.web.tsx` 添加正確的類型註解和條件渲染邏輯
+    - 在 `.env` 檔案中添加 `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` 配置選項
+    - 當沒有 Google Maps API key 時，優雅降級到車機風格的默認背景
+    - 提供完整的 Google Maps API 配置指南和錯誤處理機制
+  - **Demo 按鈕狀態同步改善**：
+    - 修改 `src/components/DemoButtons.tsx` 新增 `currentTpmsWarning` prop 接收當前數據庫狀態
+    - Demo 按鈕現在會在初始化時檢查數據庫中的胎壓異常狀態，正確顯示紅色（異常）或白色（正常）
+    - 使用 `useEffect` 監聽數據庫狀態變化，確保按鈕顏色與實際狀態同步
+    - 修改 `src/screens/HomeScreen.tsx` 傳遞 `vehicleWarnings.tpms_warning` 到 DemoButtons
+    - 解決了原本 Demo 按鈕只能修改狀態但無法反映當前狀態的問題
+  - **技術改進**：
+    - 移除硬編碼的初始狀態，改為從數據庫獲取真實狀態
+    - 提供更準確的視覺回饋，使用者能清楚了解當前系統狀態
+    - 確保 Demo 功能與實際數據庫狀態保持一致性
