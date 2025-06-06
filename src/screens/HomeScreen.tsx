@@ -29,7 +29,6 @@ import { warningIconMap } from "./VehicleInfoScreen";
 import VehicleInfoScreen from "./VehicleInfoScreen";
 import MusicScreen from "./MusicScreen";
 import ClimateScreen from "./ClimateScreen";
-import AIAssistantScreen from "./AIAssistantScreen";
 
 const HomeScreen: React.FC = () => {
   const responsiveScale = useResponsiveStyles();
@@ -54,7 +53,7 @@ const HomeScreen: React.FC = () => {
   });
 
   const [activeOverlay, setActiveOverlay] = React.useState<
-    "vehicle" | "music" | "climate" | "ai" | null
+    "vehicle" | "music" | "climate" | null
   >(null);
   const [fullScreenOverlay, setFullScreenOverlay] =
     React.useState<boolean>(false);
@@ -305,8 +304,22 @@ const HomeScreen: React.FC = () => {
     );
   }
 
+  // 取得語音狀態圖標和顏色
+  const getVoiceIconAndColor = () => {
+    if (!realtimeVoice.isConnected) {
+      return { icon: "wifi-off" as const, color: "#ff4444" }; // 未連線 - 紅色 wifi-off
+    }
+    if (realtimeVoice.isMuted) {
+      return { icon: "microphone-off" as const, color: "#ff4444" }; // 靜音 - 紅色 mic-off
+    }
+
+    return { icon: "microphone" as const, color: "#00ff00" }; // 已連線且未靜音 - 綠色 mic
+  };
+
+  const { icon: voiceIcon, color: voiceColor } = getVoiceIconAndColor();
+
   // Helper to toggle overlay selection
-  const handleOverlayPress = (type: "vehicle" | "music" | "climate" | "ai") => {
+  const handleOverlayPress = (type: "vehicle" | "music" | "climate") => {
     if (activeOverlay === type) {
       setActiveOverlay(null);
     } else {
@@ -323,16 +336,8 @@ const HomeScreen: React.FC = () => {
     <View style={{ flex: 1 }}>
       {/* Demo-only buttons to trigger vehicle warnings */}
       <DemoButtons
+        currentTpmsWarning={vehicleWarnings.tpms_warning}
         locationError={errorMsg}
-        realtimeVoice={{
-          isConnected: realtimeVoice.isConnected,
-          isRecording: realtimeVoice.isRecording,
-          isMuted: realtimeVoice.isMuted,
-          error: realtimeVoice.error,
-          startAudio: realtimeVoice.startAudio,
-          stopAudio: realtimeVoice.stopAudio,
-          toggleMute: realtimeVoice.toggleMute,
-        }}
         ws={wsRef.current}
       />
 
@@ -406,7 +411,6 @@ const HomeScreen: React.FC = () => {
           )}
           {activeOverlay === "music" && <MusicScreen />}
           {activeOverlay === "climate" && <ClimateScreen />}
-          {activeOverlay === "ai" && <AIAssistantScreen />}
         </View>
       </Animated.View>
 
@@ -501,14 +505,18 @@ const HomeScreen: React.FC = () => {
             size={responsiveScale.largeIconSize}
           />
         </TouchableOpacity>
-        {/* AI icon */}
+        {/* 語音控制 icon */}
         <TouchableOpacity
           style={styles.bottomBarBtn}
-          onPress={() => handleOverlayPress("ai")}
+          onPress={() => {
+            if (realtimeVoice.isConnected) {
+              realtimeVoice.toggleMute();
+            }
+          }}
         >
-          <MaterialIcons
-            color="#fff"
-            name="mic"
+          <MaterialCommunityIcons
+            color={voiceColor}
+            name={voiceIcon}
             size={responsiveScale.largeIconSize}
           />
         </TouchableOpacity>
