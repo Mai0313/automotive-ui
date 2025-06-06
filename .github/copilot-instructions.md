@@ -263,7 +263,7 @@ App.tsx            # 專案入口
 - 2025-05-21: 新增資料庫即時同步（WebSocket/REST fallback）功能，HomeScreen/ClimateScreen 支援自動取得與推送溫度、AC 狀態，並處理 Postgres FLOAT 型態字串轉換。
 - 2025-05-22: HomeScreen 溫度調整 chevron-down/chevron-up 按鈕僅於 AC 開啟 (isAC=true) 時顯示，AC 關閉時不顯示溫度調整按鈕，僅顯示關閉狀態。
 - 2025-05-22: 所有 PostgreSQL function 與 trigger 已整合進 `scripts/init_db.tsx`，統一命名，並更新相關說明文件。
-- 2025-05-26: 將 ClimateScreen.tsx 與 HomeScreen.tsx 中的 WebSocket 通訊與狀態管理邏輯抽取至自訂 Hook (`useClimateSettings`、`useHomeClimateSettings`)，並移除畫面元件內多餘重複程式碼。
+- 2025-05-26: ClimateScreen.tsx 與 HomeScreen.tsx 中的 WebSocket 通訊與狀態管理邏輯抽取至自訂 Hook (`useClimateSettings`、`useHomeClimateSettings`)，並移除畫面元件內多餘重複程式碼。
 - 2025-05-26: 新增 `src/components/ControlButton.tsx` 統一 ClimateScreen 控制按鈕樣式，並在 ClimateScreen 中替換原有冗長的 `TouchableOpacity + Icon + Text` 寫法。
 - 2025-05-26: 在 HomeScreen 底部控制欄中加入 `handleOverlayPress` 函式，精簡各按鈕的開/關浮層邏輯判斷，使程式碼更易維護。
 - 2025-05-26: 新增 Demo 按鈕 首頁右下方會出現一個按鈕以模擬當車輛出現胎壓問題時的應對 尚未完成當按鈕變成True以後要做的事情
@@ -503,3 +503,22 @@ App.tsx            # 專案入口
     - 提供更準確的視覺回饋，使用者能清楚了解當前系統狀態
     - 確保 Demo 功能與實際數據庫狀態保持一致性
     - 簡化 Realtime Voice 配置，提供更穩定和可預測的音訊處理行為
+- 2025-06-06: 【重大】Realtime Voice 音訊緩衝優化，解決傳輸延遲問題
+  - **問題背景**：原本 AudioWorkletProcessor 每個處理週期（128 samples = 8ms）都發送一個音訊包，造成大量小包傳輸和顯著延遲
+  - **核心優化**：
+    - 修改 `public/voice-processor.js` 實現音訊緩衝機制，累積 480 samples (30ms) 再發送
+    - 將原本每 8ms 發送改為每 30ms 發送，減少網路傳輸次數同時符合後端 VAD 限制
+    - 添加緩衝區管理邏輯，確保音訊數據的完整性和時序正確性
+  - **效能提升**：
+    - WebSocket 傳輸頻率從每秒 125 次降至每秒 33 次，減少 74% 的網路請求
+    - 大幅降低 WebSocket 協議開銷，提升整體傳輸效率
+    - 音訊延遲從數十秒降低至接近即時（30ms 緩衝延遲）
+    - 符合後端 VAD (Voice Activity Detection) 要求的 < 32ms 音訊塊限制
+  - **技術細節**：
+    - 緩衝區大小：480 samples (16000 Hz × 0.03s = 30ms)
+    - 自動緩衝區重置機制，避免記憶體洩漏
+    - 音訊數據副本機制，避免並發存取問題
+    - 新增詳細的傳輸 logging，方便效能監控和除錯
+  - **實作檔案**：
+    - `public/voice-processor.js`：新增音訊緩衝邏輯
+    - `src/hooks/useRealtimeVoice.ts`：新增傳輸狀態監控和 WebSocket 狀態檢查

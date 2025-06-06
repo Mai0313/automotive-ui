@@ -301,7 +301,13 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     // 監聽 worklet 傳回的音訊資料
     workletNode.port.onmessage = (event: MessageEvent) => {
       if (!wsRef.current || !frameTypeRef.current || isMutedRef.current) return;
+
       const audioData = event.data as Float32Array;
+
+      console.log(
+        `Sending audio chunk: ${audioData.length} samples (${((audioData.length / 16000) * 1000).toFixed(1)}ms)`,
+      );
+
       const pcmS16Array = convertFloat32ToS16PCM(audioData);
       const pcmByteArray = new Uint8Array(pcmS16Array.buffer);
       const frame = frameTypeRef.current.create({
@@ -315,7 +321,13 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
         frameTypeRef.current.encode(frame).finish(),
       );
 
-      wsRef.current.send(encodedFrame);
+      // 檢查 WebSocket 狀態並發送
+      if (wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(encodedFrame);
+        console.log(`Sent ${encodedFrame.length} bytes to WebSocket`);
+      } else {
+        console.warn(`WebSocket not ready, state: ${wsRef.current.readyState}`);
+      }
     };
 
     sourceRef.current.connect(workletNode);
