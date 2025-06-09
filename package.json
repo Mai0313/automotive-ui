@@ -80,6 +80,7 @@
     "eslint-plugin-react-native": "^5.0.0",
     "eslint-plugin-unused-imports": "^4.1.4",
     "globals": "^16.1.0",
+    "husky": "^9.1.7",
     "pg": "^8.16.0",
     "prettier": "^3.5.3",
     "tsx": "^4.19.4",
@@ -88,5 +89,15 @@
     "typescript": "~5.8.3"
   },
   "private": true,
-  "type": "module"
+  "type": "module",
+  "lint-staged": {
+    "*.json": "prettier --write",
+    "*.md": "prettier --write",
+    ".github/workflows/*.yml": "prettier --write",
+    "**/*.{js,ts,tsx}": [
+      "prettier --write",
+      "pnpm --filter @openai/codex run lint",
+      "cd codex-cli && pnpm run typecheck"
+    ]
+  }
 }
