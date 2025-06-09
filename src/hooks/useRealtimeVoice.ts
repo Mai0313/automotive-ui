@@ -309,7 +309,8 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       const audioArray = new Uint8Array(audioVector.map((x) => Number(x)));
 
       audioContextRef.current.decodeAudioData(audioArray.buffer, (buffer) => {
-        if (!audioContextRef.current || isMutedRef.current) return;
+        // 雙重檢查 mute 狀態 - 防止競爭條件
+        if (!audioContextRef.current || isMutedRef.current || isMuted) return;
 
         // Debug: Add audio chunk to recording for debugging
         addAudioChunk(buffer);
@@ -455,6 +456,11 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     workletNode.port.onmessage = (event: MessageEvent) => {
       if (!wsRef.current || !frameTypeRef.current || isMutedRef.current) return;
 
+      // 檢查是否為命令回應（非音訊數據）
+      if (typeof event.data === "object" && !event.data.length) {
+        return;
+      }
+
       const audioData = event.data as Float32Array;
 
       const pcmS16Array = convertFloat32ToS16PCM(audioData);
@@ -511,26 +517,56 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   // Mute audio (stop recording and playing but keep connection)
   const muteAudio = () => {
     setIsMuted(true);
+    isMutedRef.current = true; // 立即同步 ref
     setIsRecording(false);
     setIsPlaying(false);
 
+    // 暫停麥克風 tracks
+    if (microphoneStreamRef.current) {
+      microphoneStreamRef.current.getTracks().forEach((track) => {
+        track.enabled = false; // 暫停而不是停止
+      });
+    }
+
+    // 通知 AudioWorklet 進入 mute 狀態並清空緩衝區
+    if (scriptProcessorRef.current) {
+      scriptProcessorRef.current.port.postMessage({ command: "mute" });
+    }
+
     // Stop any currently playing audio
     activeSources.current.forEach((source) => {
-      source.stop();
+      try {
+        source.stop();
+      } catch (e) {
+        console.error("Error stopping audio source:", e);
+      }
     });
     activeSources.current = [];
     playTimeRef.current = 0;
 
-    console.log("Audio muted - WebSocket connection maintained");
+    console.log("🔇 Audio muted - microphone tracks disabled, buffers cleared");
   };
 
   // Unmute audio (resume recording and playing)
   const unmuteAudio = () => {
     setIsMuted(false);
+    isMutedRef.current = false; // 立即同步 ref
     setIsRecording(true);
     setIsPlaying(true);
 
-    console.log("Audio unmuted - resuming recording and playback");
+    // 重新啟用麥克風 tracks
+    if (microphoneStreamRef.current) {
+      microphoneStreamRef.current.getTracks().forEach((track) => {
+        track.enabled = true;
+      });
+    }
+
+    // 通知 AudioWorklet 退出 mute 狀態
+    if (scriptProcessorRef.current) {
+      scriptProcessorRef.current.port.postMessage({ command: "unmute" });
+    }
+
+    console.log("🔊 Audio unmuted - microphone tracks re-enabled");
   };
 
   // Toggle mute state

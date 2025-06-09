@@ -7,9 +7,35 @@ class VoiceProcessor extends AudioWorkletProcessor {
     this.bufferSize = 480;
     this.buffer = new Float32Array(this.bufferSize);
     this.bufferIndex = 0;
+    this.isMuted = false;
+
+    // 監聽來自主線程的命令
+    this.port.onmessage = (event) => {
+      const { command } = event.data;
+
+      if (command === "clear") {
+        this.clearBuffer();
+      } else if (command === "mute") {
+        this.isMuted = true;
+        this.clearBuffer();
+      } else if (command === "unmute") {
+        this.isMuted = false;
+      }
+    };
+  }
+
+  clearBuffer() {
+    this.buffer.fill(0);
+    this.bufferIndex = 0;
+    console.log("[AudioWorklet] Buffer cleared");
   }
 
   process(inputs) {
+    // 如果處於 mute 狀態，不處理音訊
+    if (this.isMuted) {
+      return true;
+    }
+
     // inputs: [ [ Float32Array, ... ] ]
     const input = inputs[0];
 
