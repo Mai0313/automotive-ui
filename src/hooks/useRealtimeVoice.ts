@@ -175,8 +175,6 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
         source.connect(audioContextRef.current.destination);
         playTimeRef.current += buffer.duration;
         activeSources.current.push(source);
-
-        console.log("New audio playback started");
       });
     } catch (err) {
       console.error("Error processing audio frame:", err);
@@ -304,10 +302,6 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
 
       const audioData = event.data as Float32Array;
 
-      console.log(
-        `Sending audio chunk: ${audioData.length} samples (${((audioData.length / 16000) * 1000).toFixed(1)}ms)`,
-      );
-
       const pcmS16Array = convertFloat32ToS16PCM(audioData);
       const pcmByteArray = new Uint8Array(pcmS16Array.buffer);
       const frame = frameTypeRef.current.create({
@@ -324,7 +318,6 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       // 檢查 WebSocket 狀態並發送
       if (wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(encodedFrame);
-        console.log(`Sent ${encodedFrame.length} bytes to WebSocket`);
       } else {
         console.warn(`WebSocket not ready, state: ${wsRef.current.readyState}`);
       }

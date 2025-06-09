@@ -93,16 +93,6 @@ export function getRealtimeVoiceUrl(): string {
   return replaceLocalhostWithHostname(voiceUrl);
 }
 
-/**
- * Get Streaming TTS WebSocket server URL with platform-specific handling
- */
-export function getStreamingTTSUrl(): string {
-  const ttsUrl =
-    process.env.EXPO_PUBLIC_STREAMING_TTS_URL || "ws://localhost:8100/tts";
-
-  return replaceLocalhostWithHostname(ttsUrl);
-}
-
 // OpenAI Configuration Functions
 
 /**
@@ -135,4 +125,44 @@ export function isOpenAIConfigured(): boolean {
   const model = getOpenAIModel();
 
   return !!(apiKey && baseUrl && model);
+}
+
+/**
+ * Get Realtime Voice broadcast API URL
+ */
+export function getRealtimeVoiceBroadcastUrl(): string {
+  // 從 Realtime Voice URL 推導出 broadcast API URL
+  const voiceUrl = getRealtimeVoiceUrl();
+  // 將 ws://localhost:8100/ws 轉換為 http://localhost:8100/api/event/broadcast
+  const httpUrl = voiceUrl
+    .replace("ws://", "http://")
+    .replace("/ws", "/api/event/broadcast");
+  return httpUrl;
+}
+
+/**
+ * Send message to realtime voice broadcast API
+ */
+export async function sendBroadcastMessage(message: string): Promise<boolean> {
+  try {
+    const response = await fetch(getRealtimeVoiceBroadcastUrl(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message }),
+    });
+
+    if (!response.ok) {
+      console.error("❌ [Broadcast] HTTP error:", response.status, response.statusText);
+      return false;
+    }
+
+    const result = await response.json();
+    console.log("✅ [Broadcast] Success:", result);
+    return result.status === "success";
+  } catch (error) {
+    console.error("❌ [Broadcast] Network error:", error);
+    return false;
+  }
 }

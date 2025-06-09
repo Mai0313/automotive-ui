@@ -18,11 +18,11 @@ import useCurrentLocation from "../hooks/useCurrentLocation";
 import useHomeClimateSettings from "../hooks/useHomeClimateSettings";
 import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
-import { useRealtimeTTS } from "../hooks/useRealtimeTTS";
 import {
   getWebSocketUrl,
   getHttpServerUrl,
   isOpenAIConfigured,
+  sendBroadcastMessage,
 } from "../utils/env";
 
 import { warningIconMap } from "./VehicleInfoScreen";
@@ -36,20 +36,6 @@ const HomeScreen: React.FC = () => {
   // Realtime voice功能 - 在web上自動開始
   const realtimeVoice = useRealtimeVoice({
     autoStart: Platform.OS === "web", // 僅在web上自動開始
-  });
-
-  // Realtime TTS 功能
-  const realtimeTTS = useRealtimeTTS({
-    onStatusChange: (status) => {
-      console.log("🔊 [RealtimeTTS] Status changed:", status);
-    },
-    onError: (error) => {
-      console.error("🚫 [RealtimeTTS] Error:", error);
-    },
-    onSpeakingComplete: () => {
-      console.log("✅ [RealtimeTTS] Speaking completed");
-      setIsSpeaking(false);
-    },
   });
 
   const [activeOverlay, setActiveOverlay] = React.useState<
@@ -98,18 +84,6 @@ const HomeScreen: React.FC = () => {
   // WebSocket ref
   const wsRef = useRef<WebSocket | null>(null);
 
-  // 初始化 Realtime TTS 連接
-  useEffect(() => {
-    // 自動連接到 TTS 服務器
-    realtimeTTS.connect();
-
-    return () => {
-      // 組件卸載時斷開連接
-      realtimeTTS.disconnect();
-    };
-  }, []);
-
-  // Setup WS to sync temperature and AC
   // 異常燈號語音播報
   useEffect(() => {
     // 若正在播報則不重複
@@ -157,37 +131,24 @@ const HomeScreen: React.FC = () => {
         const userPrompt = warningNameMap[warningKey] || warningKey;
 
         console.log(
-          `🔊 [車輛異常播報] 檢測到異常：${userPrompt}, using Realtime TTS`,
+          `🔊 [車輛異常播報] 檢測到異常：${userPrompt}, using Broadcast API`,
         );
 
-        // 組 prompt
-        const assistantPrompt =
-          "You are a vehicle assistant. Please provide specific suggestions for vehicle anomalies in a friendly and practical manner. Limit your reply to within 50 words.";
+        // 組合異常建議訊息
+        const message = `Vehicle anomaly detected: "${userPrompt}". Current location: ${
+          mapPreviewLocation
+            ? `Longitude ${mapPreviewLocation.longitude}, Latitude ${mapPreviewLocation.latitude}`
+            : "Unknown"
+        }. Please provide assistance and brief suggestions.`;
 
-        // 使用 Realtime TTS 進行流式對話 + TTS
-        await realtimeTTS.processConversation(
-          [
-            { role: "assistant", content: assistantPrompt },
-            {
-              role: "user",
-              content: `
-                Vehicle anomaly detected: "${userPrompt}"
-                Current location: ${
-                  mapPreviewLocation
-                    ? `Longitude ${mapPreviewLocation.longitude}, Latitude ${mapPreviewLocation.latitude}`
-                    : "Unknown"
-                }
-                Please interact with the user to confirm if they need assistance and provide a brief suggestion.
-                For example: "An XX anomaly has been detected. Would you like me to help you find the nearest XXX to resolve the issue?"
-              `,
-            },
-          ],
-          {
-            onDelta: (delta: string) => {
-              console.log("🔊 [車輛異常播報] Received delta:", delta);
-            },
-          },
-        );
+        // 使用新的 broadcast API 發送到 realtime voice
+        const success = await sendBroadcastMessage(message);
+        
+        if (success) {
+          console.log("✅ [車輛異常播報] Broadcast sent successfully");
+        } else {
+          console.error("❌ [車輛異常播報] Broadcast failed");
+        }
 
         setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
       } catch (err) {

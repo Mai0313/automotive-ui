@@ -14,13 +14,13 @@
 
 ## 2. 主要功能頁面
 
-### 【新增】首頁車輛異常語音建議（LLM+TTS）
+### 【新增】首頁車輛異常語音建議（LLM+Broadcast API）
 
-- 當首頁偵測到車輛異常（如胎壓異常、引擎燈等）時，會自動將異常資訊送進 chatCompletion，由 LLM 產生針對該異常的建議，再將建議內容轉為語音並主動播報，無需進入車輛資訊頁即可即時提醒使用者。
+- 當首頁偵測到車輛異常（如胎壓異常、引擎燈等）時，會自動將異常資訊透過 Broadcast API 發送到 Realtime Voice 伺服器，由 LLM 產生針對該異常的建議，再轉為語音並主動播報，無需進入車輛資訊頁即可即時提醒使用者。
 - 每種異常僅播報一次，避免重複提醒。
 - 建議內容由 LLM 動態生成，語氣親切且務實，能根據不同異常給出更貼近情境的建議。
-- 已整合 chatCompletion、textToSpeech 與 expo-av 音訊播放，無需額外安裝。
-- **注意：** Web 平台自動播放 audio 可能因瀏覽器政策（需用戶互動）導致 NotAllowedError，這是瀏覽器安全限制，非程式錯誤。請於有用戶互動（如點擊）後再觸發語音，或於開發測試時手動觸發。
+- 採用統一的 Realtime Voice WebSocket 連線處理語音播報，透過 `/api/event/broadcast` API 觸發。
+- **技術架構：** 前端 → Broadcast API → Realtime Voice 伺服器 → LLM + TTS → WebSocket 語音串流 → 前端播放。
 
 1. **首頁**
    - **新版設計重點：**
@@ -48,12 +48,17 @@
      - 右上角有「切換模式」按鈕，可切換為「打字模式」：顯示原本的文字輸入框與送出按鈕，方便辦公室開發測試。
      - 兩種模式可隨時切換，駕駛時建議使用語音模式，開發時可用打字模式。
      - 語音辨識完成後，僅會新增一則使用者訊息（不會重複顯示），避免訊息重複。
-   - **新增功能：**
-     - 支援麥克風錄音輸入 (`expo-audio`)。
-     - 整合 OpenAI Whisper API 進行語音轉文字。
-     - 整合 OpenAI TTS API (`tts-1-hd` 模型) 將 AI 文字回應轉為語音輸出。
-     - 實現完整的語音輸入 -> AI 處理 -> 語音輸出流程。
-     - Web 平台支援直接從 Base64 Data URL 播放 TTS 音訊，原生平台則儲存至檔案系統後播放 (`expo-file-system`)。
+   - **Realtime Voice 整合（2025-06-03 更新）：**
+     - 首頁已整合 Realtime Voice 即時語音互動功能，透過 WebSocket 與後端語音伺服器連線
+     - 支援即時語音對話：麥克風錄音 → ASR 語音辨識 → LLM 處理 → TTS 語音合成 → 即時播放
+     - Web 平台自動開始錄音，原生平台提供手動控制
+     - 統一使用 `useRealtimeVoice` Hook 處理所有即時語音功能
+   - **傳統 OpenAI API 功能（仍保留）：**
+     - 支援麥克風錄音輸入 (`expo-audio`)
+     - 整合 OpenAI Whisper API 進行語音轉文字
+     - 整合 OpenAI TTS API (`tts-1-hd` 模型) 將 AI 文字回應轉為語音輸出
+     - 實現完整的語音輸入 → AI 處理 → 語音輸出流程
+     - Web 平台支援直接從 Base64 Data URL 播放 TTS 音訊，原生平台則儲存至檔案系統後播放 (`expo-file-system`)
 
 ---
 
@@ -535,3 +540,38 @@ App.tsx            # 專案入口
     - 前端滑桿和指示點相應調整，提供更清晰的視覺回饋
     - 跨平台相容性：Web 和原生平台的滑桿都已正確更新
     - 建議執行 `npm run init-db` 重新初始化資料庫以應用新的約束條件
+- 2025-06-09: 【重大】移除 useRealtimeTTS 功能，改用 Broadcast API
+  - **功能重構**：移除 `src/hooks/useRealtimeTTS.ts` 功能，改用後端新的 `/api/event/broadcast` API
+  - **新的車輛異常播報機制**：
+    - 不再使用獨立的 Realtime TTS WebSocket 連線
+    - 改用 `sendBroadcastMessage()` 函數發送訊息到後端 broadcast API
+    - 後端透過 `/api/event/broadcast` 將訊息廣播給所有活躍的 Realtime Voice 串流
+    - 語音回應直接透過現有的 `useRealtimeVoice` WebSocket 連線接收
+  - **實作細節**：
+    - 新增 `getRealtimeVoiceBroadcastUrl()` 和 `sendBroadcastMessage()` 函數到 `src/utils/env.ts`
+    - 修改 `src/screens/HomeScreen.tsx` 移除 `useRealtimeTTS` 相關程式碼
+    - 車輛異常檢測時直接呼叫 `sendBroadcastMessage()` 發送異常資訊
+    - 移除 `EXPO_PUBLIC_STREAMING_TTS_URL` 環境變數（已不需要）
+  - **技術優勢**：
+    - 簡化架構：統一使用 Realtime Voice WebSocket 處理所有語音功能
+    - 減少連線：不需要額外的 TTS WebSocket 連線
+    - 更好的整合：語音播報與即時語音對話共用同一個 WebSocket 連線
+    - 後端統一管理：所有語音處理都透過 Realtime Voice 伺服器統一處理
+- 2025-06-09: 【重大】Broadcast API CORS 問題解決與功能驗證完成
+  - **CORS 問題診斷**：
+    - 識別後端 Realtime Voice 伺服器（port 8100）不支援 OPTIONS 請求導致 CORS preflight 失敗
+    - 確認後端已正確配置 CORS middleware，允許所有 origins、methods、headers
+    - 測試發現 POST `/api/event/broadcast` API 功能正常，curl 測試返回 200 狀態碼
+  - **前端修正**：
+    - 修改 `src/utils/env.ts` 中 `sendBroadcastMessage()` 函數，移除不必要的 `no-cors` 模式
+    - 簡化請求處理邏輯，保持標準的 fetch API 配置
+    - 優化錯誤處理與日誌記錄，提供更清楚的調試資訊
+  - **功能驗證**：
+    - 車輛異常語音播報功能已完全正常運作
+    - 透過 Demo 按鈕觸發胎壓異常，成功播報 LLM 生成的建議語音
+    - Broadcast API 與 Realtime Voice 整合無縫，統一透過 WebSocket 連線處理語音
+  - **架構優勢確認**：
+    - 單一 WebSocket 連線處理所有語音功能（對話 + 播報）
+    - 後端統一管理語音處理，前端僅需發送文字訊息到 broadcast API
+    - 跨平台相容性良好，Web 和原生平台皆正常運作
+    - 符合車機即時語音互動需求，延遲低且穩定性高
