@@ -86,7 +86,7 @@ export default function useClimateSettings() {
   };
 
   const increaseFan = () => {
-    const newVal = Math.min(fanSpeed + 1, 10);
+    const newVal = Math.min(fanSpeed + 1, 5);
 
     setFanSpeed(newVal);
     send({ fan_speed: newVal });

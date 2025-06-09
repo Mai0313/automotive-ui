@@ -22,7 +22,7 @@ const Slider =
         value,
         onValueChange,
         minimumValue = 0,
-        maximumValue = 10,
+        maximumValue = 5,
         step = 1,
         style,
         ..._omit
@@ -97,7 +97,7 @@ const ClimateScreen: React.FC = () => {
 
             <Slider
               maximumTrackTintColor="#333"
-              maximumValue={10}
+              maximumValue={5}
               minimumTrackTintColor="#3498db"
               minimumValue={0}
               step={1}
@@ -117,7 +117,7 @@ const ClimateScreen: React.FC = () => {
           </View>
 
           <View style={styles.fanSpeedIndicator}>
-            {[...Array(10)].map((_, i) => (
+            {[...Array(5)].map((_, i) => (
               <View
                 key={i}
                 style={[

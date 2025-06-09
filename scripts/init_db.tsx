@@ -70,21 +70,21 @@ const VEHICLE_TABLE_NAME = "vehicle_info";
 const createClimateTableSQL = `
 CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
     air_conditioning BOOLEAN DEFAULT true NOT NULL,
-    fan_speed INTEGER DEFAULT 2 NOT NULL CHECK (fan_speed BETWEEN 0 AND 10),
+    fan_speed INTEGER DEFAULT 2 NOT NULL CHECK (fan_speed BETWEEN 0 AND 5),
     airflow_head_on BOOLEAN DEFAULT false NOT NULL,
     airflow_body_on BOOLEAN DEFAULT false NOT NULL,
     airflow_feet_on BOOLEAN DEFAULT true NOT NULL,
     auto_on BOOLEAN DEFAULT false NOT NULL,
     front_defrost_on BOOLEAN DEFAULT false NOT NULL,
     rear_defrost_on BOOLEAN DEFAULT false NOT NULL,
-    temperature FLOAT DEFAULT 22.0 NOT NULL CHECK (temperature BETWEEN 16.0 AND 30.0),
+    temperature FLOAT DEFAULT 28.0 NOT NULL CHECK (temperature BETWEEN 16.0 AND 30.0),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 -- 加入初始資料 (如果需要)
 INSERT INTO ${TABLE_NAME} (air_conditioning, fan_speed, airflow_head_on, airflow_body_on, airflow_feet_on, front_defrost_on, rear_defrost_on, temperature)
-VALUES (true, 2, false, false, true, false, false, 22.0::float)
+VALUES (true, 2, false, false, true, false, false, 28.0::float)
 ON CONFLICT DO NOTHING;
 `;
 
