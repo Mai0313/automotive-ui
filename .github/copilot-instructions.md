@@ -14,7 +14,7 @@
 
 ## 2. 主要功能頁面
 
-### 【新增】首頁車輛異常語音建議（LLM+Broadcast API）
+### 【核心功能】首頁車輛異常語音建議（Broadcast API + Realtime Voice）
 
 - 當首頁偵測到車輛異常（如胎壓異常、引擎燈等）時，會自動將異常資訊透過 Broadcast API 發送到 Realtime Voice 伺服器，由 LLM 產生針對該異常的建議，再轉為語音並主動播報，無需進入車輛資訊頁即可即時提醒使用者。
 - 每種異常僅播報一次，避免重複提醒。
@@ -22,15 +22,39 @@
 - 採用統一的 Realtime Voice WebSocket 連線處理語音播報，透過 `/api/event/broadcast` API 觸發。
 - **技術架構：** 前端 → Broadcast API → Realtime Voice 伺服器 → LLM + TTS → WebSocket 語音串流 → 前端播放。
 
+### 【核心功能】Realtime Voice 即時語音互動系統
+
+- **即時語音對話**：Web 平台開啟後自動開始錄音，實現真正的即時語音對話（麥克風錄音 → ASR 語音辨識 → LLM 處理 → TTS 語音合成 → 即時播放）
+- **音訊處理**：使用 AudioContext 和 ScriptProcessor 捕捉麥克風音訊，轉換為 PCM S16 格式後透過 protobuf 封包傳送
+- **協議支援**：使用 protobuf 協議與後端語音伺服器通訊，支援 AudioRawFrame、TextFrame、TranscriptionFrame 三種訊息類型
+- **跨平台支援**：Web 平台自動錄音，原生平台提供手動控制，統一使用 `useRealtimeVoice` Hook 處理
+- **優化效能**：音訊緩衝機制，累積 30ms 音訊再發送，減少 74% 的網路請求，大幅降低延遲
+- **狀態指示**：提供清楚的連線與錄音狀態視覺回饋（綠色=已連線且錄音、紅色=錯誤或關閉錄音、wifi-off=未連線）
+
+### 【核心功能】響應式設計系統
+
+- **全面縮放**：使用 `useResponsiveStyles` Hook 根據螢幕尺寸自動計算按鈕、圖標、文字、間距等比例
+- **設備支援**：支援手機（<600px）、平板（600-1200px）、桌面（>1200px）三種設備類型
+- **縮放範圍**：0.6-2.0x，確保在各種設備上保持適當的操作體驗與視覺比例
+- **跨域智能配置**：自動偵測當前 hostname，支援網路多設備訪問（localhost → 當前 IP，Android 模擬器 → 10.0.2.2）
+
 1. **首頁**
-   - **新版設計重點：**
-     - 首頁背景為全螢幕互動式地圖，未來將採用 Google Navigation React 套件實現（現階段可用假資料與地圖佈局預覽）。
-     - 地圖四週保有黑色框線，強化車機風格。
-     - 取消原底部分頁導航，主功能入口由底部黑色控制欄置入（簡約 icon 依序排列）。
-     - 點擊「音樂」、「車輡資訊」、「空調」等入口，不是頁面跳轉，而是以懸浮浮層面板（overlay）的方式顯示於地圖正上方，並帶有流暢動畫。
-     - 懸浮面板僅顯示一個，點擊其他控制 icon 時平滑切換，點擊地圖空白處或浮層右上角關閉鈕可收合面板。
-     - 首頁預設浮現的面板為「車輛狀態卡片」，參照 Tesla 車機設計（如下補充）。
-     - 地圖與各類浮層卡片皆需預留橫屏/直屏響應布局設計。
+   - **設計重點：**
+     - 首頁背景為全螢幕互動式地圖，未來將採用 Google Navigation React 套件實現（現階段可用假資料與地圖佈局預覽）
+     - 地圖四週保有黑色框線，強化車機風格
+     - 取消原底部分頁導航，主功能入口由底部黑色控制欄置入（簡約 icon 依序排列）
+     - 點擊「音樂」、「車輛資訊」、「空調」等入口，不是頁面跳轉，而是以懸浮浮層面板（overlay）的方式顯示於地圖正上方，並帶有流暢動畫
+     - 懸浮面板僅顯示一個，點擊其他控制 icon 時平滑切換，點擊地圖空白處或浮層右上角關閉鈕可收合面板
+     - 首頁預設浮現的面板為「車輛狀態卡片」，參照 Tesla 車機設計，包含車輛儀表板、警示燈號、主控按鈕等
+     - 地圖與各類浮層卡片皆需預留橫屏/直屏響應布局設計
+     - 地圖載入超時機制：10秒自動切換默認背景，避免載入卡頓
+   - **Tesla 風格細節：**
+     - 首頁地圖應覆蓋整個視窗，四周有黑色邊框
+     - 地圖下方設有黑色操作控制欄（底部功能 Bar），內含主要入口 icon
+     - 預設浮層卡片為「車輛狀態卡」：左側車輛儀表板，中間大車輛俯視圖，底部主控按鈕（鎖車、空調開關、除霜）
+     - 車狀態卡內容可左右滑動切換不同分類內容，底部圓點指示當前頁
+     - 所有浮層動畫需平滑淡入淡出、收回、切換；全區塊和按鈕需有互動回饋
+     - 色系僅黑/白/灰及極簡點綴，字體、布局及交互皆比照 Tesla 車機設計稿
 
 2. **音樂播放頁**
    - 播放/暫停、曲目資訊、專輯封面
@@ -40,25 +64,15 @@
 
 4. **空調控制頁**
    - 溫度調整、風量設定、模式切換
+   - **即時同步功能**：透過 WebSocket/REST fallback 與資料庫即時同步所有空調狀態
+   - **風扇控制**：0-5級精確控制，提供更好的使用體驗
+   - **全面狀態管理**：自動模式、空調開關、除霜功能、出風方向控制等
 
 5. **AI 助理頁**
-   - 語音/文字互動，展示 AI 回應。
-   - **互動模式說明（2025-05-26 更新）：**
-     - 預設進入頁面為「語音模式」，僅顯示一個大錄音按鈕，點擊即可開始錄音，直到再次點擊停止。
-     - 右上角有「切換模式」按鈕，可切換為「打字模式」：顯示原本的文字輸入框與送出按鈕，方便辦公室開發測試。
-     - 兩種模式可隨時切換，駕駛時建議使用語音模式，開發時可用打字模式。
-     - 語音辨識完成後，僅會新增一則使用者訊息（不會重複顯示），避免訊息重複。
-   - **Realtime Voice 整合（2025-06-03 更新）：**
-     - 首頁已整合 Realtime Voice 即時語音互動功能，透過 WebSocket 與後端語音伺服器連線
-     - 支援即時語音對話：麥克風錄音 → ASR 語音辨識 → LLM 處理 → TTS 語音合成 → 即時播放
-     - Web 平台自動開始錄音，原生平台提供手動控制
-     - 統一使用 `useRealtimeVoice` Hook 處理所有即時語音功能
-   - **傳統 OpenAI API 功能（仍保留）：**
-     - 支援麥克風錄音輸入 (`expo-audio`)
-     - 整合 OpenAI Whisper API 進行語音轉文字
-     - 整合 OpenAI TTS API (`tts-1-hd` 模型) 將 AI 文字回應轉為語音輸出
-     - 實現完整的語音輸入 → AI 處理 → 語音輸出流程
-     - Web 平台支援直接從 Base64 Data URL 播放 TTS 音訊，原生平台則儲存至檔案系統後播放 (`expo-file-system`)
+   - **語音優先設計**：預設進入頁面為「語音模式」，僅顯示一個大錄音按鈕，適合車載環境；右上角可切換為「打字模式」方便開發測試
+   - **即時語音互動**：整合 Realtime Voice 功能，透過 WebSocket 與後端語音伺服器連線實現即時對話
+   - **跨平台支援**：Web 平台自動開始錄音，原生平台提供手動控制
+   - **訊息去重**：語音辨識完成後僅新增一則使用者訊息，避免訊息重複
 
 ---
 
@@ -92,12 +106,10 @@
 - **導航**：React Navigation
 - **資料**：全部功能可用假資料模擬
 - **AI 部分**：
-  - 以簡單對話框展示回應（類 ChatGPT 風格）。
-  - **語音互動**：
-    - 使用 `expo-audio` 進行錄音及播放。
-    - 語音轉文字：OpenAI Whisper API。
-    - 文字轉語音：OpenAI TTS API (`tts-1-hd` 模型)。
-    - 使用 `expo-file-system` 處理音訊檔案（僅限原生平台）。
+  - 以簡單對話框展示回應（類 ChatGPT 風格）
+  - **語音互動**：統一使用 Realtime Voice WebSocket 連線處理所有語音功能
+  - **音訊處理**：使用 `expo-audio` 進行錄音及播放（原生平台），Web 平台使用 AudioContext
+  - **協議支援**：使用 protobuf 協議與後端語音伺服器通訊
 - **地圖元件與未來發展**：首頁全螢幕地圖預計用 Google Navigation React（或相容套件），現階段請以可佈局自訂浮層板且可外掛額外元件為主。需留意浮層疊加、互動與地圖手勢衝突的處理。
 - **響應式設計系統**：
   - 使用 `useResponsiveStyles` Hook 根據螢幕尺寸自動計算元件比例。
@@ -112,19 +124,22 @@
 
 ---
 
-## 【AI Endpoint 需求】（這段會在後端處理）
+## 【後端 AI 服務架構】
 
-本專案目前僅需以下三種 AI 服務端點（endpoint），請於開發/串接時依下表規格設計，未來如有新需求再補充。
+本專案已完全遷移至後端統一處理所有 AI 功能，前端無需配置 OpenAI API key 等敏感資訊。
 
-| Endpoint         | Input 型態         | Output 型態        | 用途說明                                   |
-|------------------|--------------------|--------------------|--------------------------------------------|
-| Chat Completion  | text (訊息內容)    | text (AI 回應)     | 文字/語音對話、車輛異常建議、AI 助理回應   |
-| Speech to Text   | audio (錄音檔)     | text (辨識文字)    | 語音輸入辨識（OpenAI Whisper API）         |
-| Text to Speech   | text (AI 回應文字) | audio (語音檔/串流) | AI 回應語音化（OpenAI TTS API）            |
+### 核心架構
 
-- Chat Completion：用於 AI 助理、車輛異常建議等所有自然語言理解與生成。
-- Speech to Text：用於語音輸入，支援多平台錄音檔格式。
-- Text to Speech：用於將 AI 回應轉為語音，支援 web 及原生平台播放。
+- **車輛異常語音建議**：前端 → `sendBroadcastMessage()` → Broadcast API (`/api/event/broadcast`) → Realtime Voice 伺服器 → LLM + TTS → WebSocket 語音串流
+- **AI 助理對話**：前端 → Realtime Voice WebSocket → 即時語音處理伺服器 → ASR + LLM + TTS → 即時語音回應
+- **統一 WebSocket 連線**：所有語音功能（對話 + 播報）皆透過 `useRealtimeVoice` Hook 處理
+
+### 技術優勢
+
+- 前端部署簡化，無需配置 AI 相關敏感資訊
+- 統一後端 AI 處理，便於版本控制和模型切換
+- 減少環境變數配置複雜度，降低部署錯誤機率
+- 符合 Serverless 和容器化部署最佳實務
 
 ---
 
@@ -153,22 +168,7 @@ App.tsx            # 專案入口
 
 ---
 
-## 7. 【新增】首頁互動地圖與浮層設計細節
-
-- 請參考 Tesla 車機實際介面風格（如下圖），首頁主畫面為一個全螢幕的深色互動地圖，四周有黑色框。
-- 地圖下方設有黑色操作控制欄（底部功能 Bar），內含主要入口 icon（如：車輡、空調、音樂），排列及參照特斯拉車機 UI。
-- 點擊底部欄位任何 icon，皆以 overlay 懸浮面板（浮層卡片）形式在地圖上方顯示對應功能，非跳轉頁面；浮層面板可平順切換、點地圖空白區或按交互按鈕關閉。
-- 預設顯示「車輡狀態卡」，左側浮框內含車輛狀態資訊及快速操作，支持左右滑動檢視更多車況頁，主控三鈕（鎖車/空調/除霜）、大閃電（啟動）、胎壓、語音按鈕等。
-- 音樂卡、空調卡等皆為半透明黑底浮層，資訊結構與現代車機一致。  
-- 所有浮層動畫需平滑淡入淡出、收回、切換；全區塊和按鈕需有互動回饋。
-- 地圖未來將用 Google navigation react 套件，並保持彈性以支持元件疊加與橫直屏響應。
-- 色系僅黑/白/灰及極簡點綴，字體、布局及交互皆比照 Tesla 車機設計稿。
-
-> ![Sample Tesla UI](https://techcrunch.com/wp-content/uploads/2017/08/tesla-model-3-in-car-ux.jpg)
-
----
-
-## 8. 【新增】空調設定
+## 7. 空調控制與即時同步系統
 
 - 汽車空調設定將透過資料庫即時同步（WebSocket/REST fallback），所有狀態皆以 ac_settings table 為主，前端會根據資料庫內容自動顯示與控制。
 
@@ -200,9 +200,7 @@ App.tsx            # 專案入口
   - 前端調整溫度/AC 狀態時，會即時送出 JSON 給 WS，後端自動更新資料庫並廣播。
   - 任何時候都能直接用 psql UPDATE ac_settings SET temperature=xx.x; 測試即時同步。
 
----
-
-## 【新增】車輛警示燈號（vehicle_warnings table）
+## 8. 車輛警示燈號系統（vehicle_warnings table）
 
 - 車輛警示燈號皆以 BOOLEAN 型態儲存於 vehicle_warnings table，預設值為 false，代表無異常。前端會根據這些欄位顯示對應警示 icon，並以紅色高亮。
 - 欄位說明如下：
@@ -244,9 +242,9 @@ App.tsx            # 專案入口
 
 ---
 
-## 9. 【資料庫觸發器/通知通用化】
+## 9. 資料庫觸發器與通知系統
 
-- 2025-05-22: 所有 PostgreSQL function 與 trigger 已整合進 `scripts/init_db.tsx`，統一命名：
+- 所有 PostgreSQL function 與 trigger 已整合進 `scripts/init_db.tsx`，統一命名：
   - `update_timestamp_generic`：自動更新所有表的 `updated_at` 欄位。
   - `notify_table_update`：所有表的 INSERT/UPDATE 皆自動推播 `pg_notify(<table>_update, row_to_json(NEW))`。
 - 各資料表只需：
@@ -257,337 +255,20 @@ App.tsx            # 專案入口
 ---
 
 ## 更新紀錄
-- 2025-05-16: 調整 HomeScreen overlay 懸浮位置（top:60, bottom:100），使浮層顯示介於頂部狀態欄與底部按鈕區之間；新增底部按鈕重複點擊可收回浮層功能。
-- 2025-05-19: MusicScreen web 版改為直接嵌入 Spotify 播放器 iframe，並以特斯拉車機風格半透明黑底浮層包覆，僅 web 顯示，行動裝置維持原假資料 UI。
-- 2025-05-19: HomeScreen 地圖鋪滿全畫面，overlayCard 上下空間皆為地圖，不再出現黑色背景區塊。
-- 2025-05-19: MapView.web.tsx 移除 border 樣式，修正 React Native StyleSheet 型別錯誤。
-- 2025-05-19: ESLint 設定升級為 Flat Config，並針對專案結構簡化 ignore 與 plugin 設定。
-- 2025-05-19: 所有未使用變數與 import lint warning 已清除，專案維持乾淨。
-- 2025-05-19: AI 助理頁面新增完整語音互動功能：整合麥克風錄音 (`expo-audio`)、OpenAI Whisper 語音轉文字、Chat Completion 文字理解與回應、OpenAI TTS (`tts-1-hd`) 文字轉語音播放。區分 Web 與原生平台 TTS 音訊處理方式。
-- 2025-05-20: 調整首頁底部溫度控制區與空調開關設計，詳見最上方補充說明。
-- 2025-05-21: 新增資料庫即時同步（WebSocket/REST fallback）功能，HomeScreen/ClimateScreen 支援自動取得與推送溫度、AC 狀態，並處理 Postgres FLOAT 型態字串轉換。
-- 2025-05-22: HomeScreen 溫度調整 chevron-down/chevron-up 按鈕僅於 AC 開啟 (isAC=true) 時顯示，AC 關閉時不顯示溫度調整按鈕，僅顯示關閉狀態。
-- 2025-05-22: 所有 PostgreSQL function 與 trigger 已整合進 `scripts/init_db.tsx`，統一命名，並更新相關說明文件。
-- 2025-05-26: ClimateScreen.tsx 與 HomeScreen.tsx 中的 WebSocket 通訊與狀態管理邏輯抽取至自訂 Hook (`useClimateSettings`、`useHomeClimateSettings`)，並移除畫面元件內多餘重複程式碼。
-- 2025-05-26: 新增 `src/components/ControlButton.tsx` 統一 ClimateScreen 控制按鈕樣式，並在 ClimateScreen 中替換原有冗長的 `TouchableOpacity + Icon + Text` 寫法。
-- 2025-05-26: 在 HomeScreen 底部控制欄中加入 `handleOverlayPress` 函式，精簡各按鈕的開/關浮層邏輯判斷，使程式碼更易維護。
-- 2025-05-26: 新增 Demo 按鈕 首頁右下方會出現一個按鈕以模擬當車輛出現胎壓問題時的應對 尚未完成當按鈕變成True以後要做的事情
-- 2025-05-26: AI 助理頁面大幅改版，預設為語音模式（僅顯示大錄音按鈕），右上角可切換打字模式。語音辨識完成後僅新增一則訊息，避免訊息重複。兩種模式可隨時切換，適合車載語音優先與辦公室開發。
-- 2025-05-26: 【重大】首頁車輛異常語音建議功能升級：偵測到車輛異常時，會自動將異常資訊送進 chatCompletion，由 LLM 產生建議，再用 textToSpeech 轉語音自動播報。每種異常僅播報一次，建議內容由 LLM 動態生成。Web 平台自動播放 audio 可能因瀏覽器政策（需用戶互動）導致 NotAllowedError，這是瀏覽器安全限制，非程式錯誤。
-- 2025-05-29: 【重大】實現全面響應式按鈕系統：新增 `useResponsiveStyles` Hook，根據螢幕尺寸自動計算按鈕、圖標、文字、間距等比例。所有元件（HomeScreen、ClimateScreen、VehicleInfoScreen、MusicScreen、NavigationScreen、AIAssistantScreen、ControlButton、BottomBarButton、FloatingStatusBar、DemoButtons）皆已更新為響應式設計，支援手機、平板、桌面等不同螢幕尺寸自動縮放，縮放範圍 0.6-2.0x，確保在各種設備上保持適當的操作體驗與視覺比例。
-- 2025-06-02: Demo 按鈕優化：將原本較大的「Trigger Tire Pressure Warning」按鈕改為左上角小圖標形式，與實時語音圖標並列顯示，提供更簡潔的測試介面。
-- 2025-06-03: 【重大】新增 Realtime Voice 即時語音互動功能：整合基於 WebSocket + protobuf 的即時語音通訊，Web 平台開啟後自動開始錄音，透過 ws://localhost:8100/ws/{uuid} 與後端語音伺服器即時傳輸音訊。支援 PCM S16 格式音訊編碼、自動音訊解碼播放、連線狀態指示。新增左上角 Debug 按鈕可手動控制錄音開關。使用 `useRealtimeVoice` Hook 處理核心邏輯，整合至 HomeScreen 與 DemoButtons。原生平台目前支援基礎錄音，即時串流功能待後續完善。
-- 2025-06-03: 【新增】Realtime Voice 即時語音互動功能
-  - 整合基於 WebSocket 的即時語音互動功能，使用 protobuf 協議與後端語音伺服器 (ws://localhost:8100/ws) 通訊。
-  - 功能特色：
-    - Web 平台：網頁開啟後自動開始錄音，實現真正的即時語音對話。
-    - 音訊處理：使用 AudioContext 和 ScriptProcessor 捕捉麥克風音訊，轉換為 PCM S16 格式後透過 protobuf 封包傳送。
-    - 即時播放：接收後端傳回的音訊串流，自動解碼並播放語音回應。
-    - 左上角 Debug 按鈕：提供手動開啟/關閉錄音功能，方便開發測試。
-    - 協議支援：使用 public/frames.proto 定義的 Frame 格式，支援 AudioRawFrame、TextFrame、TranscriptionFrame 三種訊息類型。
-    - UUID 連線：每次連線自動產生 8 位數 UUID，確保 WebSocket 連線的唯一性 (ws://localhost:8100/ws/{uuid})。
-    - 狀態指示：Debug 按鈕顏色會根據連線狀態變化（綠色=已連線、紅色=錯誤、白色=離線）。
-  - 實作檔案：
-    - `src/hooks/useRealtimeVoice.ts`：核心 Hook，處理 WebSocket 連線、音訊錄製/播放、protobuf 編解碼。
-    - `src/components/DemoButtons.tsx`：整合 realtime voice debug 控制按鈕。
-    - `src/screens/HomeScreen.tsx`：在首頁整合並啟用 realtime voice 功能。
-  - 技術依賴：
-    - protobufjs：處理 .proto 檔案解析與二進位編解碼。
-    - expo-audio：原生平台錄音支援（目前簡化實作）。
-    - AudioContext：Web 平台即時音訊處理。
-  - 注意事項：
-    - Web 平台需要 HTTPS 或 localhost 才能存取麥克風。
-    - 原生平台目前僅支援基礎錄音，即時串流功能待後續完善。
-    - 後端需搭配支援 pipecat.Frame 協議的語音伺服器。
-- 2025-06-03: 【重大】環境變數重構：將所有硬編碼的伺服器 URL 重構為可配置的環境變數，提升部署靈活性與安全性。
-  - 新增環境變數配置：
-    - `EXPO_PUBLIC_WS_SERVER_URL`：WebSocket 即時資料同步伺服器 URL (預設: ws://localhost:4000)
-    - `EXPO_PUBLIC_HTTP_SERVER_URL`：HTTP REST API fallback 伺服器 URL (預設: http://localhost:4001)
-    - `EXPO_PUBLIC_REALTIME_VOICE_URL`：即時語音 WebSocket 伺服器 URL (預設: ws://localhost:8100/ws)
-    - `WS_SERVER_PORT`：後端 WebSocket 伺服器連接埠 (預設: 4000)
-    - `HTTP_SERVER_PORT`：後端 HTTP 伺服器連接埠 (預設: 4001)
-  - 技術改進：
-    - 修改 `server.js` 加入 `dotenv` 環境變數載入，並加入必要環境變數驗證，若未設定會報錯退出。
-    - 新增 `src/utils/env.ts` 環境變數管理工具，提供 `getWebSocketUrl()`、`getHttpServerUrl()`、`getRealtimeVoiceUrl()` 函式，支援 Android 模擬器自動 localhost → 10.0.2.2 轉換。
-    - 更新所有相關 Hook 與元件：`useClimateSettings`、`useHomeClimateSettings`、`useRealtimeVoice`、`HomeScreen` 等，移除硬編碼 URL。
-    - 更新 `.env.example` 文件，提供完整的環境變數配置範例與說明。
-  - 重構檔案：
-    - `server.js`：加入環境變數載入與驗證
-    - `src/utils/env.ts`：環境變數管理工具（新增）
-    - `src/hooks/useClimateSettings.ts`：使用環境變數取代硬編碼 URL
-    - `src/hooks/useHomeClimateSettings.ts`：使用環境變數取代硬編碼 URL
-    - `src/hooks/useRealtimeVoice.ts`：使用環境變數取代硬編碼 URL
-    - `src/screens/HomeScreen.tsx`：移除硬編碼 serverUrl 參數
-    - `.env` 與 `.env.example`：新增所有伺服器 URL 環境變數配置
-  - 優勢：
-    - 支援不同環境（開發、測試、生產）的靈活配置
-    - 提升安全性，避免硬編碼敏感資訊
-    - 環境變數未設定時自動報錯，避免靜默失敗
-    - 自動處理 Android 模擬器網路映射 (localhost → 10.0.2.2)
-    - 統一的環境變數管理與驗證機制
-- 2025-06-03: 【重大】解決跨域連線問題：修改前端和後端伺服器配置，支援網路多設備訪問。
-  - **問題背景**：當從 `http://mtktma:8081` 或其他網路地址訪問時，WebSocket 和 HTTP 請求仍指向 `localhost:4000/4001`，導致跨域連線失敗。
-  - **統一配置解決方案**：
-    - **環境變數統一**：將原本分離的 `WS_SERVER_PORT`/`HTTP_SERVER_PORT` 改為完整 URL 配置：
-      - `WS_SERVER_URL=ws://localhost:4000`
-      - `HTTP_SERVER_URL=http://localhost:4001`
-      - `REALTIME_VOICE_URL=ws://localhost:8100/ws`
-    - **動態主機偵測**：修改 `src/utils/env.ts` 新增：
-      - `getCurrentHostname()`：自動偵測當前網頁的 hostname
-      - `replaceLocalhostWithHostname()`：智能URL轉換函數
-    - **前端配置**：修改 `package.json` 的 `npm run web` 腳本為 `--host lan --port 8081`，讓 Expo 在網路介面提供服務。
-    - **後端配置**：修改 `server.js` 新增：
-      - `replaceLocalhostForServerBinding()`：自動將 localhost 轉換為 0.0.0.0 進行伺服器綁定
-      - 完整 URL 解析：從環境變數解析 hostname 和 port，而非僅解析 port
-  - **智能URL轉換機制**：
-    - **Web 平台**：`localhost` → 當前 hostname（如 `mtktma` 或 `172.21.140.52`）
-    - **Android 模擬器**：`localhost` → `10.0.2.2`
-    - **其他平台**：保持原始 URL
-    - **伺服器綁定**：`localhost` → `0.0.0.0`（監聽所有網路介面）
-  - **使用方式**：
-    - 啟動後端：`npm run ws`（自動監聽 0.0.0.0:4000/4001）
-    - 啟動前端：`npm run web`（服務於網路介面，如 172.21.140.52:8081）
-    - 多設備訪問：可從任何網路設備訪問 `http://[IP]:8081`，自動解決跨域問題
-  - **實作檔案更新**：
-    - `src/utils/env.ts`：新增動態主機偵測與URL轉換函數
-    - `server.js`：新增URL解析與伺服器綁定邏輯
-    - `package.json`：修改 web 腳本支援 LAN 訪問
-    - `.env` & `.env.example`：更新為統一的 localhost URL 配置
-  - **技術優勢**：
-    - **統一配置**：前後端皆使用 localhost URL，自動轉換為適當的綁定地址
-    - **自動跨域解決**：無需手動配置 CORS，智能檢測並調整連線地址
-    - **多設備支援**：支援開發環境多設備測試（手機、平板、其他電腦）
-    - **向下相容**：localhost 訪問仍正常運作，不影響現有工作流程
-    - **平台智能檢測**：Android 模擬器自動使用 10.0.2.2，Web 平台自動使用當前 hostname
-    - **除錯友善**：新增主機偵測的 debug logging，方便故障排除
-- 2025-06-03: 【權限管理】改善非安全上下文權限處理與使用者引導
-  - **問題背景**：當從非 localhost（如 `http://172.21.140.52:8081`）訪問時，瀏覽器安全政策阻止存取麥克風和定位權限，導致功能無法正常運作。
-  - **解決方案與改進**：
-    - **權限錯誤檢測**：修改 `useRealtimeVoice.ts` 新增詳細權限檢測：
-      - 檢查 `window.isSecureContext` 判斷是否為安全上下文
-      - 提供具體錯誤訊息，指導使用者設定 Chrome flags
-      - 區分 `NotAllowedError`、`NotFoundError`、`NotSupportedError` 等不同錯誤類型
-    - **定位權限優化**：修改 `useCurrentLocation.ts` 新增權限拒絕時的詳細說明
-    - **使用者引導介面**：修改 `DemoButtons.tsx` 新增權限設定說明面板：
-      - 自動偵測權限問題並顯示設定指南
-      - 提供 Chrome flags 設定步驟說明
-      - 顯示當前網址，方便使用者複製到 Chrome flags 設定中
-      - 可關閉的浮動說明面板，不影響正常操作
-  - **Chrome Flags 設定指南**：
-    - 打開 `chrome://flags/`
-    - 搜尋 "Insecure origins treated as secure"
-    - 在設定值中加入當前網址（如 `http://172.21.140.52:8081`）
-    - 設為 "Enabled" 並重新啟動瀏覽器
-  - **技術改进**：
-    - 更精確的錯誤分類與訊息提示
-    - 自動偵測安全上下文狀態
-    - 動態顯示當前網址供使用者參考
-    - 優雅的錯誤處理，不會因權限問題導致應用崩潰
-  - **實作檔案**：
-    - `src/hooks/useRealtimeVoice.ts`：新增安全上下文檢測與詳細錯誤處理
-    - `src/hooks/useCurrentLocation.ts`：改善定位權限錯誤訊息
-    - `src/components/DemoButtons.tsx`：新增權限設定說明面板與狀態顯示
-    - `src/screens/HomeScreen.tsx`：傳遞 location error 到 DemoButtons
-  - **使用者體驗**：
-    - 清楚的權限問題說明與解決步驟
-    - 自動顯示相關的設定指引
-    - 不會因權限問題影響其他功能正常運作
-    - 提供開發與測試環境的便利設定方法
-- 2025-06-03: 【UI 改善】Realtime Voice 狀態圖標優化
-  - **功能說明**：改善左上角 Realtime Voice 按鈕的視覺狀態指示，讓使用者能清楚了解當前連線與錄音狀態。
-  - **圖標狀態規則**：
-    - **沒順利連接到 realtime ws server**：顯示 `wifi-off` 圖標，紅色 (#ff4444)
-    - **順利連接且正在錄音**：顯示 `microphone` 圖標，綠色 (#00ff00)
-    - **順利連接但手動關閉錄音**：顯示 `microphone-off` 圖標，紅色 (#ff4444)
-  - **實作檔案**：
-    - `src/components/DemoButtons.tsx`：修改 Realtime Voice 按鈕的圖標邏輯，根據 `isConnected` 和 `isRecording` 狀態動態顯示對應圖標與顏色
-  - **使用者體驗改善**：
-    - 直觀的狀態指示：使用者能立即識別連線狀態
-    - 清楚的操作回饋：不同顏色與圖標對應不同功能狀態
-    - 提升除錯效率：開發者能快速判斷 WebSocket 連線是否正常
-- 2025-06-03: 【重大】OpenAI API 狀態檢測系統
-  - **功能說明**：新增自動檢測 OpenAI API 連線狀態功能，在 UI 啟動時自動測試 Chat Completion 和 Text-to-Speech API 的可用性，並在權限設定面板中顯示詳細的錯誤診斷資訊。
-  - **核心功能**：
-    - **自動 API 測試**：應用啟動時自動執行 Chat Completion ("hi" 訊息) 和 TTS ("test" 文字) 測試
-    - **錯誤分類診斷**：提供詳細錯誤分析 (401/Unauthorized, 404/Not Found, 429/Rate limit, Network issues)
-    - **環境變數檢查**：自動檢測 OpenAI API key 等必要環境變數配置狀態
-    - **統一錯誤顯示**：整合至 DemoButtons 權限說明面板，統一顯示 API、權限、連線問題
-  - **實作檔案**：
-    - `src/hooks/useOpenAIStatus.ts`：新增 OpenAI API 狀態檢測 Hook，自動測試 API 連線並分類錯誤
-    - `src/hooks/usePermissionHelp.ts`：重構權限說明 Hook，整合 OpenAI API 狀態與 Realtime Voice 連線狀態
-    - `src/components/DemoButtons.tsx`：完全重寫，使用 Hook 架構取代內聯邏輯，支援滾動式錯誤顯示面板
-    - `docs/OpenAI-Status-Detection.md`：新增詳細技術文件說明實作細節与故障排除指南
-  - **使用者體驗改善**：
-    - **即時診斷**：啟動時立即了解 API 連線狀況，無需手動測試
-    - **詳細指引**：根據不同錯誤類型提供對應的解決方案
-    - **統一介面**：將權限、API、連線問題整合至單一說明面板
-    - **滾動支援**：支援長錯誤訊息列表的滾動檢視
-  - **錯誤分類**：
-    - **401 Unauthorized**：API key 無效或過期
-    - **404 Not Found**：API endpoint 不存在或 model 不可用
-    - **429 Rate Limit**：API 請求頻率超限
-    - **Network Error**：網路連線問題或伺服器無回應
-    - **Environment Config**：缺少必要環境變數 (OPENAI_API_KEY 等)
-- 2025-06-03: 【擴展】Realtime Voice 連線狀態整合
-  - **功能說明**：將 Realtime Voice WebSocket 連線問題整合至統一的狀態檢測系統，與 OpenAI API 和瀏覽器權限問題一併顯示診斷資訊。
-  - **連線狀態檢測**：
-    - **連線狀態監控**：自動監控 WebSocket 連線狀態 (已連線/未連線/錯誤)
-    - **錯誤分類**：區分權限錯誤與連線錯誤，提供對應解決方案
-    - **狀態指示**：即時顯示連線狀態與錯誤訊息
-  - **整合顯示**：
-    - **統一面板**：Realtime Voice 問題與 OpenAI API、權限問題一併顯示於說明面板
-    - **分類顯示**：使用分隔線區分不同類型問題 (權限/API/連線)
-    - **解決指引**：提供 Realtime Voice 伺服器設定與故障排除步驟
-  - **實作更新**：
-    - `src/hooks/usePermissionHelp.ts`：新增 `hasRealtimeVoiceIssues`、`realtimeVoiceStatus` 等連線狀態檢測
-    - `src/components/DemoButtons.tsx`：整合 Realtime Voice 連線狀態到權限說明面板，提供伺服器設定指引
-  - **技術優勢**：
-    - **全面診斷**：覆蓋瀏覽器權限、OpenAI API、WebSocket 連線三大類問題
-    - **智能檢測**：自動區分不同錯誤類型並提供對應解決方案
-    - **開發友善**：提供詳細的故障排除資訊，加速開發除錯流程
-    - **使用者引導**：清楚的設定步驟說明，降低使用門檻
-- 2025-06-03: 【重大】地圖載入超時機制與默認背景
-  - **功能說明**：為 HomeScreen 的 Google Maps 添加 10 秒載入超時機制，當地圖載入失敗或超時時自動切換到默認背景，提升使用者體驗與系統穩定性。
-  - **核心功能**：
-    - **10 秒超時檢測**：地圖載入開始後 10 秒內未完成則自動切換到默認背景
-    - **載入狀態管理**：追蹤 loading、loaded、error、timeout 四種狀態
-    - **優雅降級**：載入失敗時顯示車機風格的默認背景界面
-    - **跨平台支援**：Web 和原生平台皆支援超時機制
-  - **載入狀態指示**：
-    - **載入中**：顯示 ActivityIndicator 和「載入地圖中...」文字
-    - **載入成功**：正常顯示 Google Maps 或 React Native Maps
-    - **載入失敗/超時**：顯示地圖圖標和錯誤說明的默認背景
-  - **實作檔案**：
-    - `src/components/MapView/MapView.web.tsx`：新增 Web 版地圖超時機制，使用 iframe onLoad/onError 事件監控載入狀態
-    - `src/components/MapView/MapView.native.tsx`：新增原生版地圖超時機制，使用 react-native-maps onMapReady 事件
-    - 兩版本皆使用 useEffect + setTimeout 實現 10 秒超時計時器
-  - **UI/UX 改善**：
-    - **載入體驗**：提供清楚的載入進度指示
-    - **錯誤處理**：載入失敗時給予明確說明，不會留下空白畫面
-    - **視覺一致性**：默認背景採用車機風格設計（深色背景 + 地圖圖標）
-    - **無阻塞體驗**：地圖問題不會影響其他功能正常使用
-  - **技術細節**：
-    - Web 版使用 iframe onLoad/onError 事件精確檢測 Google Maps 載入狀態
-    - 原生版使用 react-native-maps onMapReady 事件檢測地圖初始化完成
-    - 載入成功前地圖 opacity 設為 0，避免載入過程中的視覺閃爍
-    - 超時計時器會在載入成功或失敗時自動清除，避免記憶體洩漏
-  - **使用者體驗**：
-    - **快速回饋**：最多等待 10 秒，不會無限期等待地圖載入
-    - **清楚狀態**：始終顯示當前載入狀態，使用者了解系統運作情況
-    - **可靠性提升**：網路問題或地圖服務異常時系統仍可正常使用
-    - **一致體驗**：Web 和原生平台提供相同的超時處理體驗
-- 2025-06-04: 【重大】Realtime TTS（即時語音合成）功能上線
-  - **功能說明**：首頁車輛異常語音建議、AI 助理等場景，已全面整合 Realtime TTS 串流語音合成服務。
-  - **技術細節**：
-    - 採用 WebSocket 協議與後端語音伺服器即時通訊，將 LLM 產生的完整建議文字傳送給 TTS 服務，實現即時語音播報。
-    - chatCompletion 預設改為非串流模式，先取得完整建議句子，再送往 TTS。
-    - 支援跨平台（Web/原生）語音播放，Web 端自動處理瀏覽器互動限制。
-    - 所有異常僅播報一次，避免重複提醒。
-    - 若 TTS 播報失敗，僅記錄錯誤，不再自動播放預設錄音（已移除 demo.wav fallback 機制）。
-  - **主要檔案**：
-    - `src/hooks/useRealtimeTTS.ts`：Realtime TTS hook，負責與 TTS 伺服器連線、發送文字、處理語音播放與錯誤。
-    - `src/hooks/openai.ts`：chatCompletion 支援 stream 參數，預設首頁異常建議為非串流模式。
-    - `src/screens/HomeScreen.tsx`：首頁異常語音建議流程，已整合 Realtime TTS，catch 區塊不再播放 demo.wav。
-  - **使用說明**：
-    - 呼叫 `realtimeTTS.processConversation(messages)` 會自動串接 LLM 與 TTS，並於 TTS 失敗時記錄錯誤。
-    - 不再提供預設語音 fallback，所有語音播報僅依據 LLM 實時生成內容。
-- 2025-06-06: 【修正】Demo 按鈕狀態同步改善與 Realtime Voice 取樣率固定
-  - **Demo 按鈕狀態同步改善**：
-    - 修改 `src/components/DemoButtons.tsx` 新增 `currentTpmsWarning` prop 接收當前數據庫狀態
-    - Demo 按鈕現在會在初始化時檢查數據庫中的胎壓異常狀態，正確顯示紅色（異常）或白色（正常）
-    - 使用 `useEffect` 監聽數據庫狀態變化，確保按鈕顏色與實際狀態同步
-    - 修改 `src/screens/HomeScreen.tsx` 傳遞 `vehicleWarnings.tpms_warning` 到 DemoButtons
-    - 解決了原本 Demo 按鈕只能修改狀態但無法反映當前狀態的問題
-  - **Realtime Voice 取樣率固定**：
-    - 修改 `src/hooks/useRealtimeVoice.ts` 將取樣率固定為 16000 Hz，不再動態偵測
-    - 移除未使用的 `sampleRate` 變數和相關配置選項，簡化代碼邏輯
-    - AudioContext、getUserMedia、expo-audio 錄音器皆統一使用固定的 16000 Hz
-    - 修正 ESLint 警告：移除 `RealtimeVoiceConfig` 介面中未使用的 `sampleRate` 屬性
-  - **技術改進**：
-    - 移除硬編碼的初始狀態，改為從數據庫獲取真實狀態
-    - 提供更準確的視覺回饋，使用者能清楚了解當前系統狀態
-    - 確保 Demo 功能與實際數據庫狀態保持一致性
-    - 簡化 Realtime Voice 配置，提供更穩定和可預測的音訊處理行為
-- 2025-06-06: 【重大】Realtime Voice 音訊緩衝優化，解決傳輸延遲問題
-  - **問題背景**：原本 AudioWorkletProcessor 每個處理週期（128 samples = 8ms）都發送一個音訊包，造成大量小包傳輸和顯著延遲
-  - **核心優化**：
-    - 修改 `public/voice-processor.js` 實現音訊緩衝機制，累積 480 samples (30ms) 再發送
-    - 將原本每 8ms 發送改為每 30ms 發送，減少網路傳輸次數同時符合後端 VAD 限制
-    - 添加緩衝區管理邏輯，確保音訊數據的完整性和時序正確性
-  - **效能提升**：
-    - WebSocket 傳輸頻率從每秒 125 次降至每秒 33 次，減少 74% 的網路請求
-    - 大幅降低 WebSocket 協議開銷，提升整體傳輸效率
-    - 音訊延遲從數十秒降低至接近即時（30ms 緩衝延遲）
-    - 符合後端 VAD (Voice Activity Detection) 要求的 < 32ms 音訊塊限制
-  - **技術細節**：
-    - 緩衝區大小：480 samples (16000 Hz × 0.03s = 30ms)
-    - 自動緩衝區重置機制，避免記憶體洩漏
-    - 音訊數據副本機制，避免並發存取問題
-    - 新增詳細的傳輸 logging，方便效能監控和除錯
-  - **實作檔案**：
-    - `public/voice-processor.js`：新增音訊緩衝邏輯
-    - `src/hooks/useRealtimeVoice.ts`：新增傳輸狀態監控和 WebSocket 狀態檢查
-- 2025-06-09: 【優化】風扇控制等級調整：從10級改為5級
-  - **資料庫層級**：修改 `scripts/init_db.tsx` 中 `ac_settings` 表的 `fan_speed` 欄位檢查約束條件，從 `CHECK (fan_speed BETWEEN 0 AND 10)` 改為 `CHECK (fan_speed BETWEEN 0 AND 5)`
-  - **前端UI調整**：
-    - 修改 `src/screens/ClimateScreen.tsx` 中 Slider 元件的 `maximumValue` 從 `10` 改為 `5`
-    - 更新 Web 平台 fallback Slider 的預設 `maximumValue` 從 `10` 改為 `5`
-    - 調整風速指示點顯示，從 `[...Array(10)]` 改為 `[...Array(5)]`，現在只顯示5個指示點
-  - **邏輯控制**：修改 `src/hooks/useClimateSettings.ts` 中 `increaseFan` 函數的最大值限制，從 `Math.min(fanSpeed + 1, 10)` 改為 `Math.min(fanSpeed + 1, 5)`
-  - **文件更新**：同步更新 `.github/copilot-instructions.md` 中空調設定說明，將 fan_speed 範圍描述從 0~10 修改為 0~5
-  - **影響說明**：
-    - 資料庫會強制檢查風扇速度只能在 0-5 之間，提供更精確的控制粒度
-    - 前端滑桿和指示點相應調整，提供更清晰的視覺回饋
-    - 跨平台相容性：Web 和原生平台的滑桿都已正確更新
-    - 建議執行 `npm run init-db` 重新初始化資料庫以應用新的約束條件
-- 2025-06-09: 【重大】移除 useRealtimeTTS 功能，改用 Broadcast API
-  - **功能重構**：移除 `src/hooks/useRealtimeTTS.ts` 功能，改用後端新的 `/api/event/broadcast` API
-  - **新的車輛異常播報機制**：
-    - 不再使用獨立的 Realtime TTS WebSocket 連線
-    - 改用 `sendBroadcastMessage()` 函數發送訊息到後端 broadcast API
-    - 後端透過 `/api/event/broadcast` 將訊息廣播給所有活躍的 Realtime Voice 串流
-    - 語音回應直接透過現有的 `useRealtimeVoice` WebSocket 連線接收
-  - **實作細節**：
-    - 新增 `getRealtimeVoiceBroadcastUrl()` 和 `sendBroadcastMessage()` 函數到 `src/utils/env.ts`
-    - 修改 `src/screens/HomeScreen.tsx` 移除 `useRealtimeTTS` 相關程式碼
-    - 車輛異常檢測時直接呼叫 `sendBroadcastMessage()` 發送異常資訊
-    - 移除 `EXPO_PUBLIC_STREAMING_TTS_URL` 環境變數（已不需要）
-  - **技術優勢**：
-    - 簡化架構：統一使用 Realtime Voice WebSocket 處理所有語音功能
-    - 減少連線：不需要額外的 TTS WebSocket 連線
-    - 更好的整合：語音播報與即時語音對話共用同一個 WebSocket 連線
-    - 後端統一管理：所有語音處理都透過 Realtime Voice 伺服器統一處理
-- 2025-06-09: 【重大】Broadcast API CORS 問題解決與功能驗證完成
-  - **CORS 問題診斷**：
-    - 識別後端 Realtime Voice 伺服器（port 8100）不支援 OPTIONS 請求導致 CORS preflight 失敗
-    - 確認後端已正確配置 CORS middleware，允許所有 origins、methods、headers
-    - 測試發現 POST `/api/event/broadcast` API 功能正常，curl 測試返回 200 狀態碼
-  - **前端修正**：
-    - 修改 `src/utils/env.ts` 中 `sendBroadcastMessage()` 函數，移除不必要的 `no-cors` 模式
-    - 簡化請求處理邏輯，保持標準的 fetch API 配置
-    - 優化錯誤處理與日誌記錄，提供更清楚的調試資訊
-  - **功能驗證**：
-    - 車輛異常語音播報功能已完全正常運作
-    - 透過 Demo 按鈕觸發胎壓異常，成功播報 LLM 生成的建議語音
-    - Broadcast API 與 Realtime Voice 整合無縫，統一透過 WebSocket 連線處理語音
-  - **架構優勢確認**：
-    - 單一 WebSocket 連線處理所有語音功能（對話 + 播報）
-    - 後端統一管理語音處理，前端僅需發送文字訊息到 broadcast API
-    - 跨平台相容性良好，Web 和原生平台皆正常運作
-    - 符合車機即時語音互動需求，延遲低且穩定性高
-- 2025-06-09: 【重大】OpenAI 環境變數完全清理：完成 Broadcast API 架構遷移
-  - **清理背景**：隨著架構從直接 OpenAI API 呼叫完全遷移至 Broadcast API + Realtime Voice，所有 OpenAI 相關環境變數已不再需要
-  - **清理內容**：
-    - 移除 `src/utils/env.ts` 中所有 OpenAI 相關函數：`getOpenAIApiKey()`、`getOpenAIBaseUrl()`、`getOpenAIModel()`、`isOpenAIConfigured()`
-    - 移除 `.env.example` 中 OpenAI 配置區塊：`EXPO_PUBLIC_OPENAI_BASE_URL`、`EXPO_PUBLIC_OPENAI_API_KEY`、`EXPO_PUBLIC_OPENAI_MODEL`
-    - 移除 `docker/.env.deploy` 中 OpenAI 配置區塊，包括 localhost:8889 和 meta-llama 模型配置
-    - 清理所有相關註解和說明文字
-  - **架構確認**：
-    - 車輛異常語音建議：前端 → `sendBroadcastMessage()` → Broadcast API → Realtime Voice 伺服器 → LLM + TTS → WebSocket 語音串流
-    - AI 助理對話：前端 → Realtime Voice WebSocket → 即時語音處理伺服器 → ASR + LLM + TTS → 即時語音回應
-    - 不再需要前端配置 OpenAI API key，所有 AI 處理皆在後端統一進行
-  - **簡化優勢**：
-    - 前端部署更簡單，無需配置 AI 相關敏感資訊
-    - 統一後端 AI 處理，便於版本控制和模型切換
-    - 減少環境變數配置複雜度，降低部署錯誤機率
-    - 符合 Serverless 和容器化部署最佳實務
+
+### 🏗️ 架構重大變更
+- **Broadcast API 架構遷移**：完全移除 OpenAI 環境變數，統一後端 AI 處理
+- **Realtime Voice 系統**：即時語音互動功能，Web 平台自動錄音，支援 protobuf 協議
+- **環境變數重構**：支援跨域連線與多設備訪問，智能 hostname 檢測
+- **響應式設計系統**：0.6-2.0x 縮放範圍，全面支援多設備
+
+### ⚡ 功能優化
+- **風扇控制精度**：從10級調整為5級，提供更精確控制
+- **音訊緩衝優化**：減少 74% 網路請求，大幅降低延遲
+- **地圖載入優化**：10秒超時機制，自動切換默認背景
+- **語音建議功能**：LLM 動態生成建議並自動播報
+
+### 🎨 UI/UX 改進
+- **權限管理優化**：Chrome flags 設定指引與錯誤診斷
+- **語音優先設計**：AI 助理預設語音模式，適合車載環境
+- **即時同步**：WebSocket/REST fallback，空調溫度狀態實時更新
