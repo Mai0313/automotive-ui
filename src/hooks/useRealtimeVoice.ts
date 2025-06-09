@@ -272,7 +272,8 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       // Stop active audio if we receive text (interrupt signal)
       if (parsedFrame?.text) {
         activeSources.current.forEach((source) => {
-          try { // Add try-catch for robustness
+          try {
+            // Add try-catch for robustness
             source.stop();
           } catch (e) {
             console.warn("Error stopping source on interrupt:", e);
@@ -306,7 +307,11 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       // 2. The scheduled playTimeRef is significantly in the past (e.g., >100ms ago).
       // 3. There's been a considerable pause in receiving audio (e.g., >0.5s).
       // Add a small buffer (e.g., 0.05s) to schedule slightly in the future, accommodating decode/scheduling overhead.
-      if (playTimeRef.current === 0 || playTimeRef.current < now - 0.1 || timeSinceLastMessage > 0.5) {
+      if (
+        playTimeRef.current === 0 ||
+        playTimeRef.current < now - 0.1 ||
+        timeSinceLastMessage > 0.5
+      ) {
         playTimeRef.current = now + 0.05; // Schedule to start slightly in the future from now.
       }
       lastMessageTimeRef.current = now;
@@ -315,39 +320,49 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       const audioVector = Array.from(parsedFrame.audio.audio);
       const audioArray = new Uint8Array(audioVector.map((x) => Number(x)));
 
-      audioContextRef.current.decodeAudioData(audioArray.buffer, (buffer) => {
-        // 雙重檢查 mute 狀態 - 防止競爭條件
-        if (!audioContextRef.current || isMutedRef.current || isMuted) return;
+      audioContextRef.current.decodeAudioData(
+        audioArray.buffer,
+        (buffer) => {
+          // 雙重檢查 mute 狀態 - 防止競爭條件
+          if (!audioContextRef.current || isMutedRef.current || isMuted) return;
 
-        // Debug: Add audio chunk to recording for debugging
-        addAudioChunk(buffer);
-        // Debug End
+          // Debug: Add audio chunk to recording for debugging
+          addAudioChunk(buffer);
+          // Debug End
 
-        const source = new AudioBufferSourceNode(audioContextRef.current);
-        source.buffer = buffer;
+          const source = new AudioBufferSourceNode(audioContextRef.current);
 
-        // Determine the actual time to schedule this buffer.
-        // It should be no earlier than the current playTimeRef, and also
-        // no earlier than the current audio context time plus a small processing buffer (e.g., 0.02s).
-        // This prevents scheduling in the past if decodeAudioData took some time.
-        const scheduleTime = Math.max(playTimeRef.current, audioContextRef.current.currentTime + 0.02);
+          source.buffer = buffer;
 
-        source.connect(audioContextRef.current.destination);
-        source.start(scheduleTime);
-        
-        // Update playTimeRef for the *next* buffer.
-        playTimeRef.current = scheduleTime + buffer.duration;
-        
-        activeSources.current.push(source);
-        // Clean up the source node from activeSources array once it has finished playing.
-        source.onended = () => {
-          activeSources.current = activeSources.current.filter(s => s !== source);
-          // Optional: console.log("[Debug] Audio source ended and removed.");
-        };
+          // Determine the actual time to schedule this buffer.
+          // It should be no earlier than the current playTimeRef, and also
+          // no earlier than the current audio context time plus a small processing buffer (e.g., 0.02s).
+          // This prevents scheduling in the past if decodeAudioData took some time.
+          const scheduleTime = Math.max(
+            playTimeRef.current,
+            audioContextRef.current.currentTime + 0.02,
+          );
 
-      }, (decodeError) => { // Add error handling for decodeAudioData
-        console.error("Error decoding audio data:", decodeError);
-      });
+          source.connect(audioContextRef.current.destination);
+          source.start(scheduleTime);
+
+          // Update playTimeRef for the *next* buffer.
+          playTimeRef.current = scheduleTime + buffer.duration;
+
+          activeSources.current.push(source);
+          // Clean up the source node from activeSources array once it has finished playing.
+          source.onended = () => {
+            activeSources.current = activeSources.current.filter(
+              (s) => s !== source,
+            );
+            // Optional: console.log("[Debug] Audio source ended and removed.");
+          };
+        },
+        (decodeError) => {
+          // Add error handling for decodeAudioData
+          console.error("Error decoding audio data:", decodeError);
+        },
+      );
     } catch (err) {
       console.error("Error processing audio frame:", err);
     }
