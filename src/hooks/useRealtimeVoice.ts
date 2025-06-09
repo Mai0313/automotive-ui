@@ -52,6 +52,135 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   const scriptProcessorRef = useRef<any>(null);
   const isMutedRef = useRef<boolean>(false);
 
+  // Debug: Audio recording functionality for debugging noise issues
+  const recordedAudioChunks = useRef<AudioBuffer[]>([]);
+  const recordingStartTime = useRef<number | null>(null);
+  const recordingSessionId = useRef<string | null>(null);
+
+  const startAudioRecording = () => {
+    recordedAudioChunks.current = [];
+    recordingStartTime.current = Date.now();
+    recordingSessionId.current = new Date().toISOString().replace(/[:.]/g, "-");
+    console.log(
+      `[🔧 Debug] Started recording session: ${recordingSessionId.current}`,
+    );
+  };
+
+  const addAudioChunk = (audioBuffer: AudioBuffer) => {
+    if (recordingSessionId.current) {
+      recordedAudioChunks.current.push(audioBuffer);
+    }
+  };
+
+  const saveRecordedAudio = () => {
+    if (Platform.OS !== "web" || recordedAudioChunks.current.length === 0)
+      return;
+
+    try {
+      // Merge all audio chunks into one buffer
+      const totalLength = recordedAudioChunks.current.reduce(
+        (sum, buffer) => sum + buffer.length,
+        0,
+      );
+      const sampleRate = recordedAudioChunks.current[0].sampleRate;
+      const numberOfChannels = recordedAudioChunks.current[0].numberOfChannels;
+
+      // Create merged audio context if needed
+      const offlineContext = new OfflineAudioContext(
+        numberOfChannels,
+        totalLength,
+        sampleRate,
+      );
+      let offset = 0;
+
+      // Merge all chunks
+      recordedAudioChunks.current.forEach((chunk) => {
+        const source = offlineContext.createBufferSource();
+
+        source.buffer = chunk;
+        source.connect(offlineContext.destination);
+        source.start(offset / sampleRate);
+        offset += chunk.length;
+      });
+
+      offlineContext.startRendering().then((mergedBuffer) => {
+        const wav = audioBufferToWav(mergedBuffer);
+        const blob = new Blob([wav], { type: "audio/wav" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+
+        a.href = url;
+        a.download = `realtime_voice_${recordingSessionId.current}.wav`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        const duration = mergedBuffer.duration;
+        const chunks = recordedAudioChunks.current.length;
+
+        console.log(
+          `[🔧 Debug] Saved complete audio session: realtime_voice_${recordingSessionId.current}.wav`,
+        );
+        console.log(
+          `[🔧 Debug] Duration: ${duration.toFixed(2)}s, Chunks: ${chunks}, Sample Rate: ${sampleRate}Hz`,
+        );
+
+        // Reset recording
+        recordedAudioChunks.current = [];
+        recordingSessionId.current = null;
+      });
+    } catch (err) {
+      console.error("[🔧 Debug] Failed to save recorded audio:", err);
+    }
+  };
+
+  // Convert AudioBuffer to WAV format
+  const audioBufferToWav = (buffer: AudioBuffer): ArrayBuffer => {
+    const length = buffer.length;
+    const sampleRate = buffer.sampleRate;
+    const numberOfChannels = buffer.numberOfChannels;
+    const arrayBuffer = new ArrayBuffer(44 + length * numberOfChannels * 2);
+    const view = new DataView(arrayBuffer);
+
+    // Write WAV header
+    const writeString = (offset: number, string: string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+
+    writeString(0, "RIFF");
+    view.setUint32(4, 36 + length * numberOfChannels * 2, true);
+    writeString(8, "WAVE");
+    writeString(12, "fmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, numberOfChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * numberOfChannels * 2, true);
+    view.setUint16(32, numberOfChannels * 2, true);
+    view.setUint16(34, 16, true);
+    writeString(36, "data");
+    view.setUint32(40, length * numberOfChannels * 2, true);
+
+    // Write audio data
+    let offset = 44;
+
+    for (let i = 0; i < length; i++) {
+      for (let channel = 0; channel < numberOfChannels; channel++) {
+        const sample = Math.max(
+          -1,
+          Math.min(1, buffer.getChannelData(channel)[i]),
+        );
+
+        view.setInt16(offset, sample * 0x7fff, true);
+        offset += 2;
+      }
+    }
+
+    return arrayBuffer;
+  };
+  // Debug End
+
   // Generate 8-digit UUID
   const generateUUID8 = () => {
     return Math.random().toString(36).substr(2, 8).toUpperCase();
@@ -154,6 +283,18 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
 
       if (!parsedFrame?.audio) return;
 
+      // Debug: Log audio frame details
+      const audioFrameInfo = {
+        audioLength: parsedFrame.audio.audio?.length || 0,
+        sampleRate: parsedFrame.audio.sampleRate || "unknown",
+        numChannels: parsedFrame.audio.numChannels || "unknown",
+      };
+
+      console.log(
+        `[🔧 Debug] Audio frame - Length: ${audioFrameInfo.audioLength}, Sample Rate: ${audioFrameInfo.sampleRate}, Channels: ${audioFrameInfo.numChannels}`,
+      );
+      // Debug End
+
       // Reset play time if needed
       const diffTime =
         audioContextRef.current.currentTime - lastMessageTimeRef.current;
@@ -169,6 +310,10 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
 
       audioContextRef.current.decodeAudioData(audioArray.buffer, (buffer) => {
         if (!audioContextRef.current || isMutedRef.current) return;
+
+        // Debug: Add audio chunk to recording for debugging
+        addAudioChunk(buffer);
+        // Debug End
 
         const source = new AudioBufferSourceNode(audioContextRef.current);
 
@@ -196,6 +341,10 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       console.log("[🎙️ RealtimeVoice] connected.");
       setIsConnected(true);
       setError(null);
+
+      // Debug: Start recording session when connected
+      startAudioRecording();
+      // Debug End
     });
 
     ws.addEventListener("message", handleWebSocketMessage);
@@ -204,6 +353,10 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       console.log("[👋 RealtimeVoice] disconnected.");
       setIsConnected(false);
       stopAudio();
+
+      // Debug: Save recorded audio when disconnected
+      saveRecordedAudio();
+      // Debug End
     });
 
     ws.addEventListener("error", (event) => {
@@ -392,6 +545,9 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   // Stop audio
   const stopAudio = async () => {
     try {
+      // Debug: Save recorded audio before stopping
+      saveRecordedAudio();
+      // Debug End
       setIsRecording(false);
       setIsPlaying(false);
       playTimeRef.current = 0;
@@ -462,5 +618,8 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     muteAudio,
     unmuteAudio,
     toggleMute,
+    // Debug function - can be called manually from console
+    saveCurrentRecording: saveRecordedAudio,
+    // Debug End
   };
 };

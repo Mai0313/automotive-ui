@@ -288,6 +288,10 @@ const HomeScreen: React.FC = () => {
       <DemoButtons
         currentTpmsWarning={vehicleWarnings.tpms_warning}
         locationError={errorMsg}
+        realtimeVoice={{
+          saveCurrentRecording: realtimeVoice.saveCurrentRecording,
+          isConnected: realtimeVoice.isConnected,
+        }}
         ws={wsRef.current}
       />
 

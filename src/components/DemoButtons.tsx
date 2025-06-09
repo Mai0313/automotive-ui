@@ -18,12 +18,17 @@ interface Props {
   ws: WebSocket | null;
   locationError?: string | null;
   currentTpmsWarning?: boolean; // 當前數據庫中的 TPMS 警示狀態
+  realtimeVoice?: {
+    saveCurrentRecording?: () => void;
+    isConnected?: boolean;
+  };
 }
 
 const DemoButtons: React.FC<Props> = ({
   ws,
   locationError,
   currentTpmsWarning = false,
+  realtimeVoice,
 }) => {
   const [tpmsActive, setTpmsActive] = useState(currentTpmsWarning);
 
@@ -44,6 +49,15 @@ const DemoButtons: React.FC<Props> = ({
     setTpmsActive(newValue);
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ tpms_warning: newValue }));
+    }
+  };
+
+  const handleSaveAudio = () => {
+    if (realtimeVoice?.saveCurrentRecording) {
+      realtimeVoice.saveCurrentRecording();
+      console.log("[🔧 Debug] 手動觸發音頻保存");
+    } else {
+      console.warn("[🔧 Debug] 無法保存音頻：saveCurrentRecording 函數不可用");
     }
   };
 
@@ -117,6 +131,25 @@ const DemoButtons: React.FC<Props> = ({
           size={16}
         />
       </TouchableOpacity>
+
+      {/* Save Audio Button - 只在有 Realtime Voice 功能時顯示 */}
+      {realtimeVoice && Platform.OS === "web" && (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          disabled={!realtimeVoice.isConnected}
+          style={[
+            styles.container,
+            !realtimeVoice.isConnected && styles.disabledContainer,
+          ]}
+          onPress={handleSaveAudio}
+        >
+          <MaterialCommunityIcons
+            color={realtimeVoice.isConnected ? "#00ff88" : "#666666"}
+            name="content-save"
+            size={16}
+          />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -137,6 +170,9 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.6)",
     alignItems: "center",
     justifyContent: "center",
+  },
+  disabledContainer: {
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
   },
   permissionHelp: {
     position: "absolute",
