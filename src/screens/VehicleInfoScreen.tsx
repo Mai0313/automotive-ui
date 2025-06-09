@@ -4,13 +4,7 @@
 // 參考：https://docs.expo.dev/versions/latest/sdk/image-picker/  https://docs.expo.dev/versions/latest/sdk/camera/
 
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  Platform,
-} from "react-native";
+import { View, Text, Image, TouchableOpacity, Platform } from "react-native";
 import { MaterialCommunityIcons as Icon } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
@@ -84,22 +78,34 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
 
           <View style={layoutStyles.vehicleGearIndicator}>
             <Text
-              style={[layoutStyles.vehicleGearText, gear === "P" ? layoutStyles.vehicleActiveGear : null]}
+              style={[
+                layoutStyles.vehicleGearText,
+                gear === "P" ? layoutStyles.vehicleActiveGear : null,
+              ]}
             >
               P
             </Text>
             <Text
-              style={[layoutStyles.vehicleGearText, gear === "R" ? layoutStyles.vehicleActiveGear : null]}
+              style={[
+                layoutStyles.vehicleGearText,
+                gear === "R" ? layoutStyles.vehicleActiveGear : null,
+              ]}
             >
               R
             </Text>
             <Text
-              style={[layoutStyles.vehicleGearText, gear === "N" ? layoutStyles.vehicleActiveGear : null]}
+              style={[
+                layoutStyles.vehicleGearText,
+                gear === "N" ? layoutStyles.vehicleActiveGear : null,
+              ]}
             >
               N
             </Text>
             <Text
-              style={[layoutStyles.vehicleGearText, gear === "D" ? layoutStyles.vehicleActiveGear : null]}
+              style={[
+                layoutStyles.vehicleGearText,
+                gear === "D" ? layoutStyles.vehicleActiveGear : null,
+              ]}
             >
               D
             </Text>

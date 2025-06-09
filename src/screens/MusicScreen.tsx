@@ -76,7 +76,9 @@ const MusicScreen: React.FC = () => {
       <View
         style={[
           layoutStyles.musicContent,
-          isLandscape ? layoutStyles.musicContentLandscape : layoutStyles.musicContentPortrait,
+          isLandscape
+            ? layoutStyles.musicContentLandscape
+            : layoutStyles.musicContentPortrait,
         ]}
       >
         <View
@@ -88,7 +90,9 @@ const MusicScreen: React.FC = () => {
           ]}
         >
           {/* full white album art placeholder */}
-          <View style={[layoutStyles.musicAlbumArt, { backgroundColor: "#fff" }]} />
+          <View
+            style={[layoutStyles.musicAlbumArt, { backgroundColor: "#fff" }]}
+          />
         </View>
         <View
           style={[
@@ -127,7 +131,10 @@ const MusicScreen: React.FC = () => {
 
           {/* Playback Controls */}
           <View
-            style={[layoutStyles.musicControls, isLandscape && layoutStyles.musicControlsLandscape]}
+            style={[
+              layoutStyles.musicControls,
+              isLandscape && layoutStyles.musicControlsLandscape,
+            ]}
           >
             <TouchableOpacity style={layoutStyles.musicControlButton}>
               <MaterialIcons

@@ -135,9 +135,9 @@ export const layoutStyles = StyleSheet.create({
   },
 
   // === MusicScreen 樣式 ===
-  musicStatusInfo: { 
-    color: "#fff", 
-    fontSize: 16 
+  musicStatusInfo: {
+    color: "#fff",
+    fontSize: 16,
   },
   musicContainer: {
     flex: 1,

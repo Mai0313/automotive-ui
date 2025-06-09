@@ -122,7 +122,9 @@ const ClimateScreen: React.FC = () => {
                 key={i}
                 style={[
                   layoutStyles.climateFanSpeedDot,
-                  i < fanSpeed ? layoutStyles.climateActiveDot : layoutStyles.climateInactiveDot,
+                  i < fanSpeed
+                    ? layoutStyles.climateActiveDot
+                    : layoutStyles.climateInactiveDot,
                 ]}
               />
             ))}

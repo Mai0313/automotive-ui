@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity, Platform } from "react-native";
+import { View, TouchableOpacity, Platform } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 

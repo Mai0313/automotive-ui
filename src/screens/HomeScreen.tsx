@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useState } from "react";
 import { Platform } from "react-native"; // ensure Platform is imported
 import {
   View,
-  StyleSheet,
   TouchableOpacity,
   Animated,
   Pressable,
@@ -172,12 +171,12 @@ const HomeScreen: React.FC = () => {
   // 監聽警告燈號變化，清除已關閉警告的播報記錄
   useEffect(() => {
     const warningKeys = Object.keys(vehicleWarnings);
-    
+
     // 清除已關閉警告的播報記錄
     setSpokenWarnings((prev) => {
       const updated = { ...prev };
       let hasChanges = false;
-      
+
       warningKeys.forEach((key) => {
         // 如果警告燈號變成false，且之前有播報記錄，則清除記錄
         if (!vehicleWarnings[key] && prev[key]) {
@@ -186,7 +185,7 @@ const HomeScreen: React.FC = () => {
           console.log(`🔄 [警告清除] ${key} 燈號關閉，清除播報記錄`);
         }
       });
-      
+
       return hasChanges ? updated : prev;
     });
   }, [vehicleWarnings]);
@@ -256,7 +255,13 @@ const HomeScreen: React.FC = () => {
         setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
       }
     })();
-  }, [vehicleWarnings, spokenWarnings, isSpeaking, mapPreviewLocation, sendBroadcastMessage]);
+  }, [
+    vehicleWarnings,
+    spokenWarnings,
+    isSpeaking,
+    mapPreviewLocation,
+    sendBroadcastMessage,
+  ]);
 
   if (errorMsg) {
     console.error("Error getting location:", errorMsg);
@@ -436,7 +441,10 @@ const HomeScreen: React.FC = () => {
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={[layoutStyles.homeTempTextWrap, !isAC && layoutStyles.homeTempOff]}
+            style={[
+              layoutStyles.homeTempTextWrap,
+              !isAC && layoutStyles.homeTempOff,
+            ]}
             onPress={toggleAC}
           >
             {isAC ? (
