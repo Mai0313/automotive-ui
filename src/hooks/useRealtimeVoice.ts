@@ -40,10 +40,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
         audioQuality: 96,
       },
     },
-    (status) => {
-      // Handle recording status updates if needed
-      console.log("Recording status:", status);
-    },
+    // Removed frequent status logging to reduce console noise
   );
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
@@ -111,7 +108,10 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       if (typeof event.data === "string") {
         const jsonData = JSON.parse(event.data);
 
-        console.log("Received JSON:", jsonData);
+        // Only log non-routine JSON messages
+        if (jsonData.type && jsonData.type !== "heartbeat") {
+          console.log("Received JSON:", jsonData);
+        }
 
         return;
       }
@@ -148,6 +148,8 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
         });
         activeSources.current = [];
         playTimeRef.current = 0;
+        // Only log significant interrupts, not routine ones
+        console.log("Audio interrupted by text signal");
       }
 
       if (!parsedFrame?.audio) return;
@@ -191,7 +193,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     wsRef.current = ws;
 
     ws.addEventListener("open", () => {
-      console.log("WebSocket connection established");
+      console.log("[🎙️ RealtimeVoice] connected.");
       setIsConnected(true);
       setError(null);
     });
@@ -199,14 +201,14 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     ws.addEventListener("message", handleWebSocketMessage);
 
     ws.addEventListener("close", (event) => {
-      console.log("WebSocket connection closed:", event.code, event.reason);
+      console.log("[👋 RealtimeVoice] disconnected.");
       setIsConnected(false);
       stopAudio();
     });
 
     ws.addEventListener("error", (event) => {
       console.error("WebSocket error:", event);
-      setError("WebSocket connection failed");
+      setError("[❌ RealtimeVoice] connection failed");
       setIsConnected(false);
     });
   };
@@ -319,7 +321,13 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       if (wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(encodedFrame);
       } else {
-        console.warn(`WebSocket not ready, state: ${wsRef.current.readyState}`);
+        // Only log WebSocket state issues occasionally to avoid spam
+        if (Math.random() < 0.01) {
+          // Log only 1% of failed attempts
+          console.warn(
+            `WebSocket not ready, state: ${wsRef.current.readyState}`,
+          );
+        }
       }
     };
 

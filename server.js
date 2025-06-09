@@ -1,5 +1,6 @@
 // server.js - WebSocket server to broadcast climate data updates from Postgres
 import http from "http";
+
 import { Client } from "pg";
 import { WebSocketServer } from "ws";
 import express from "express";

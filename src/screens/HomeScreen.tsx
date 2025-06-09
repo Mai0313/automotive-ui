@@ -152,12 +152,12 @@ const HomeScreen: React.FC = () => {
   useEffect(() => {
     const wsUrl = getWebSocketUrl();
 
-    console.log("[Home WS] connecting to", wsUrl);
+    console.log("📝 Database connecting to", wsUrl);
     const ws = new WebSocket(wsUrl);
 
     wsRef.current = ws;
     ws.onopen = () => {
-      console.log("[Home WS] connected");
+      console.log("📝 Database connected");
       ws.send(JSON.stringify({ action: "get_state" }));
     };
     ws.onmessage = (event) => {
@@ -172,11 +172,11 @@ const HomeScreen: React.FC = () => {
           }
         });
       } catch (err) {
-        console.error("[Home WS] parse error", err);
+        console.error("❌ Database parsing error", err);
       }
     };
     ws.onerror = (err) => {
-      console.error("[Home WS] error", err);
+      console.error("❌ Database connection error", err);
       // Fetch fallback
       fetch(`${getHttpServerUrl()}/state`)
         .then((res) => res.json())
@@ -190,9 +190,9 @@ const HomeScreen: React.FC = () => {
             }
           });
         })
-        .catch((fetchErr) => console.error("[Home HTTP] error", fetchErr));
+        .catch((fetchErr) => console.error("❌ Database HTTP error", fetchErr));
     };
-    ws.onclose = () => console.log("[Home WS] closed");
+    ws.onclose = () => console.log("🔄 Database connection closed");
 
     return () => {
       ws.close();
