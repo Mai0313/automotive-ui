@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
 import commonStyles from "../styles/commonStyles";
 import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
+import { layoutStyles } from "../styles/layoutStyles";
 
 const AIAssistantScreen: React.FC = () => {
   const responsiveScale = useResponsiveStyles();
@@ -37,13 +38,13 @@ const AIAssistantScreen: React.FC = () => {
   const { icon, color } = getIconAndColor();
 
   return (
-    <SafeAreaView style={[commonStyles.container, styles.container]}>
-      <View style={styles.content}>
+    <SafeAreaView style={[commonStyles.container, layoutStyles.aiContainer]}>
+      <View style={layoutStyles.aiContent}>
         {/* 主要控制按鈕 */}
         <TouchableOpacity
           disabled={!realtimeVoice.isConnected}
           style={[
-            styles.primaryButton,
+            layoutStyles.aiPrimaryButton,
             {
               width: responsiveScale.buttonSize * 4,
               height: responsiveScale.buttonSize * 4,
@@ -62,30 +63,5 @@ const AIAssistantScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  content: {
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
-  },
-  primaryButton: {
-    backgroundColor: "#2c3e50",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-});
 
 export default AIAssistantScreen;

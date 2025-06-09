@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import commonStyles from "../styles/commonStyles";
 import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
+import { layoutStyles } from "../styles/layoutStyles";
 
 // Slider fallback for web with proper HTML attributes
 const Slider =
@@ -74,61 +75,61 @@ const MusicScreen: React.FC = () => {
       {/* Main Content: responsive to orientation */}
       <View
         style={[
-          styles.content,
-          isLandscape ? styles.contentLandscape : styles.contentPortrait,
+          layoutStyles.musicContent,
+          isLandscape ? layoutStyles.musicContentLandscape : layoutStyles.musicContentPortrait,
         ]}
       >
         <View
           style={[
-            styles.albumContainer,
+            layoutStyles.musicAlbumContainer,
             isLandscape
-              ? styles.albumContainerLandscape
-              : styles.albumContainerPortrait,
+              ? layoutStyles.musicAlbumContainerLandscape
+              : layoutStyles.musicAlbumContainerPortrait,
           ]}
         >
           {/* full white album art placeholder */}
-          <View style={[styles.albumArt, { backgroundColor: "#fff" }]} />
+          <View style={[layoutStyles.musicAlbumArt, { backgroundColor: "#fff" }]} />
         </View>
         <View
           style={[
-            styles.rightContainer,
+            layoutStyles.musicRightContainer,
             isLandscape
-              ? styles.rightContainerLandscape
-              : styles.rightContainerPortrait,
+              ? layoutStyles.musicRightContainerLandscape
+              : layoutStyles.musicRightContainerPortrait,
           ]}
         >
           {/* Song Info */}
-          <View style={styles.infoContainer}>
-            <Text style={styles.songTitle}>{songTitle}</Text>
-            <Text style={styles.artistName}>{artistName}</Text>
-            <Text style={styles.albumName}>{albumName}</Text>
+          <View style={layoutStyles.musicInfoContainer}>
+            <Text style={layoutStyles.musicSongTitle}>{songTitle}</Text>
+            <Text style={layoutStyles.musicArtistName}>{artistName}</Text>
+            <Text style={layoutStyles.musicAlbumName}>{albumName}</Text>
           </View>
 
           {/* Playback Progress */}
           <View
             style={[
-              styles.progressContainer,
-              isLandscape && styles.progressContainerLandscape,
+              layoutStyles.musicProgressContainer,
+              isLandscape && layoutStyles.musicProgressContainerLandscape,
             ]}
           >
             <Slider
-              style={styles.slider}
+              style={layoutStyles.musicSlider}
               value={progress}
               onValueChange={(value: number) => setProgress(value)}
             />
-            <View style={styles.timeContainer}>
-              <Text style={styles.timeText}>
+            <View style={layoutStyles.musicTimeContainer}>
+              <Text style={layoutStyles.musicTimeText}>
                 {formatTime(progress * totalSecondsAll)}
               </Text>
-              <Text style={styles.timeText}>{totalTime}</Text>
+              <Text style={layoutStyles.musicTimeText}>{totalTime}</Text>
             </View>
           </View>
 
           {/* Playback Controls */}
           <View
-            style={[styles.controls, isLandscape && styles.controlsLandscape]}
+            style={[layoutStyles.musicControls, isLandscape && layoutStyles.musicControlsLandscape]}
           >
-            <TouchableOpacity style={styles.controlButton}>
+            <TouchableOpacity style={layoutStyles.musicControlButton}>
               <MaterialIcons
                 color="#fff"
                 name="skip-previous"
@@ -137,7 +138,7 @@ const MusicScreen: React.FC = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.playButton}
+              style={layoutStyles.musicPlayButton}
               onPress={togglePlayback}
             >
               <MaterialIcons
@@ -147,7 +148,7 @@ const MusicScreen: React.FC = () => {
               />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.controlButton}>
+            <TouchableOpacity style={layoutStyles.musicControlButton}>
               <MaterialIcons
                 color="#fff"
                 name="skip-next"
@@ -159,11 +160,11 @@ const MusicScreen: React.FC = () => {
           {/* Additional Controls */}
           <View
             style={[
-              styles.additionalControls,
-              isLandscape && styles.additionalControlsLandscape,
+              layoutStyles.musicAdditionalControls,
+              isLandscape && layoutStyles.musicAdditionalControlsLandscape,
             ]}
           >
-            <TouchableOpacity style={styles.additionalControlButton}>
+            <TouchableOpacity style={layoutStyles.musicAdditionalControlButton}>
               <MaterialIcons
                 color="#888"
                 name="shuffle"
@@ -171,7 +172,7 @@ const MusicScreen: React.FC = () => {
               />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.additionalControlButton}>
+            <TouchableOpacity style={layoutStyles.musicAdditionalControlButton}>
               <MaterialIcons
                 color="#888"
                 name="repeat"
@@ -179,7 +180,7 @@ const MusicScreen: React.FC = () => {
               />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.additionalControlButton}>
+            <TouchableOpacity style={layoutStyles.musicAdditionalControlButton}>
               <MaterialIcons
                 color="#888"
                 name="queue-music"
@@ -187,7 +188,7 @@ const MusicScreen: React.FC = () => {
               />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.additionalControlButton}>
+            <TouchableOpacity style={layoutStyles.musicAdditionalControlButton}>
               <MaterialIcons
                 color="#888"
                 name="devices"
@@ -210,175 +211,5 @@ const MusicScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  statusInfo: { color: "#fff", fontSize: 16 },
-  container: {
-    flex: 1,
-    width: "100%", // full width for web responsiveness
-    backgroundColor: "#000",
-  },
-  statusBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  statusText: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  statusRight: {
-    // Added style for statusRight
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  content: {
-    flex: 1,
-    width: "100%",
-    alignItems: "center",
-    paddingHorizontal: 0, // no horizontal padding in portrait for center alignment
-    paddingTop: 20,
-  },
-  contentLandscape: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    paddingHorizontal: 20, // margin from edges
-  },
-  contentPortrait: {
-    paddingHorizontal: 0, // override for portrait
-    maxWidth: 600, // limit width in portrait for centering
-    alignSelf: "center", // center container
-  },
-  albumContainer: {
-    // width is overridden per orientation
-    maxWidth: 400, // limit size on wide displays
-    aspectRatio: 1,
-    marginBottom: 30,
-    boxShadow: "0px 2px 10px rgba(52, 152, 219, 0.3)",
-    elevation: 5,
-  },
-  albumContainerPortrait: {
-    width: "80%", // wider in portrait
-    alignSelf: "center", // center album cover horizontally
-  },
-  albumContainerLandscape: {
-    width: "40%", // occupy left 40%
-    marginLeft: 20, // from left edge
-  },
-  albumArt: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 8,
-  },
-  rightContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center", // center in portrait
-    paddingLeft: 0, // remove left offset
-  },
-  rightContainerPortrait: {
-    width: "80%", // match album width in portrait
-    alignSelf: "center", // center controls/info
-  },
-  rightContainerLandscape: {
-    width: "60%", // occupy right 60% (from album edge to screen edge)
-    alignItems: "center", // center content horizontally in landscape
-  },
-  infoContainer: {
-    alignItems: "center",
-    marginBottom: 30,
-    width: "100%",
-  },
-  songTitle: {
-    color: "#fff",
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  artistName: {
-    color: "#ddd",
-    fontSize: 22,
-    marginBottom: 5,
-  },
-  albumName: {
-    color: "#999",
-    fontSize: 18,
-  },
-  progressContainer: {
-    width: "100%",
-    marginBottom: 30,
-  },
-  progressContainerLandscape: {
-    width: "80%",
-    alignSelf: "center",
-    marginVertical: 20,
-  },
-  slider: {
-    width: "100%",
-    height: 40,
-  },
-  timeContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    paddingHorizontal: 15,
-  },
-  timeText: {
-    color: "#aaa",
-    fontSize: 14,
-  },
-  controls: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 30,
-    width: "80%",
-  },
-  controlsLandscape: {
-    width: "100%", // full width of right container
-    justifyContent: "space-around",
-    marginVertical: 20,
-  },
-  controlButton: {
-    paddingHorizontal: 20,
-  },
-  playButton: {
-    backgroundColor: "rgba(52, 152, 219, 0.2)",
-    borderRadius: 50,
-    width: 100,
-    height: 100,
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: 20,
-  },
-  additionalControls: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "80%",
-    marginBottom: 20,
-  },
-  additionalControlsLandscape: {
-    width: "100%", // full width of right container
-    justifyContent: "space-around",
-    marginBottom: 20,
-  },
-  additionalControlButton: {
-    padding: 15,
-  },
-  overlayCard: {
-    backgroundColor: "rgba(0,0,0,0.8)",
-    borderRadius: 20,
-    margin: 20,
-    padding: 0,
-    justifyContent: "center",
-    alignItems: "center",
-    boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.5)",
-    elevation: 10,
-  },
-});
 
 export default MusicScreen;

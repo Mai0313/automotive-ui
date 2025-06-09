@@ -2,7 +2,6 @@ import React from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   Platform,
   StyleSheet as RNStyleSheet,
@@ -12,6 +11,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import useClimateSettings from "../hooks/useClimateSettings";
 import commonStyles from "../styles/commonStyles";
+import { layoutStyles } from "../styles/layoutStyles";
 import ControlButton from "../components/ControlButton";
 import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 
@@ -66,7 +66,7 @@ const ClimateScreen: React.FC = () => {
   return (
     <SafeAreaView style={commonStyles.container}>
       {/* Main Climate Controls */}
-      <View style={styles.controlsContainer}>
+      <View style={layoutStyles.climateControlsContainer}>
         {/* AC On/Off Toggle */}
         <ControlButton
           active={acOn}
@@ -76,17 +76,17 @@ const ClimateScreen: React.FC = () => {
         />
 
         {/* Fan Speed Control */}
-        <View style={styles.fanControl}>
+        <View style={layoutStyles.climateFanControl}>
           <Text
             style={[
-              styles.controlLabel,
+              layoutStyles.climateControlLabel,
               { fontSize: responsiveScale.mediumFontSize },
             ]}
           >
             風速控制
           </Text>
 
-          <View style={styles.fanSliderContainer}>
+          <View style={layoutStyles.climateFanSliderContainer}>
             <TouchableOpacity onPress={decreaseFan}>
               <MaterialCommunityIcons
                 color="#aaa"
@@ -101,7 +101,7 @@ const ClimateScreen: React.FC = () => {
               minimumTrackTintColor="#3498db"
               minimumValue={0}
               step={1}
-              style={styles.slider}
+              style={layoutStyles.climateSlider}
               thumbTintColor="#fff"
               value={fanSpeed}
               onValueChange={setFanSpeed}
@@ -116,13 +116,13 @@ const ClimateScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.fanSpeedIndicator}>
+          <View style={layoutStyles.climateFanSpeedIndicator}>
             {[...Array(5)].map((_, i) => (
               <View
                 key={i}
                 style={[
-                  styles.fanSpeedDot,
-                  i < fanSpeed ? styles.activeDot : styles.inactiveDot,
+                  layoutStyles.climateFanSpeedDot,
+                  i < fanSpeed ? layoutStyles.climateActiveDot : layoutStyles.climateInactiveDot,
                 ]}
               />
             ))}
@@ -130,7 +130,7 @@ const ClimateScreen: React.FC = () => {
         </View>
 
         {/* Climate Controls */}
-        <View style={styles.climateControls}>
+        <View style={layoutStyles.climateClimateControls}>
           <ControlButton
             active={autoOn}
             iconName="auto-fix"
@@ -152,22 +152,22 @@ const ClimateScreen: React.FC = () => {
         </View>
 
         {/* Air Flow Direction */}
-        <View style={styles.airFlowContainer}>
+        <View style={layoutStyles.climateAirFlowContainer}>
           <Text
             style={[
-              styles.controlLabel,
+              layoutStyles.climateControlLabel,
               { fontSize: responsiveScale.mediumFontSize },
             ]}
           >
             出風方向
           </Text>
 
-          <View style={styles.airFlowButtons}>
+          <View style={layoutStyles.climateAirFlowButtons}>
             <ControlButton
               active={airFace}
               iconName="emoticon-outline"
               label="面部"
-              style={styles.airFlowButton}
+              style={layoutStyles.climateAirFlowButton}
               textStyle={commonStyles.controlText}
               onPress={toggleAirFace}
             />
@@ -176,7 +176,7 @@ const ClimateScreen: React.FC = () => {
               active={airMiddle}
               iconName="car-seat"
               label="中間"
-              style={styles.airFlowButton}
+              style={layoutStyles.climateAirFlowButton}
               textStyle={commonStyles.controlText}
               onPress={toggleAirMiddle}
             />
@@ -185,7 +185,7 @@ const ClimateScreen: React.FC = () => {
               active={airFoot}
               iconName="shoe-print"
               label="腳部"
-              style={styles.airFlowButton}
+              style={layoutStyles.climateAirFlowButton}
               textStyle={commonStyles.controlText}
               onPress={toggleAirFoot}
             />
@@ -198,87 +198,5 @@ const ClimateScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  controlsContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  tempDisplay: {
-    alignItems: "center",
-    marginBottom: 40,
-  },
-  tempText: {
-    color: "#fff",
-    fontSize: 80,
-    fontWeight: "300",
-  },
-  tempControls: {
-    flexDirection: "row",
-    marginTop: 20,
-  },
-  tempButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#333",
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: 20,
-  },
-  controlLabel: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 15,
-  },
-  fanControl: {
-    marginBottom: 30,
-  },
-  fanSliderContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  slider: {
-    flex: 1,
-    height: 40,
-    marginHorizontal: 10,
-  },
-  fanSpeedIndicator: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10,
-  },
-  fanSpeedDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  activeDot: {
-    backgroundColor: "#3498db",
-  },
-  inactiveDot: {
-    backgroundColor: "#333",
-  },
-  climateControls: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 30,
-  },
-  airFlowContainer: {
-    marginBottom: 30,
-  },
-  airFlowButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  airFlowButton: {
-    alignItems: "center",
-    padding: 15,
-    borderRadius: 10,
-    width: "30%",
-  },
-});
 
 export default ClimateScreen;

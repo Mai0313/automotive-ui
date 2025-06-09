@@ -20,6 +20,7 @@ import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
 import { useBroadcastMessage } from "../hooks/useBroadcastMessage";
 import { getWebSocketUrl, getHttpServerUrl } from "../utils/env";
+import { layoutStyles } from "../styles/layoutStyles";
 
 import { warningIconMap } from "./VehicleInfoScreen";
 import VehicleInfoScreen from "./VehicleInfoScreen";
@@ -320,7 +321,7 @@ const HomeScreen: React.FC = () => {
 
       {/* Notification icon for first active warning */}
       {activeWarningKeys.length > 0 && (
-        <View style={styles.notificationIcon}>
+        <View style={layoutStyles.homeNotificationIcon}>
           <MaterialCommunityIcons
             color="#e74c3c"
             name={
@@ -334,7 +335,7 @@ const HomeScreen: React.FC = () => {
         </View>
       )}
       {/* Map 絕對鋪滿全畫面 */}
-      <Animated.View style={[styles.mapContainer]}>
+      <Animated.View style={[layoutStyles.homeMapContainer]}>
         <Pressable style={{ flex: 1 }} onPress={() => setActiveOverlay(null)}>
           <MapView initialRegion={mapPreviewLocation} style={{ flex: 1 }} />
         </Pressable>
@@ -344,14 +345,14 @@ const HomeScreen: React.FC = () => {
       {!fullScreenOverlay && activeOverlay && (
         <Animated.View
           {...panResponder.panHandlers}
-          style={[styles.dragHandle, { left: overlayWidth - 10 }]}
+          style={[layoutStyles.homeDragHandle, { left: overlayWidth - 10 }]}
         />
       )}
 
       {/* Animated overlay panel */}
       <Animated.View
         style={[
-          styles.overlayCard,
+          layoutStyles.homeOverlayCard,
           {
             width: overlayWidth,
             opacity: anim,
@@ -364,7 +365,7 @@ const HomeScreen: React.FC = () => {
           style={{ flex: 1, pointerEvents: activeOverlay ? "auto" : "none" }}
         >
           {/* Header with close and expand */}
-          <View style={styles.overlayHeader}>
+          <View style={layoutStyles.homeOverlayHeader}>
             <TouchableOpacity onPress={() => setActiveOverlay(null)}>
               <MaterialIcons
                 color="#fff"
@@ -392,26 +393,26 @@ const HomeScreen: React.FC = () => {
       </Animated.View>
 
       {/* Bottom control bar fixed at bottom */}
-      <View style={styles.bottomBar}>
+      <View style={layoutStyles.homeBottomBar}>
         {/* 車輛 icon */}
         <TouchableOpacity
-          style={styles.bottomBarBtn}
+          style={layoutStyles.homeBottomBarBtn}
           onPress={() => handleOverlayPress("vehicle")}
         >
-          <View style={styles.iconWithBadge}>
+          <View style={layoutStyles.homeIconWithBadge}>
             <MaterialCommunityIcons
               color="#fff"
               name="car"
               size={responsiveScale.largeIconSize}
             />
             {Object.values(vehicleWarnings).some((v) => v) && (
-              <View style={styles.badge} />
+              <View style={layoutStyles.homeBadge} />
             )}
           </View>
         </TouchableOpacity>
         {/* AC icon */}
         <TouchableOpacity
-          style={styles.bottomBarBtn}
+          style={layoutStyles.homeBottomBarBtn}
           onPress={() => handleOverlayPress("climate")}
         >
           <MaterialCommunityIcons
@@ -421,10 +422,10 @@ const HomeScreen: React.FC = () => {
           />
         </TouchableOpacity>
         {/* 溫度調整區（顯示溫度本身為 AC 開關按鈕，關閉時顯示紅色圓圈+icon） */}
-        <View style={styles.tempBarWrap}>
+        <View style={layoutStyles.homeTempBarWrap}>
           {isAC && (
             <TouchableOpacity
-              style={styles.bottomBarBtn}
+              style={layoutStyles.homeBottomBarBtn}
               onPress={increaseTemp}
             >
               <MaterialCommunityIcons
@@ -435,20 +436,20 @@ const HomeScreen: React.FC = () => {
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={[styles.tempTextWrap, !isAC && styles.tempOff]}
+            style={[layoutStyles.homeTempTextWrap, !isAC && layoutStyles.homeTempOff]}
             onPress={toggleAC}
           >
             {isAC ? (
               <Animated.Text
                 style={[
-                  styles.tempText,
+                  layoutStyles.homeTempText,
                   { fontSize: responsiveScale.mediumFontSize },
                 ]}
               >
                 {temperature}°C
               </Animated.Text>
             ) : (
-              <View style={styles.tempOffContent}>
+              <View style={layoutStyles.homeTempOffContent}>
                 <MaterialCommunityIcons
                   color="#e74c3c"
                   name="power"
@@ -460,7 +461,7 @@ const HomeScreen: React.FC = () => {
           </TouchableOpacity>
           {isAC && (
             <TouchableOpacity
-              style={styles.bottomBarBtn}
+              style={layoutStyles.homeBottomBarBtn}
               onPress={decreaseTemp}
             >
               <MaterialCommunityIcons
@@ -473,7 +474,7 @@ const HomeScreen: React.FC = () => {
         </View>
         {/* 音樂 icon */}
         <TouchableOpacity
-          style={styles.bottomBarBtn}
+          style={layoutStyles.homeBottomBarBtn}
           onPress={() => handleOverlayPress("music")}
         >
           <MaterialIcons
@@ -484,7 +485,7 @@ const HomeScreen: React.FC = () => {
         </TouchableOpacity>
         {/* 語音控制 icon */}
         <TouchableOpacity
-          style={styles.bottomBarBtn}
+          style={layoutStyles.homeBottomBarBtn}
           onPress={() => {
             if (realtimeVoice.isConnected) {
               realtimeVoice.toggleMute();
@@ -501,139 +502,5 @@ const HomeScreen: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  mapContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: undefined,
-    height: undefined,
-    backgroundColor: "transparent",
-  },
-  notificationIcon: {
-    position: "absolute",
-    top: Platform.OS === "web" ? 40 : 10,
-    right: 20,
-    zIndex: 150,
-  },
-  voiceStatusIcon: {
-    position: "absolute",
-    top: Platform.OS === "web" ? 40 : 10,
-    left: 20,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 150,
-  },
-  overlayCard: {
-    position: "absolute",
-    // float between status bar and bottom buttons
-    top: 80, // 原本 60，往下縮小
-    bottom: 120, // 原本 100，往上縮小
-    backgroundColor: "rgba(0,0,0,0.8)",
-    borderRadius: 20,
-    boxShadow: "0 4px 24px rgba(0,0,0,0.5)", // web only, RN web 支援
-    overflow: "hidden",
-  },
-  overlayHeader: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    right: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    zIndex: 10,
-  },
-  bottomBar: {
-    position: "absolute",
-    bottom: 20,
-    left: 20,
-    right: 20,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: "#121212",
-    padding: 10,
-    borderRadius: 28,
-  },
-  dragHandle: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    width: 20,
-    backgroundColor: "transparent",
-    zIndex: 5,
-  },
-  // bottomBar 內新增溫度調整區樣式
-  bottomBarBtn: {
-    backgroundColor: "transparent",
-    borderRadius: 20,
-    padding: 10,
-    marginHorizontal: 16, // 原本 6，調大間隔
-    alignItems: "center",
-    justifyContent: "center",
-    minWidth: 44,
-    minHeight: 44,
-  },
-  tempBarWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "transparent",
-    borderRadius: 20,
-    marginHorizontal: 4,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    minWidth: 220, // 固定整個溫度區寬度，避免小數點時影響按鈕位置
-    justifyContent: "center",
-  },
-  tempTextWrap: {
-    width: 64, // 改為固定寬度，避免內容變動影響布局
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "row",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 16,
-    backgroundColor: "transparent",
-    minHeight: 36,
-  },
-  tempOff: {
-    backgroundColor: "#2a0000",
-    borderColor: "#e74c3c",
-    borderWidth: 2,
-  },
-  tempOffContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tempText: {
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: "bold",
-  },
-  tempTextOff: {
-    color: "#e74c3c",
-    fontSize: 22,
-    fontWeight: "bold",
-  },
-  iconWithBadge: {
-    position: "relative",
-  },
-  badge: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#e74c3c",
-  },
-});
 
 export default HomeScreen;

@@ -133,6 +133,11 @@
   - 縮放範圍 0.6-2.0x，確保按鈕、圖標、文字在各種螢幕尺寸下保持適當比例。
   - 所有按鈕、圖標、字體、間距皆使用響應式數值，避免固定尺寸。
   - 提供 `buttonSize`、`iconSize`、`fontSize`、`padding`、`margin` 等完整的響應式屬性。
+- **集中式樣式管理**：
+  - 所有螢幕樣式已遷移至 `src/styles/layoutStyles.ts` 統一管理
+  - 採用 `screen*` 前綴命名規範：`home*`、`music*`、`vehicle*`、`climate*`、`ai*`
+  - 禁止在螢幕組件中使用本地 `StyleSheet.create()`，統一引用 `layoutStyles`
+  - 樣式變更僅需修改集中文件，便於主題切換和全域調整
 
 ---
 
@@ -163,7 +168,9 @@
 assets/            # 圖片、icons
 src/
   components/      # 共用元件
-  screens/         # 各功能頁
+  screens/         # 各功能頁（已移除本地 StyleSheet，統一使用 layoutStyles）
+  styles/          # 集中式樣式管理（layoutStyles.ts 為主要樣式文件）
+  hooks/           # 自定義 Hook
   navigation/      # 導航設定
   types/           # 型別定義
 App.tsx            # 專案入口
@@ -274,6 +281,15 @@ App.tsx            # 專案入口
 
 ## 更新紀錄
 
+### 📅 2025-06-09
+
+#### 🎨 StyleSheet 集中管理架構優化
+- **完成 StyleSheet 集中化遷移**：將所有螢幕組件（HomeScreen、MusicScreen、AIAssistantScreen、VehicleInfoScreen、ClimateScreen）的本地樣式定義完全遷移至 `src/styles/layoutStyles.ts`
+- **樣式命名規範標準化**：採用 `screen*` 前綴系統：`home*`、`music*`、`vehicle*`、`climate*`、`ai*`，總計 100+ 樣式定義統一管理
+- **清理冗餘代碼**：移除所有螢幕文件中的 `StyleSheet.create()` 區塊和 StyleSheet import，確保零本地樣式定義
+- **樣式可維護性大幅提升**：全面集中管理使主題切換、響應式調整、全域樣式變更變得極其便利
+- **架構一致性**：統一使用 `import { layoutStyles } from "../styles/layoutStyles"` 和 `layoutStyles.*` 引用模式
+
 ### 🏗️ 架構重大變更
 
 - **Broadcast API 架構遷移**：完全移除 OpenAI 環境變數，統一後端 AI 處理
@@ -293,3 +309,11 @@ App.tsx            # 專案入口
 - **權限管理優化**：Chrome flags 設定指引與錯誤診斷
 - **語音優先設計**：AI 助理預設語音模式，適合車載環境
 - **即時同步**：WebSocket/REST fallback，空調溫度狀態實時更新
+- **樣式集中管理**：所有 StyleSheet 從各螢幕文件遷移至 `src/styles/layoutStyles.ts` 統一管理
+
+### 🔧 代碼架構優化
+
+- **StyleSheet 集中化**：將所有螢幕組件的本地樣式定義遷移至集中式樣式管理
+- **命名規範標準化**：採用 `screen*` 前綴命名（如 `home*`、`music*`、`vehicle*`、`climate*`、`ai*`）
+- **樣式可維護性提升**：100+ 樣式定義統一管理，便於主題切換和響應式調整
+- **清理冗餘代碼**：移除所有螢幕文件中的 `StyleSheet.create()` 區塊和本地樣式引用

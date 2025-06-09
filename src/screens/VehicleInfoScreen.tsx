@@ -7,7 +7,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   Image,
   TouchableOpacity,
   Platform,
@@ -18,6 +17,7 @@ import * as ImagePicker from "expo-image-picker";
 
 import commonStyles from "../styles/commonStyles";
 import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
+import { layoutStyles } from "../styles/layoutStyles";
 
 // mapping from warning keys to icon names
 export const warningIconMap: Record<string, string> = {
@@ -76,30 +76,30 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
   return (
     <SafeAreaView style={commonStyles.container}>
       {/* Main Content */}
-      <View style={styles.content}>
+      <View style={layoutStyles.vehicleContent}>
         {/* Main Speed Display */}
-        <View style={styles.speedContainer}>
-          <Text style={styles.speedText}>{speed}</Text>
-          <Text style={styles.unitText}>MPH</Text>
+        <View style={layoutStyles.vehicleSpeedContainer}>
+          <Text style={layoutStyles.vehicleSpeedText}>{speed}</Text>
+          <Text style={layoutStyles.vehicleUnitText}>MPH</Text>
 
-          <View style={styles.gearIndicator}>
+          <View style={layoutStyles.vehicleGearIndicator}>
             <Text
-              style={[styles.gearText, gear === "P" ? styles.activeGear : null]}
+              style={[layoutStyles.vehicleGearText, gear === "P" ? layoutStyles.vehicleActiveGear : null]}
             >
               P
             </Text>
             <Text
-              style={[styles.gearText, gear === "R" ? styles.activeGear : null]}
+              style={[layoutStyles.vehicleGearText, gear === "R" ? layoutStyles.vehicleActiveGear : null]}
             >
               R
             </Text>
             <Text
-              style={[styles.gearText, gear === "N" ? styles.activeGear : null]}
+              style={[layoutStyles.vehicleGearText, gear === "N" ? layoutStyles.vehicleActiveGear : null]}
             >
               N
             </Text>
             <Text
-              style={[styles.gearText, gear === "D" ? styles.activeGear : null]}
+              style={[layoutStyles.vehicleGearText, gear === "D" ? layoutStyles.vehicleActiveGear : null]}
             >
               D
             </Text>
@@ -107,8 +107,8 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
         </View>
 
         {/* Range & Battery Info */}
-        <View style={styles.rangeContainer}>
-          <View style={styles.batteryInfoSmall}>
+        <View style={layoutStyles.vehicleRangeContainer}>
+          <View style={layoutStyles.vehicleBatteryInfoSmall}>
             <Icon
               color="#4CAF50"
               name={`battery-${batteryLevel}`}
@@ -116,7 +116,7 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
             />
             <Text
               style={[
-                styles.rangeTextSmall,
+                layoutStyles.vehicleRangeTextSmall,
                 { fontSize: responsiveScale.smallFontSize },
               ]}
             >
@@ -126,11 +126,11 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
         </View>
 
         {/* Quick Controls */}
-        <View style={styles.quickControls}>
+        <View style={layoutStyles.vehicleQuickControls}>
           <TouchableOpacity
             style={[
-              commonStyles.controlButton,
-              lockOn && commonStyles.activeButton,
+              layoutStyles.vehicleControlButton,
+              lockOn && layoutStyles.vehicleActiveButton,
             ]}
             onPress={() => setLockOn((v) => !v)}
           >
@@ -141,8 +141,8 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
             />
             <Text
               style={[
-                commonStyles.controlText,
-                lockOn && commonStyles.activeText,
+                layoutStyles.vehicleControlText,
+                lockOn && layoutStyles.vehicleActiveText,
                 { fontSize: responsiveScale.smallFontSize },
               ]}
             >
@@ -151,8 +151,8 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={[
-              commonStyles.controlButton,
-              lightOn && commonStyles.activeButton,
+              layoutStyles.vehicleControlButton,
+              lightOn && layoutStyles.vehicleActiveButton,
             ]}
             onPress={() => setLightOn((v) => !v)}
           >
@@ -163,8 +163,8 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
             />
             <Text
               style={[
-                commonStyles.controlText,
-                lightOn && commonStyles.activeText,
+                layoutStyles.vehicleControlText,
+                lightOn && layoutStyles.vehicleActiveText,
                 { fontSize: responsiveScale.smallFontSize },
               ]}
             >
@@ -173,8 +173,8 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={[
-              commonStyles.controlButton,
-              autoDriveOn && commonStyles.activeButton,
+              layoutStyles.vehicleControlButton,
+              autoDriveOn && layoutStyles.vehicleActiveButton,
             ]}
             onPress={() => setAutoDriveOn((v) => !v)}
           >
@@ -185,8 +185,8 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
             />
             <Text
               style={[
-                commonStyles.controlText,
-                autoDriveOn && commonStyles.activeText,
+                layoutStyles.vehicleControlText,
+                autoDriveOn && layoutStyles.vehicleActiveText,
                 { fontSize: responsiveScale.smallFontSize },
               ]}
             >
@@ -230,7 +230,7 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
       </View>
       {/* 警示燈顯示 */}
       {activeWarnings.length > 0 && (
-        <View style={styles.warningBar}>
+        <View style={layoutStyles.vehicleWarningBar}>
           {activeWarnings.map(([key]) => (
             <Icon
               key={key}
@@ -242,7 +242,7 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
                 >["name"]
               }
               size={responsiveScale.largeIconSize}
-              style={styles.warningIcon}
+              style={layoutStyles.vehicleWarningIcon}
             />
           ))}
         </View>
@@ -250,129 +250,5 @@ const VehicleInfoScreen: React.FC<Props> = ({ vehicleWarnings }) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  speedContainer: {
-    alignItems: "center",
-    marginVertical: 20,
-  },
-  speedText: {
-    color: "#fff",
-    fontSize: 120,
-    fontWeight: "200", // Tesla uses a very thin font for speed
-  },
-  unitText: {
-    color: "#aaa",
-    fontSize: 24,
-    marginTop: -20,
-  },
-  gearIndicator: {
-    flexDirection: "row",
-    marginTop: 10,
-  },
-  gearText: {
-    color: "#555",
-    fontSize: 24,
-    fontWeight: "bold",
-    marginHorizontal: 10,
-  },
-  activeGear: {
-    color: "#fff",
-  },
-  rangeContainer: {
-    marginBottom: 20,
-  },
-  batteryInfoSmall: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  rangeTextSmall: {
-    color: "#fff",
-    fontSize: 15,
-    marginLeft: 8,
-    marginRight: 6,
-  },
-  batteryPercent: {
-    color: "#4CAF50",
-    fontSize: 13,
-    fontWeight: "bold",
-    marginLeft: 2,
-  },
-  vehicleVisual: {
-    alignItems: "center",
-    marginVertical: 20,
-  },
-  carImage: {
-    width: "100%",
-    height: 150,
-    resizeMode: "contain",
-  },
-  quickControls: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginVertical: 20,
-  },
-  controlButton: {
-    alignItems: "center",
-    padding: 10,
-  },
-  activeButton: {
-    backgroundColor: "rgba(52, 152, 219, 0.15)",
-  },
-  controlText: {
-    color: "#fff",
-    marginTop: 5,
-    fontSize: 14,
-  },
-  activeText: {
-    color: "#3498db",
-    fontWeight: "bold",
-  },
-  assistancePanel: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginVertical: 20,
-  },
-  assistanceButton: {
-    alignItems: "center",
-    backgroundColor: "rgba(52, 152, 219, 0.1)",
-    padding: 15,
-    borderRadius: 10,
-    width: "45%",
-  },
-  assistanceText: {
-    color: "#3498db",
-    marginTop: 5,
-    fontSize: 16,
-  },
-  topCarVisualWrap: {
-    width: "100%",
-    alignItems: "center",
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  topCarImage: {
-    width: 180,
-    height: 90,
-    opacity: 0.95,
-  },
-  warningBar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    // backgroundColor: "#111",
-    padding: 10,
-    borderRadius: 5,
-    margin: 10,
-  },
-  warningIcon: {
-    marginHorizontal: 5,
-  },
-});
 
 export default VehicleInfoScreen;
