@@ -13,7 +13,6 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { usePermissionHelp } from "../hooks/usePermissionHelp";
-import { useOpenAIStatus } from "../hooks/useOpenAIStatus";
 
 interface Props {
   ws: WebSocket | null;
@@ -33,28 +32,10 @@ const DemoButtons: React.FC<Props> = ({
     setTpmsActive(currentTpmsWarning);
   }, [currentTpmsWarning]);
 
-  // 使用 OpenAI 狀態檢測 hook
-  const { status: openAIStatus } = useOpenAIStatus();
-
-  // 收集 OpenAI 錯誤訊息
-  const openAIErrors: string[] = [];
-
-  if (!openAIStatus.configurationStatus.isConfigured) {
-    openAIErrors.push(
-      `缺少環境變數: ${openAIStatus.configurationStatus.missingVars.join(", ")}`,
-    );
-  }
-  if (
-    openAIStatus.chatCompletionStatus.tested &&
-    !openAIStatus.chatCompletionStatus.isAvailable
-  ) {
-    openAIErrors.push(`Chat API: ${openAIStatus.chatCompletionStatus.error}`);
-  }
-
   // 使用權限設定說明 hook
   const { config: helpConfig, setShowHelp } = usePermissionHelp({
     locationError,
-    openAIErrors,
+    openAIErrors: [], // 移除 OpenAI 狀態檢測，因為不再使用 chatCompletion
   });
 
   const toggleTpms = () => {

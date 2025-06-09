@@ -416,7 +416,7 @@ App.tsx            # 專案入口
     - `src/hooks/useOpenAIStatus.ts`：新增 OpenAI API 狀態檢測 Hook，自動測試 API 連線並分類錯誤
     - `src/hooks/usePermissionHelp.ts`：重構權限說明 Hook，整合 OpenAI API 狀態與 Realtime Voice 連線狀態
     - `src/components/DemoButtons.tsx`：完全重寫，使用 Hook 架構取代內聯邏輯，支援滾動式錯誤顯示面板
-    - `docs/OpenAI-Status-Detection.md`：新增詳細技術文件說明實作細節與故障排除指南
+    - `docs/OpenAI-Status-Detection.md`：新增詳細技術文件說明實作細節与故障排除指南
   - **使用者體驗改善**：
     - **即時診斷**：啟動時立即了解 API 連線狀況，無需手動測試
     - **詳細指引**：根據不同錯誤類型提供對應的解決方案
@@ -575,3 +575,19 @@ App.tsx            # 專案入口
     - 後端統一管理語音處理，前端僅需發送文字訊息到 broadcast API
     - 跨平台相容性良好，Web 和原生平台皆正常運作
     - 符合車機即時語音互動需求，延遲低且穩定性高
+- 2025-06-09: 【重大】OpenAI 環境變數完全清理：完成 Broadcast API 架構遷移
+  - **清理背景**：隨著架構從直接 OpenAI API 呼叫完全遷移至 Broadcast API + Realtime Voice，所有 OpenAI 相關環境變數已不再需要
+  - **清理內容**：
+    - 移除 `src/utils/env.ts` 中所有 OpenAI 相關函數：`getOpenAIApiKey()`、`getOpenAIBaseUrl()`、`getOpenAIModel()`、`isOpenAIConfigured()`
+    - 移除 `.env.example` 中 OpenAI 配置區塊：`EXPO_PUBLIC_OPENAI_BASE_URL`、`EXPO_PUBLIC_OPENAI_API_KEY`、`EXPO_PUBLIC_OPENAI_MODEL`
+    - 移除 `docker/.env.deploy` 中 OpenAI 配置區塊，包括 localhost:8889 和 meta-llama 模型配置
+    - 清理所有相關註解和說明文字
+  - **架構確認**：
+    - 車輛異常語音建議：前端 → `sendBroadcastMessage()` → Broadcast API → Realtime Voice 伺服器 → LLM + TTS → WebSocket 語音串流
+    - AI 助理對話：前端 → Realtime Voice WebSocket → 即時語音處理伺服器 → ASR + LLM + TTS → 即時語音回應
+    - 不再需要前端配置 OpenAI API key，所有 AI 處理皆在後端統一進行
+  - **簡化優勢**：
+    - 前端部署更簡單，無需配置 AI 相關敏感資訊
+    - 統一後端 AI 處理，便於版本控制和模型切換
+    - 減少環境變數配置複雜度，降低部署錯誤機率
+    - 符合 Serverless 和容器化部署最佳實務

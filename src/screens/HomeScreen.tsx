@@ -19,11 +19,7 @@ import useHomeClimateSettings from "../hooks/useHomeClimateSettings";
 import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
 import { useBroadcastMessage } from "../hooks/useBroadcastMessage";
-import {
-  getWebSocketUrl,
-  getHttpServerUrl,
-  isOpenAIConfigured,
-} from "../utils/env";
+import { getWebSocketUrl, getHttpServerUrl } from "../utils/env";
 
 import { warningIconMap } from "./VehicleInfoScreen";
 import VehicleInfoScreen from "./VehicleInfoScreen";
@@ -106,16 +102,6 @@ const HomeScreen: React.FC = () => {
 
     (async () => {
       try {
-        // 檢查 OpenAI 配置
-        if (!isOpenAIConfigured()) {
-          console.warn("🚫 [車輛異常播報] OpenAI 未配置，跳過語音播報功能");
-          // 標記為已播報，避免重複檢查
-          setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
-          setIsSpeaking(false);
-
-          return;
-        }
-
         // 將異常 key 轉為中文描述
         const warningNameMap: Record<string, string> = {
           tpms_warning: "Tire Pressure Abnormal",

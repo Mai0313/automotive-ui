@@ -14,23 +14,6 @@ function getRequiredEnv(key: string): string {
 }
 
 /**
- * Get optional environment variable with warning if not set
- */
-function getOptionalEnv(key: string): string | undefined {
-  const value = process.env[key];
-
-  if (!value) {
-    console.warn(
-      `⚠️  [Environment] ${key} is not configured. Related functionality may be disabled.`,
-    );
-
-    return undefined;
-  }
-
-  return value;
-}
-
-/**
  * Get current hostname for web platform
  */
 function getCurrentHostname(): string {
@@ -91,38 +74,4 @@ export function getRealtimeVoiceUrl(): string {
   const voiceUrl = getRequiredEnv("EXPO_PUBLIC_REALTIME_VOICE_URL");
 
   return replaceLocalhostWithHostname(voiceUrl);
-}
-
-// OpenAI Configuration Functions
-
-/**
- * Get OpenAI API key
- */
-export function getOpenAIApiKey(): string | undefined {
-  return getOptionalEnv("EXPO_PUBLIC_OPENAI_API_KEY");
-}
-
-/**
- * Get OpenAI base URL
- */
-export function getOpenAIBaseUrl(): string | undefined {
-  return getOptionalEnv("EXPO_PUBLIC_OPENAI_BASE_URL");
-}
-
-/**
- * Get OpenAI model name
- */
-export function getOpenAIModel(): string | undefined {
-  return getOptionalEnv("EXPO_PUBLIC_OPENAI_MODEL");
-}
-
-/**
- * Check if all required OpenAI environment variables are configured
- */
-export function isOpenAIConfigured(): boolean {
-  const apiKey = getOpenAIApiKey();
-  const baseUrl = getOpenAIBaseUrl();
-  const model = getOpenAIModel();
-
-  return !!(apiKey && baseUrl && model);
 }
