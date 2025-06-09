@@ -1,6 +1,6 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { StatusBar } from "expo-status-bar";
+import { StatusBar } from "expo-status-bar"; 
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider as PaperProvider, DefaultTheme } from "react-native-paper";
 
