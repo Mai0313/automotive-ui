@@ -39,4 +39,3 @@ yarn-error.*
 bun.lockb
 .env
 backup/
-/docs/
