@@ -33,8 +33,8 @@ const WebMapView: React.FC<MapViewProps> = ({ style, initialRegion }) => {
   }>(initialRegion || DEFAULT_CENTER);
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const contentCheckRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const contentCheckRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 設置 10 秒超時機制
   useEffect(() => {

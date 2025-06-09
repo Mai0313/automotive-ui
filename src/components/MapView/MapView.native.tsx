@@ -24,7 +24,7 @@ const NativeMapView: React.FC<MapViewProps> = ({
   ...props
 }) => {
   const [loadState, setLoadState] = useState<LoadState>("loading");
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 設置 10 秒超時機制
   useEffect(() => {

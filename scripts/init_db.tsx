@@ -252,7 +252,10 @@ async function recreateTable(): Promise<void> {
       );
     } catch (err) {
       // PostgreSQL較舊版本可能不支援COMMENT，如果這樣我們嘗試一個簡化版本
-      if (/syntax error at or near.*comment/i.test(err.message)) {
+      if (
+        err instanceof Error &&
+        /syntax error at or near.*comment/i.test(err.message)
+      ) {
         logger.warn(
           "Your PostgreSQL version doesn't support COMMENT in CREATE TABLE",
         );
@@ -278,7 +281,10 @@ async function recreateTable(): Promise<void> {
       );
     } catch (err) {
       // PostgreSQL 較舊版本可能不支持 COMMENT
-      if (/syntax error at or near.*comment/i.test(err.message)) {
+      if (
+        err instanceof Error &&
+        /syntax error at or near.*comment/i.test(err.message)
+      ) {
         logger.warn(
           "Your PostgreSQL version doesn't support COMMENT in CREATE TABLE for vehicle_info",
         );
@@ -347,7 +353,7 @@ async function recreateTable(): Promise<void> {
         [TABLE_NAME],
       );
 
-      acTableStructure.rows.forEach((col) => {
+      acTableStructure.rows.forEach((col: any) => {
         logger.result(
           `${col.column_name}: ${col.data_type}${col.is_nullable === "NO" ? " NOT NULL" : ""}${col.column_default ? ` DEFAULT ${col.column_default}` : ""}`,
         );
@@ -376,7 +382,7 @@ async function recreateTable(): Promise<void> {
         [VEHICLE_TABLE_NAME],
       );
 
-      vehicleTableStructure.rows.forEach((col) => {
+      vehicleTableStructure.rows.forEach((col: any) => {
         logger.result(
           `${col.column_name}: ${col.data_type}${col.is_nullable === "NO" ? " NOT NULL" : ""}${col.column_default ? ` DEFAULT ${col.column_default}` : ""}`,
         );
