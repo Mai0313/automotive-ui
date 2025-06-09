@@ -173,7 +173,7 @@ App.tsx            # 專案入口
   |------------------|-----------|--------|------------------------|--------------------------|
   | auto_on          | BOOLEAN   | false  | 自動開啟               | 自動（autoOn）           |
   | air_conditioning | BOOLEAN   | true   | 空調開關               | 空調（acOn）             |
-  | fan_speed        | INTEGER   | 2      | 風速等級 (0-10)        | 風速控制（fanSpeed）      |
+  | fan_speed        | INTEGER   | 2      | 風速等級 (0-5)         | 風速控制（fanSpeed）      |
   | front_defrost_on | BOOLEAN   | false  | 前擋風玻璃除霜         | 前除霜（frontDefrostOn）  |
   | rear_defrost_on  | BOOLEAN   | false  | 後擋風玻璃除霜         | 後除霜（rearDefrostOn）   |
   | airflow_head_on  | BOOLEAN   | false  | 出風至頭部             | 面部（airFace）           |
@@ -184,7 +184,7 @@ App.tsx            # 專案入口
   | updated_at       | TIMESTAMP | now()  | 最後更新時間           |                          |
 
 - 說明：
-  - fan_speed 範圍為 0~10，對應 UI 風速滑桿與指示點。
+  - fan_speed 範圍為 0~5，對應 UI 風速滑桿與指示點。
   - airflow_head_on、airflow_body_on、airflow_feet_on 對應 UI 的「面部」、「中間」、「腳部」三個出風方向按鈕，分別為 airFace、airMiddle、airFoot。
   - 溫度（temperature）欄位雖在 ac_settings table，實際顯示與調整可能於 HomeScreen 或底部溫度顯示區，ClimateScreen 目前未直接顯示溫度調整。
   - 所有狀態皆會根據 ac_settings table 的即時資料自動同步顯示與控制，並非僅溫度。
@@ -522,3 +522,16 @@ App.tsx            # 專案入口
   - **實作檔案**：
     - `public/voice-processor.js`：新增音訊緩衝邏輯
     - `src/hooks/useRealtimeVoice.ts`：新增傳輸狀態監控和 WebSocket 狀態檢查
+- 2025-06-09: 【優化】風扇控制等級調整：從10級改為5級
+  - **資料庫層級**：修改 `scripts/init_db.tsx` 中 `ac_settings` 表的 `fan_speed` 欄位檢查約束條件，從 `CHECK (fan_speed BETWEEN 0 AND 10)` 改為 `CHECK (fan_speed BETWEEN 0 AND 5)`
+  - **前端UI調整**：
+    - 修改 `src/screens/ClimateScreen.tsx` 中 Slider 元件的 `maximumValue` 從 `10` 改為 `5`
+    - 更新 Web 平台 fallback Slider 的預設 `maximumValue` 從 `10` 改為 `5`
+    - 調整風速指示點顯示，從 `[...Array(10)]` 改為 `[...Array(5)]`，現在只顯示5個指示點
+  - **邏輯控制**：修改 `src/hooks/useClimateSettings.ts` 中 `increaseFan` 函數的最大值限制，從 `Math.min(fanSpeed + 1, 10)` 改為 `Math.min(fanSpeed + 1, 5)`
+  - **文件更新**：同步更新 `.github/copilot-instructions.md` 中空調設定說明，將 fan_speed 範圍描述從 0~10 修改為 0~5
+  - **影響說明**：
+    - 資料庫會強制檢查風扇速度只能在 0-5 之間，提供更精確的控制粒度
+    - 前端滑桿和指示點相應調整，提供更清晰的視覺回饋
+    - 跨平台相容性：Web 和原生平台的滑桿都已正確更新
+    - 建議執行 `npm run init-db` 重新初始化資料庫以應用新的約束條件
