@@ -2,8 +2,8 @@
 
 # 車機 UI Demo 專案需求（React Native + TypeScript）
 
-每一次你進行功能修改/增減 請記得對應編輯這份文件 好讓其他人可以更快熟悉此專案
-開發流程: 確認需求 -> 編寫/修改程式碼 -> 確認是運行報錯 -> 修改 `.github/copilot-instructions.md` 並紀錄每一次的修改
+確認需求 -> 編寫/修改程式碼 -> 將改動更新至 `.github/copilot-instructions.md`
+`.github/copilot-instructions.md` 非常重要, 方便 Copilot 知道專案需求與上下文。
 
 ## 1. 專案目標
 
