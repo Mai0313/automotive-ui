@@ -200,7 +200,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
 
     ws.addEventListener("message", handleWebSocketMessage);
 
-    ws.addEventListener("close", (event) => {
+    ws.addEventListener("close", () => {
       console.log("[👋 RealtimeVoice] disconnected.");
       setIsConnected(false);
       stopAudio();
