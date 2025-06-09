@@ -272,16 +272,19 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       // Stop active audio if we receive text (interrupt signal)
       if (parsedFrame?.text) {
         activeSources.current.forEach((source) => {
-          source.stop();
-          console.log("Stopped active audio due to interrupt signal");
+          try { // Add try-catch for robustness
+            source.stop();
+          } catch (e) {
+            console.warn("Error stopping source on interrupt:", e);
+          }
         });
-        activeSources.current = [];
-        playTimeRef.current = 0;
+        activeSources.current = []; // Clear the array
+        playTimeRef.current = 0; // Reset play time
         // Only log significant interrupts, not routine ones
         console.log("Audio interrupted by text signal");
       }
 
-      if (!parsedFrame?.audio) return;
+      if (!parsedFrame?.audio?.audio) return; // Ensure audio data exists
 
       // Debug: Log audio frame details
       const audioFrameInfo = {
@@ -295,14 +298,18 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       );
       // Debug End
 
-      // Reset play time if needed
-      const diffTime =
-        audioContextRef.current.currentTime - lastMessageTimeRef.current;
+      const now = audioContextRef.current.currentTime;
+      const timeSinceLastMessage = now - lastMessageTimeRef.current;
 
-      if (playTimeRef.current === 0 || diffTime > 1.0) {
-        playTimeRef.current = audioContextRef.current.currentTime;
+      // Reset playTimeRef if:
+      // 1. It's the very first audio chunk (playTimeRef.current === 0).
+      // 2. The scheduled playTimeRef is significantly in the past (e.g., >100ms ago).
+      // 3. There's been a considerable pause in receiving audio (e.g., >0.5s).
+      // Add a small buffer (e.g., 0.05s) to schedule slightly in the future, accommodating decode/scheduling overhead.
+      if (playTimeRef.current === 0 || playTimeRef.current < now - 0.1 || timeSinceLastMessage > 0.5) {
+        playTimeRef.current = now + 0.05; // Schedule to start slightly in the future from now.
       }
-      lastMessageTimeRef.current = audioContextRef.current.currentTime;
+      lastMessageTimeRef.current = now;
 
       // Process audio data
       const audioVector = Array.from(parsedFrame.audio.audio);
@@ -317,12 +324,29 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
         // Debug End
 
         const source = new AudioBufferSourceNode(audioContextRef.current);
-
         source.buffer = buffer;
-        source.start(playTimeRef.current);
+
+        // Determine the actual time to schedule this buffer.
+        // It should be no earlier than the current playTimeRef, and also
+        // no earlier than the current audio context time plus a small processing buffer (e.g., 0.02s).
+        // This prevents scheduling in the past if decodeAudioData took some time.
+        const scheduleTime = Math.max(playTimeRef.current, audioContextRef.current.currentTime + 0.02);
+
         source.connect(audioContextRef.current.destination);
-        playTimeRef.current += buffer.duration;
+        source.start(scheduleTime);
+        
+        // Update playTimeRef for the *next* buffer.
+        playTimeRef.current = scheduleTime + buffer.duration;
+        
         activeSources.current.push(source);
+        // Clean up the source node from activeSources array once it has finished playing.
+        source.onended = () => {
+          activeSources.current = activeSources.current.filter(s => s !== source);
+          // Optional: console.log("[Debug] Audio source ended and removed.");
+        };
+
+      }, (decodeError) => { // Add error handling for decodeAudioData
+        console.error("Error decoding audio data:", decodeError);
       });
     } catch (err) {
       console.error("Error processing audio frame:", err);
