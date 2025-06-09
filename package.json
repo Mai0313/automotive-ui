@@ -7,7 +7,9 @@
     "android": "npx tsx scripts/init_db.tsx && expo start --android",
     "ios": "npx tsx scripts/init_db.tsx && expo start --ios",
     "web": "npx tsx scripts/init_db.tsx && expo start --web --host lan --port 8081",
+    "format": "prettier --write .",
     "lint": "eslint --fix",
+    "check": "prettier --write . && eslint --fix",
     "db": "npx tsx scripts/init_db.tsx",
     "ws": "node server.js"
   },

@@ -41,12 +41,12 @@ export default defineConfig([
       ),
     ),
     plugins: {
-      react: fixupPluginRules(react),
+      "react": fixupPluginRules(react),
       "unused-imports": unusedImports,
-      import: fixupPluginRules(_import),
+      "import": fixupPluginRules(_import),
       "@typescript-eslint": typescriptEslint,
       "jsx-a11y": fixupPluginRules(jsxA11Y),
-      prettier: fixupPluginRules(prettier),
+      "prettier": fixupPluginRules(prettier),
     },
     languageOptions: {
       globals: {
@@ -69,9 +69,9 @@ export default defineConfig([
         version: "detect",
       },
     },
-    files: ["**/*.ts", "**/*.tsx"],
+    files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
     rules: {
-      "no-console": ["warn", { "allow": ["warn", "error", "log"] }],
+      "no-console": ["warn", { allow: ["warn", "error", "log"] }],
       "react/prop-types": "off",
       "react/jsx-uses-react": "off",
       "react/react-in-jsx-scope": "off",
@@ -93,7 +93,7 @@ export default defineConfig([
       "import/order": [
         "warn",
         {
-          groups: [
+          "groups": [
             "type",
             "builtin",
             "object",
@@ -103,7 +103,7 @@ export default defineConfig([
             "sibling",
             "index",
           ],
-          pathGroups: [
+          "pathGroups": [
             {
               pattern: "~/**",
               group: "external",

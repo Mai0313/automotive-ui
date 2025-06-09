@@ -28,7 +28,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
   const audioRecorder = useAudioRecorder(
     {
       extension: ".wav",
-      sampleRate: 16000, // 固定使用 16000 Hz
+      sampleRate: 16000,
       numberOfChannels: numChannels,
       bitRate: 128000,
       android: {
@@ -272,7 +272,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
     audioContextRef.current = new (window.AudioContext ||
       (window as any).webkitAudioContext)({
       latencyHint: "interactive",
-      sampleRate: 16000, // 固定使用 16000 Hz
+      sampleRate: 16000,
     });
 
     // 載入 AudioWorklet 處理器
@@ -280,7 +280,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
 
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
-        sampleRate: 16000, // 固定使用 16000 Hz
+        sampleRate: 16000,
         channelCount: numChannels,
         autoGainControl: true,
         echoCancellation: true,
@@ -307,7 +307,7 @@ export const useRealtimeVoice = (config: RealtimeVoiceConfig = {}) => {
       const frame = frameTypeRef.current.create({
         audio: {
           audio: Array.from(pcmByteArray),
-          sampleRate: 16000, // 固定使用 16000 Hz
+          sampleRate: 16000,
           numChannels: numChannels,
         },
       });

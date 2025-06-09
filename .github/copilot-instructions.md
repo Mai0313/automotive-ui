@@ -39,6 +39,7 @@
 - **跨域智能配置**：自動偵測當前 hostname，支援網路多設備訪問（localhost → 當前 IP，Android 模擬器 → 10.0.2.2）
 
 1. **首頁**
+
    - **設計重點：**
      - 首頁背景為全螢幕互動式地圖，未來將採用 Google Navigation React 套件實現（現階段可用假資料與地圖佈局預覽）
      - 地圖四週保有黑色框線，強化車機風格
@@ -57,12 +58,15 @@
      - 色系僅黑/白/灰及極簡點綴，字體、布局及交互皆比照 Tesla 車機設計稿
 
 2. **音樂播放頁**
+
    - 播放/暫停、曲目資訊、專輯封面
 
 3. **車輛資訊頁**
+
    - 顯示速度、油量/電量、里程等（假資料）
 
 4. **空調控制頁**
+
    - 溫度調整、風量設定、模式切換
    - **即時同步功能**：透過 WebSocket/REST fallback 與資料庫即時同步所有空調狀態
    - **風扇控制**：0-5級精確控制，提供更好的使用體驗
@@ -174,10 +178,10 @@ App.tsx            # 專案入口
 
 - ac_settings table 欄位設計如下（對應 ClimateScreen.tsx 之 UI 控制）：
 
-  | 欄位名稱         | 型態      | 預設值 | 說明                   | UI 對應名稱/按鈕         |
-  |------------------|-----------|--------|------------------------|--------------------------|
-  | auto_on          | BOOLEAN   | false  | 自動開啟               | 自動（autoOn）           |
-  | air_conditioning | BOOLEAN   | true   | 空調開關               | 空調（acOn）             |
+  | 欄位名稱         | 型態      | 預設值 | 說明                   | UI 對應名稱/按鈕          |
+  | ---------------- | --------- | ------ | ---------------------- | ------------------------- |
+  | auto_on          | BOOLEAN   | false  | 自動開啟               | 自動（autoOn）            |
+  | air_conditioning | BOOLEAN   | true   | 空調開關               | 空調（acOn）              |
   | fan_speed        | INTEGER   | 2      | 風速等級 (0-5)         | 風速控制（fanSpeed）      |
   | front_defrost_on | BOOLEAN   | false  | 前擋風玻璃除霜         | 前除霜（frontDefrostOn）  |
   | rear_defrost_on  | BOOLEAN   | false  | 後擋風玻璃除霜         | 後除霜（rearDefrostOn）   |
@@ -185,8 +189,8 @@ App.tsx            # 專案入口
   | airflow_body_on  | BOOLEAN   | false  | 出風至身體             | 中間（airMiddle）         |
   | airflow_feet_on  | BOOLEAN   | true   | 出風至腳部             | 腳部（airFoot）           |
   | temperature      | FLOAT     | 22.0   | 溫度設定 (16.0~30.0°C) | 溫度顯示/調整（其他區塊） |
-  | created_at       | TIMESTAMP | now()  | 建立時間               |                          |
-  | updated_at       | TIMESTAMP | now()  | 最後更新時間           |                          |
+  | created_at       | TIMESTAMP | now()  | 建立時間               |                           |
+  | updated_at       | TIMESTAMP | now()  | 最後更新時間           |                           |
 
 - 說明：
   - fan_speed 範圍為 0~5，對應 UI 風速滑桿與指示點。
@@ -205,20 +209,20 @@ App.tsx            # 專案入口
 - 車輛警示燈號皆以 BOOLEAN 型態儲存於 vehicle_warnings table，預設值為 false，代表無異常。前端會根據這些欄位顯示對應警示 icon，並以紅色高亮。
 - 欄位說明如下：
 
-  | 欄位名稱                      | 型態    | 預設值 | Icon 名稱（MaterialCommunityIcons） | 說明（中文）           | 說明（英文）                |
-  |-------------------------------|---------|--------|--------------------------------------|------------------------|-----------------------------|
-  | engine_warning                | BOOLEAN | false  | engine                               | 引擎異常               | Engine malfunction          |
-  | oil_pressure_warning          | BOOLEAN | false  | oil-temperature                      | 機油壓力異常           | Oil pressure abnormal       |
-  | battery_warning               | BOOLEAN | false  | car-battery                          | 電瓶異常               | Battery issue               |
-  | coolant_temp_warning          | BOOLEAN | false  | thermometer                          | 冷卻液溫度過高         | Coolant temperature high    |
-  | brake_warning                 | BOOLEAN | false  | car-brake-alert                      | 煞車系統異常           | Brake system warning        |
-  | abs_warning                   | BOOLEAN | false  | car-brake-abs                        | ABS 防鎖死系統異常     | ABS system warning          |
-  | tpms_warning                  | BOOLEAN | false  | car-tire-alert                       | 胎壓異常               | Tire pressure abnormal      |
-  | airbag_warning                | BOOLEAN | false  | airbag                               | 安全氣囊異常           | Airbag warning              |
-  | low_fuel_warning              | BOOLEAN | false  | fuel                                 | 油量過低               | Low fuel                    |
-  | door_ajar_warning             | BOOLEAN | false  | door-open                            | 車門未關妥             | Door ajar                   |
-  | seat_belt_warning             | BOOLEAN | false  | seatbelt                             | 安全帶未繫上           | Seat belt unfastened        |
-  | exterior_light_failure_warning| BOOLEAN | false  | lightbulb-outline                    | 外部燈光故障           | Exterior light failure      |
+  | 欄位名稱                       | 型態    | 預設值 | Icon 名稱（MaterialCommunityIcons） | 說明（中文）       | 說明（英文）             |
+  | ------------------------------ | ------- | ------ | ----------------------------------- | ------------------ | ------------------------ |
+  | engine_warning                 | BOOLEAN | false  | engine                              | 引擎異常           | Engine malfunction       |
+  | oil_pressure_warning           | BOOLEAN | false  | oil-temperature                     | 機油壓力異常       | Oil pressure abnormal    |
+  | battery_warning                | BOOLEAN | false  | car-battery                         | 電瓶異常           | Battery issue            |
+  | coolant_temp_warning           | BOOLEAN | false  | thermometer                         | 冷卻液溫度過高     | Coolant temperature high |
+  | brake_warning                  | BOOLEAN | false  | car-brake-alert                     | 煞車系統異常       | Brake system warning     |
+  | abs_warning                    | BOOLEAN | false  | car-brake-abs                       | ABS 防鎖死系統異常 | ABS system warning       |
+  | tpms_warning                   | BOOLEAN | false  | car-tire-alert                      | 胎壓異常           | Tire pressure abnormal   |
+  | airbag_warning                 | BOOLEAN | false  | airbag                              | 安全氣囊異常       | Airbag warning           |
+  | low_fuel_warning               | BOOLEAN | false  | fuel                                | 油量過低           | Low fuel                 |
+  | door_ajar_warning              | BOOLEAN | false  | door-open                           | 車門未關妥         | Door ajar                |
+  | seat_belt_warning              | BOOLEAN | false  | seatbelt                            | 安全帶未繫上       | Seat belt unfastened     |
+  | exterior_light_failure_warning | BOOLEAN | false  | lightbulb-outline                   | 外部燈光故障       | Exterior light failure   |
 
 - 當任一欄位為 true，前端會於車輛資訊頁（VehicleInfoScreen）下方顯示對應 icon，並以紅色高亮提示駕駛注意。
 - 欄位名稱與 icon 對應請參考 src/screens/VehicleInfoScreen.tsx 的 warningIconMap。
@@ -229,11 +233,13 @@ App.tsx            # 專案入口
 ### ac_settings table 觸發器（Trigger）說明
 
 - **notify_ac_settings_update_trigger**
+
   - 角色：即時推播資料異動。
   - 用途：當 ac_settings 資料表有 INSERT 或 UPDATE 時，會呼叫 notify_ac_settings_update() function，進而用 `pg_notify` 把最新 row 的內容（JSON 格式）推送到 PostgreSQL 的通知頻道（ac_settings_update）。
   - 作用：讓 WebSocket server 能即時收到資料異動，並推播給所有前端，實現前後端即時同步。
 
 - **update_ac_settings_timestamp**
+
   - 角色：自動更新時間戳。
   - 用途：當 ac_settings 資料表有 UPDATE 時，會自動把 updated_at 欄位設為當下時間（CURRENT_TIMESTAMP）。
   - 作用：確保每次資料異動都會自動記錄最後更新時間，方便追蹤資料變動。
@@ -257,18 +263,21 @@ App.tsx            # 專案入口
 ## 更新紀錄
 
 ### 🏗️ 架構重大變更
+
 - **Broadcast API 架構遷移**：完全移除 OpenAI 環境變數，統一後端 AI 處理
 - **Realtime Voice 系統**：即時語音互動功能，Web 平台自動錄音，支援 protobuf 協議
 - **環境變數重構**：支援跨域連線與多設備訪問，智能 hostname 檢測
 - **響應式設計系統**：0.6-2.0x 縮放範圍，全面支援多設備
 
 ### ⚡ 功能優化
+
 - **風扇控制精度**：從10級調整為5級，提供更精確控制
 - **音訊緩衝優化**：減少 74% 網路請求，大幅降低延遲
 - **地圖載入優化**：10秒超時機制，自動切換默認背景
 - **語音建議功能**：LLM 動態生成建議並自動播報
 
 ### 🎨 UI/UX 改進
+
 - **權限管理優化**：Chrome flags 設定指引與錯誤診斷
 - **語音優先設計**：AI 助理預設語音模式，適合車載環境
 - **即時同步**：WebSocket/REST fallback，空調溫度狀態實時更新

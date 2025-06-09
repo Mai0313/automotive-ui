@@ -12,27 +12,30 @@ class VoiceProcessor extends AudioWorkletProcessor {
   process(inputs) {
     // inputs: [ [ Float32Array, ... ] ]
     const input = inputs[0];
+
     if (input && input[0]) {
       const inputData = input[0];
-      
+
       // 將輸入數據添加到緩衝區
       for (let i = 0; i < inputData.length; i++) {
         this.buffer[this.bufferIndex] = inputData[i];
         this.bufferIndex++;
-        
+
         // 當緩衝區滿時，發送數據並重置
         if (this.bufferIndex >= this.bufferSize) {
           // 創建副本以避免數據競爭
           const bufferCopy = new Float32Array(this.buffer);
+
           this.port.postMessage(bufferCopy);
-          
+
           // 重置緩衝區
           this.bufferIndex = 0;
         }
       }
     }
+
     return true;
   }
 }
 
-registerProcessor('voice-processor', VoiceProcessor);
+registerProcessor("voice-processor", VoiceProcessor);

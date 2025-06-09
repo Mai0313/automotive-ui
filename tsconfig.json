@@ -15,12 +15,6 @@
     },
     "typeRoots": ["./src/types", "./node_modules/@types"]
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "App.tsx"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  "exclude": ["node_modules"]
 }

@@ -21,25 +21,30 @@ An in-vehicle UI demo built from scratch using React Native and TypeScript, desi
 ## Key Features
 
 - **Home Screen**
+
   - Full-screen interactive map with a black bezel for a car-like experience.
   - Bottom control bar with icons for Vehicle Info, Climate, Music, and AI Assistant.
   - Overlay panels (cards) instead of traditional navigation—smooth slide-in/out animations and tap-to-close behavior.
   - Default vehicle status card modeled after Tesla’s center display (speed, warnings, quick actions).
 
 - **Climate Control**
+
   - Real-time temperature adjustment, fan speed control, AC toggle, auto mode, front/rear defrost, and airflow direction.
   - WebSocket-based synchronization with PostgreSQL `ac_settings` table (HTTP REST fallback).
   - Custom `useClimateSettings` and `useHomeClimateSettings` hooks encapsulate communication logic.
   - Reusable `ControlButton` component for consistent UI across controls.
 
 - **Vehicle Info**
+
   - Live warning indicators (engine, oil pressure, battery, TPMS, etc.) via WebSocket notifications.
 
 - **Music Player**
+
   - Mock playback controls with album art, track info, and progress bar.
   - Spotify embed on Web; native UI on mobile.
 
 - **AI Assistant**
+
   - Voice and text chat interface powered by OpenAI Whisper (speech-to-text), ChatGPT, and TTS (`tts-1-hd`).
   - Expo Audio + FileSystem integration for native recording/playback.
 
