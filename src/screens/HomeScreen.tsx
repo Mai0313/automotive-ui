@@ -18,11 +18,11 @@ import useCurrentLocation from "../hooks/useCurrentLocation";
 import useHomeClimateSettings from "../hooks/useHomeClimateSettings";
 import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
+import { useBroadcastMessage } from "../hooks/useBroadcastMessage";
 import {
   getWebSocketUrl,
   getHttpServerUrl,
   isOpenAIConfigured,
-  sendBroadcastMessage,
 } from "../utils/env";
 
 import { warningIconMap } from "./VehicleInfoScreen";
@@ -37,6 +37,9 @@ const HomeScreen: React.FC = () => {
   const realtimeVoice = useRealtimeVoice({
     autoStart: Platform.OS === "web", // 僅在web上自動開始
   });
+
+  // Broadcast message hook
+  const { sendMessage: sendBroadcastMessage } = useBroadcastMessage();
 
   const [activeOverlay, setActiveOverlay] = React.useState<
     "vehicle" | "music" | "climate" | null
@@ -143,7 +146,7 @@ const HomeScreen: React.FC = () => {
 
         // 使用新的 broadcast API 發送到 realtime voice
         const success = await sendBroadcastMessage(message);
-        
+
         if (success) {
           console.log("✅ [車輛異常播報] Broadcast sent successfully");
         } else {
