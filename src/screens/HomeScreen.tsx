@@ -83,72 +83,6 @@ const HomeScreen: React.FC = () => {
   // WebSocket ref
   const wsRef = useRef<WebSocket | null>(null);
 
-  // 異常燈號語音播報
-  useEffect(() => {
-    // 若正在播報則不重複
-    if (isSpeaking) return;
-
-    // 找出尚未播報且目前為 true 的異常
-    const newWarnings = Object.keys(vehicleWarnings).filter(
-      (key) => vehicleWarnings[key] && !spokenWarnings[key],
-    );
-
-    if (newWarnings.length === 0) return;
-
-    // 只播報第一個新異常
-    const warningKey = newWarnings[0];
-
-    setIsSpeaking(true);
-
-    (async () => {
-      try {
-        // 將異常 key 轉為中文描述
-        const warningNameMap: Record<string, string> = {
-          tpms_warning: "Tire Pressure Abnormal",
-          engine_warning: "Engine Warning Light On",
-          oil_pressure_warning: "Oil Pressure Abnormal",
-          battery_warning: "Battery Voltage Abnormal",
-          coolant_temp_warning: "Coolant Temperature Too High",
-          brake_warning: "Brake System Abnormal",
-          abs_warning: "ABS (Anti-lock Braking System) Abnormal",
-          airbag_warning: "Airbag System Abnormal",
-          low_fuel_warning: "Low Fuel Level",
-          door_ajar_warning: "Door Not Closed Properly",
-          seat_belt_warning: "Seat Belt Not Fastened",
-          exterior_light_failure_warning: "Exterior Light Failure",
-        };
-        const userPrompt = warningNameMap[warningKey] || warningKey;
-
-        console.log(
-          `🔊 [車輛異常播報] 檢測到異常：${userPrompt}, using Broadcast API`,
-        );
-
-        // 組合異常建議訊息
-        const message = `Vehicle anomaly detected: "${userPrompt}". Current location: ${
-          mapPreviewLocation
-            ? `Longitude ${mapPreviewLocation.longitude}, Latitude ${mapPreviewLocation.latitude}`
-            : "Unknown"
-        }. Please provide assistance and brief suggestions.`;
-
-        // 使用新的 broadcast API 發送到 realtime voice
-        const success = await sendBroadcastMessage(message);
-
-        if (success) {
-          console.log("✅ [車輛異常播報] Broadcast sent successfully");
-        } else {
-          console.error("❌ [車輛異常播報] Broadcast failed");
-        }
-
-        setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
-      } catch (err) {
-        console.error("🚫 [車輛異常播報] 播報失敗", err);
-        setIsSpeaking(false);
-        // 即使失敗也標記為已播報，避免持續重試
-        setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
-      }
-    })();
-  }, [vehicleWarnings]);
-
   useEffect(() => {
     const wsUrl = getWebSocketUrl();
 
@@ -233,6 +167,95 @@ const HomeScreen: React.FC = () => {
 
   // 地圖預設中心座標
   const { location: mapPreviewLocation, errorMsg } = useCurrentLocation();
+
+  // 監聽警告燈號變化，清除已關閉警告的播報記錄
+  useEffect(() => {
+    const warningKeys = Object.keys(vehicleWarnings);
+    
+    // 清除已關閉警告的播報記錄
+    setSpokenWarnings((prev) => {
+      const updated = { ...prev };
+      let hasChanges = false;
+      
+      warningKeys.forEach((key) => {
+        // 如果警告燈號變成false，且之前有播報記錄，則清除記錄
+        if (!vehicleWarnings[key] && prev[key]) {
+          delete updated[key];
+          hasChanges = true;
+          console.log(`🔄 [警告清除] ${key} 燈號關閉，清除播報記錄`);
+        }
+      });
+      
+      return hasChanges ? updated : prev;
+    });
+  }, [vehicleWarnings]);
+
+  // 異常燈號語音播報
+  useEffect(() => {
+    // 若正在播報則不重複
+    if (isSpeaking) return;
+
+    // 找出尚未播報且目前為 true 的異常
+    const newWarnings = Object.keys(vehicleWarnings).filter(
+      (key) => vehicleWarnings[key] && !spokenWarnings[key],
+    );
+
+    if (newWarnings.length === 0) return;
+
+    // 只播報第一個新異常
+    const warningKey = newWarnings[0];
+
+    setIsSpeaking(true);
+
+    (async () => {
+      try {
+        // 將異常 key 轉為中文描述
+        const warningNameMap: Record<string, string> = {
+          tpms_warning: "Tire Pressure Abnormal",
+          engine_warning: "Engine Warning Light On",
+          oil_pressure_warning: "Oil Pressure Abnormal",
+          battery_warning: "Battery Voltage Abnormal",
+          coolant_temp_warning: "Coolant Temperature Too High",
+          brake_warning: "Brake System Abnormal",
+          abs_warning: "ABS (Anti-lock Braking System) Abnormal",
+          airbag_warning: "Airbag System Abnormal",
+          low_fuel_warning: "Low Fuel Level",
+          door_ajar_warning: "Door Not Closed Properly",
+          seat_belt_warning: "Seat Belt Not Fastened",
+          exterior_light_failure_warning: "Exterior Light Failure",
+        };
+        const userPrompt = warningNameMap[warningKey] || warningKey;
+
+        console.log(
+          `🔊 [車輛異常播報] 檢測到異常：${userPrompt}, using Broadcast API`,
+        );
+
+        // 組合異常建議訊息
+        const message = `Vehicle anomaly detected: "${userPrompt}". Current location: ${
+          mapPreviewLocation
+            ? `Longitude ${mapPreviewLocation.longitude}, Latitude ${mapPreviewLocation.latitude}`
+            : "Unknown"
+        }. Please provide assistance and brief suggestions.`;
+
+        // 使用新的 broadcast API 發送到 realtime voice
+        const success = await sendBroadcastMessage(message);
+
+        if (success) {
+          console.log("✅ [車輛異常播報] Broadcast sent successfully");
+        } else {
+          console.error("❌ [車輛異常播報] Broadcast failed");
+        }
+
+        setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
+        setIsSpeaking(false);
+      } catch (err) {
+        console.error("🚫 [車輛異常播報] 播報失敗", err);
+        setIsSpeaking(false);
+        // 即使失敗也標記為已播報，避免持續重試
+        setSpokenWarnings((prev) => ({ ...prev, [warningKey]: true }));
+      }
+    })();
+  }, [vehicleWarnings, spokenWarnings, isSpeaking, mapPreviewLocation, sendBroadcastMessage]);
 
   if (errorMsg) {
     console.error("Error getting location:", errorMsg);

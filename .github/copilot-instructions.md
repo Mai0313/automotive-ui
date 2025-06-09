@@ -17,7 +17,8 @@
 ### 【核心功能】首頁車輛異常語音建議（Broadcast API + Realtime Voice）
 
 - 當首頁偵測到車輛異常（如胎壓異常、引擎燈等）時，會自動將異常資訊透過 Broadcast API 發送到 Realtime Voice 伺服器，由 LLM 產生針對該異常的建議，再轉為語音並主動播報，無需進入車輛資訊頁即可即時提醒使用者。
-- 每種異常僅播報一次，避免重複提醒。
+- **智能播報邏輯**：每種異常會在燈號變成 true 時播報一次，若燈號關閉後重新出現，會再次播報；燈號持續亮起時不會重複播報。
+- **動態記錄管理**：`spokenWarnings` 會記錄已播報的異常，當燈號變回 false 時自動清除對應記錄，確保下次異常出現時能重新播報。
 - 建議內容由 LLM 動態生成，語氣親切且務實，能根據不同異常給出更貼近情境的建議。
 - 採用統一的 Realtime Voice WebSocket 連線處理語音播報，透過 `/api/event/broadcast` API 觸發。
 - **技術架構：** 前端 → Broadcast API → Realtime Voice 伺服器 → LLM + TTS → WebSocket 語音串流 → 前端播放。
