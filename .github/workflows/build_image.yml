@@ -97,13 +97,12 @@ jobs:
         #         GIT_SSL_NO_VERIFY = "true"
 
       - name: Set image tags
-        id: set-tags
         run: |
           if [[ $GITHUB_REF == refs/tags/* ]]; then
-            TAG_NAME=${GITHUB_REF#refs/tags/}
-            echo "MAIN_TAG=${TAG_NAME}" >> $GITHUB_OUTPUT
+            VERSION=${GITHUB_REF#refs/tags/}
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
           else
-            echo "MAIN_TAG=latest" >> $GITHUB_OUTPUT
+            echo "VERSION=latest" >> $GITHUB_ENV
           fi
 
       - name: ${{ matrix.target.name }}
@@ -116,7 +115,7 @@ jobs:
           build-args: ${{ matrix.target.build_args }}
           labels: ${{ github.sha }}
           tags: |
-            ${{ matrix.target.tag }}:${{ steps.set-tags.outputs.MAIN_TAG }}
+            ${{ matrix.target.tag }}:${{ env.VERSION }}
             ${{ matrix.target.tag }}:${{ github.sha }}
           sbom: false
           provenance: false
