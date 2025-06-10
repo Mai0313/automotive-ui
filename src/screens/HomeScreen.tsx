@@ -230,14 +230,7 @@ const HomeScreen: React.FC = () => {
           `🔊 [車輛異常播報] 檢測到異常：${userPrompt}, using Broadcast API`,
         );
 
-        // 組合異常建議訊息
-        // const message = `Vehicle anomaly detected: "${userPrompt}". Current location: ${
-        //   mapPreviewLocation
-        //     ? `Longitude ${mapPreviewLocation.longitude}, Latitude ${mapPreviewLocation.latitude}`
-        //     : "Unknown"
-        // }. Please provide assistance and brief suggestions.`;
-
-        const message = `Vehicle anomaly detected: "${userPrompt}".`
+        const message = `Vehicle anomaly detected: "${userPrompt}".`;
 
         // 使用新的 broadcast API 發送到 realtime voice
         const success = await sendBroadcastMessage(message);
