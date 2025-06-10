@@ -211,7 +211,7 @@ const HomeScreen: React.FC = () => {
       try {
         // 將異常 key 轉為中文描述
         const warningNameMap: Record<string, string> = {
-          tpms_warning: "Tire Pressure Abnormal",
+          tpms_warning: "Tire Pressure Abnormal (Low Tire Pressure)",
           engine_warning: "Engine Warning Light On",
           oil_pressure_warning: "Oil Pressure Abnormal",
           battery_warning: "Battery Voltage Abnormal",
