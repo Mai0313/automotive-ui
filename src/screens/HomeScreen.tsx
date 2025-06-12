@@ -475,10 +475,10 @@ const HomeScreen: React.FC = () => {
             </TouchableOpacity>
           )}
         </View>
-        {/* 音樂 icon */}
+        {/* 音樂 icon - 暫時禁用於 demo */}
         <TouchableOpacity
-          style={layoutStyles.homeBottomBarBtn}
-          onPress={() => handleOverlayPress("music")}
+          style={[layoutStyles.homeBottomBarBtn, { opacity: 0.5 }]}
+          // onPress={() => handleOverlayPress("music")} // 暫時註解，demo 時不讓主管點擊
         >
           <MaterialIcons
             color="#fff"
