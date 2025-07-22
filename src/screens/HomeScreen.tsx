@@ -25,6 +25,7 @@ import { warningIconMap } from "./VehicleInfoScreen";
 import VehicleInfoScreen from "./VehicleInfoScreen";
 import MusicScreen from "./MusicScreen";
 import ClimateScreen from "./ClimateScreen";
+import AmbientLightScreen from "./AmbientLightScreen";
 
 const HomeScreen: React.FC = () => {
   const responsiveScale = useResponsiveStyles();
@@ -38,7 +39,7 @@ const HomeScreen: React.FC = () => {
   const { sendMessage: sendBroadcastMessage } = useBroadcastMessage();
 
   const [activeOverlay, setActiveOverlay] = React.useState<
-    "vehicle" | "music" | "climate" | null
+    "vehicle" | "music" | "climate" | "ambient" | null
   >(null);
   const [fullScreenOverlay, setFullScreenOverlay] =
     React.useState<boolean>(false);
@@ -293,7 +294,9 @@ const HomeScreen: React.FC = () => {
   const { icon: voiceIcon, color: voiceColor } = getVoiceIconAndColor();
 
   // Helper to toggle overlay selection
-  const handleOverlayPress = (type: "vehicle" | "music" | "climate") => {
+  const handleOverlayPress = (
+    type: "vehicle" | "music" | "climate" | "ambient",
+  ) => {
     if (activeOverlay === type) {
       setActiveOverlay(null);
     } else {
@@ -389,6 +392,7 @@ const HomeScreen: React.FC = () => {
           )}
           {activeOverlay === "music" && <MusicScreen />}
           {activeOverlay === "climate" && <ClimateScreen />}
+          {activeOverlay === "ambient" && <AmbientLightScreen />}
         </View>
       </Animated.View>
 
@@ -483,6 +487,17 @@ const HomeScreen: React.FC = () => {
           <MaterialIcons
             color="#fff"
             name="music-note"
+            size={responsiveScale.largeIconSize}
+          />
+        </TouchableOpacity>
+        {/* Ambient light icon */}
+        <TouchableOpacity
+          style={layoutStyles.homeBottomBarBtn}
+          onPress={() => handleOverlayPress("ambient")}
+        >
+          <MaterialCommunityIcons
+            color="#fff"
+            name="palette"
             size={responsiveScale.largeIconSize}
           />
         </TouchableOpacity>

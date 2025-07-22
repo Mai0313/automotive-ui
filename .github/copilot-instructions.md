@@ -318,3 +318,11 @@ App.tsx            # 專案入口
 - **命名規範標準化**：採用 `screen*` 前綴命名（如 `home*`、`music*`、`vehicle*`、`climate*`、`ai*`）
 - **樣式可維護性提升**：100+ 樣式定義統一管理，便於主題切換和響應式調整
 - **清理冗餘代碼**：移除所有螢幕文件中的 `StyleSheet.create()` 區塊和本地樣式引用
+
+### \ud83d\udcc5 2025-07-22
+
+#### \ud83c\udf08 \u65b0\u589e AmbientLightScreen
+
+- \u5f37\u5316\u8f09\u5165\u300cAmbientLightScreen\u300d\uff0c\u7528\u6237\u53ef\u8abf\u63a7\u8eca\u5167\u6c1b\u570d\u71c8\u8272\u8abf\u8207\u4eae\u5ea6
+- HomeScreen \u65b0\u589e palette \u6309\u9215\uff0c\u53ef\u6253\u958b\u8a72 overlay
+- `layoutStyles` \u65b0\u589e `ambient*` \u6a23\u5f0f\u5b9a\u7fa9

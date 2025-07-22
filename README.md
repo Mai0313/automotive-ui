@@ -17,7 +17,7 @@ An in-vehicle UI demo built from scratch using React Native and TypeScript, desi
 - **Home Screen**
 
   - Full-screen interactive map with a black bezel for a car-like experience.
-  - Bottom control bar with icons for Vehicle Info, Climate, Music, and AI Assistant.
+  - Bottom control bar with icons for Vehicle Info, Climate, Ambient Lighting, Music, and AI Assistant.
   - Overlay panels (cards) instead of traditional navigation—smooth slide-in/out animations and tap-to-close behavior.
   - Default vehicle status card modeled after Tesla’s center display (speed, warnings, quick actions).
 
@@ -31,6 +31,10 @@ An in-vehicle UI demo built from scratch using React Native and TypeScript, desi
 - **Vehicle Info**
 
   - Live warning indicators (engine, oil pressure, battery, TPMS, etc.) via WebSocket notifications.
+
+- **Ambient Lighting**
+
+  - Fun color orb lets you adjust cabin light hue and intensity.
 
 - **Music Player**
 
@@ -64,7 +68,7 @@ assets/                # Icons & images
 src/
   components/          # Reusable UI components (ControlButton, BottomBarButton, FloatingStatusBar, MapView)
   hooks/               # Custom hooks (useClimateSettings, useHomeClimateSettings, etc.)
-  screens/             # Screen components (HomeScreen, ClimateScreen, VehicleInfoScreen, MusicScreen, AIAssistantScreen)
+  screens/             # Screen components (HomeScreen, ClimateScreen, VehicleInfoScreen, AmbientLightScreen, MusicScreen, AIAssistantScreen)
   styles/              # Shared style definitions (commonStyles)
   types/               # Type declarations
 App.tsx                # Entry point for the React Native app

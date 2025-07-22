@@ -533,4 +533,27 @@ export const layoutStyles = StyleSheet.create({
     borderRadius: 10,
     width: "30%",
   },
+  // === AmbientLightScreen styles ===
+  ambientContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  ambientOrbContainer: {
+    width: 200,
+    height: 200,
+    marginBottom: 30,
+  },
+  ambientControlGroup: {
+    width: "100%",
+    marginBottom: 20,
+  },
+  ambientLabel: {
+    color: "#fff",
+    marginBottom: 10,
+  },
+  ambientSlider: {
+    width: "100%",
+  },
 });
